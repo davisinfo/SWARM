@@ -79,7 +79,7 @@ param(
     [Parameter(Mandatory = $false)]
     [String]$Proxy = "", #i.e http://192.0.0.1:8080 
     [Parameter(Mandatory = $false)]
-    [String]$CoinExchange = "LTC",
+    [String]$CoinExchange,
     [Parameter(Mandatory = $false)]
     [string]$Auto_Coin = "No",
     [Parameter(Mandatory = $false)]
@@ -203,7 +203,7 @@ Write-Host "OS = $Platform"
 . .\build\powershell\config_file.ps1;
 if ($Type -like "*ASIC*") {. .\build\powershell\icserver.ps1; . .\build\powershell\poolmanager.ps1}
 if ($Platform -eq "linux") {. .\build\powershell\sexyunixlogo.ps1; . .\build\powershell\gpu-count-unix.ps1}
-if ($Platform -eq "windows") {. .\build\powershell\hiveoc.ps1; . .\build\powershell\sexywinlogo.ps1; . .\build\powershell\bus.ps1; }
+if ($Platform -eq "windows") {. .\build\powershell\hiveoc.ps1; . .\build\powershell\sexywinlogo.ps1; . .\build\powershell\bus.ps1; . .\build\powershell\environment.ps1;}
 
 ##filepath dir
 $dir = (Split-Path $script:MyInvocation.MyCommand.Path)
@@ -219,6 +219,11 @@ $swarmstamp = "SWARMISBESTMINEREVER"
 if (-not (Test-Path ".\build\txt")) {New-Item -Name "txt" -ItemType "Directory" -Path ".\build" | Out-Null}
 $Platform | Set-Content ".\build\txt\os.txt"
 
+## Version
+$Version = Get-Content ".\h-manifest.conf" | ConvertFrom-StringData
+$Version.CUSTOM_NAME | Set-Content ".\build\txt\version.txt"
+$Version = $Version.CUSTOM_VERSION
+
 ## Initiate Update Check
 if ($Platform -eq "Windows") {$GetUpdates = "Yes"}
 else {$GetUpdates = $Update}
@@ -228,14 +233,21 @@ start-update -Update $Getupdates -Dir $dir -Platforms $Platform
 ## Close Previous Running Agent- Agent is left running to send stats online, even if SWARM crashes
 if ($Platform -eq "windows") {
     $dir | Set-Content ".\build\cmd\dir.txt"
+
+    ##Get current path envrionments
     $oldpath = (Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment' -Name PATH).path
+
+    ##First remove old Paths, in case this is an update / new dir
+    $oldpathlist = "$oldpath" -split ";"
+    $oldpathlist | %{if($_ -like "*SWARM*" -and $_ -notlike "*$dir\build\cmd*" ){Set-NewPath "remove" "$($_)"}}
+
     if($oldpath -notlike "*;$dir\build\cmd*")
      {
       Write-Host "
 Setting Path Variable For Commands: May require reboot to use.
 " -ForegroundColor Yellow
-      $newpath = "$oldpath;$dir\build\cmd"
-      Set-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment' -Name PATH -Value $newPath
+      $newpath = "$dir\build\cmd"
+      Set-NewPath "add" $newpath
      }
     $newpath = "$oldpath;$dir\build\cmd"
     Write-Host "Stopping Previous Agent"
@@ -532,12 +544,6 @@ if (-Not (Test-Path ".\wallet\keys")) {new-item -Path ".\wallet" -Name "keys" -I
 ## Save Array To File
 $Wallets | % { $_ | ConvertTo-Json | Set-Content ".\wallet\keys\$($_.Wallet).txt"}
 
-## Version
-if (-Not (Test-Path ".\build\txt")) {New-Item -Name "txt" -Path ".\build" -ItemType "directory" | Out-Null}
-$Version = Get-Content ".\h-manifest.conf" | ConvertFrom-StringData
-$Version.CUSTOM_NAME | Set-Content ".\build\txt\version.txt"
-$Version = $Version.CUSTOM_VERSION
-
 ## lower case (Linux file path)
 if ($Platform -eq "Windows") {$Platform = "windows"}
 
@@ -816,14 +822,14 @@ else {$Device_Count = $GPU_Count}
 Write-Host "Device Count = $Device_Count" -foregroundcolor green
 Start-Sleep -S 2
 if ($GPUCount -ne $null) {$LogGPUS = $GPUCount.Substring(0, $GPUCount.Length - 1)}
-if ($GPUDevices1){$GPUDevices1 | % {$NVIDIADevices1 += "$($_),"}}
-if ($GPUDevices2){$GPUDevices2 | % {$NVIDIADevices2 += "$($_),"}}
-if ($GPUDevices3){$GPUDevices3 | % {$NVIDIADevices3 += "$($_),"}}
-if ($GPUDevices1){$GPUDevices1 | % {$AMDDevices1 += "$($_),"}}
-if ($NVIDIADevices1){$NVIDIADevices1 = $NVIDIADevices1.Substring(0,$NVIDIADevices1.Length-1)}
-if ($NVIDIADevices2){$NVIDIADevices2 = $NVIDIADevices2.Substring(0,$NVIDIADevices2.Length-1)}
-if ($NVIDIADevices3){$NVIDIADevices3 = $NVIDIADevices3.Substring(0,$NVIDIADevices3.Length-1)}
-if ($AMDDevices1){$AMDDevices1 = $AMDDevices1.Substring(0,$AMDDevices1.Length-1)}
+if ($GPUDevices1){$GPUDevices1 | % {$NVIDIADevices1 += "$($_),"}} else {$NVIDIADevices1 = "none"}
+if ($GPUDevices2){$GPUDevices2 | % {$NVIDIADevices2 += "$($_),"}} else {$NVIDIADevices2 = "none"}
+if ($GPUDevices3){$GPUDevices3 | % {$NVIDIADevices3 += "$($_),"}} else {$NVIDIADevices3 = "none"}
+if ($GPUDevices1){$GPUDevices1 | % {$AMDDevices1 += "$($_),"}} else {$AMDDevices1 = "none"}
+if ($NVIDIADevices1 -ne "none"){$NVIDIADevices1 = $NVIDIADevices1.Substring(0,$NVIDIADevices1.Length-1)}
+if ($NVIDIADevices2 -ne "none"){$NVIDIADevices2 = $NVIDIADevices2.Substring(0,$NVIDIADevices2.Length-1)}
+if ($NVIDIADevices3 -ne "none"){$NVIDIADevices3 = $NVIDIADevices3.Substring(0,$NVIDIADevices3.Length-1)}
+if ($AMDDevices1 -ne "none"){$AMDDevices1 = $AMDDevices1.Substring(0,$AMDDevices1.Length-1)}
 $GCount = Get-Content ".\build\txt\devicelist.txt" | ConvertFrom-Json
 
 ##Reset-Old Stats And Their Time
@@ -985,8 +991,6 @@ While ($true) {
             continue
         }
 
-        ## Load a resizable array
-        [System.Collections.ArrayList]$AlgoPools = @();
         ##Get Algorithm Pools
         Write-Host "Checking Algo Pools" -Foregroundcolor yellow;
         $AllAlgoPools = Get-Pools -PoolType "Algo" -Stats $Stats
@@ -999,7 +1003,7 @@ While ($true) {
         $Top_3_Custom = $AllCustomPools.Symbol | Select-Object -Unique | ForEach-Object {$AllCustomPools | Where Symbol -EQ $_ | Sort-Object Price -Descending | Select -First 3};
 
         ## Combine Stats From Algo and Custom
-        if($Top_3_Algo){$Top_3_Algo | ForEach-Object {$AlgoPools.Add($_)} | Out-Null;}
+        [System.Collections.ArrayList]$AlgoPools = if($Top_3_Algo){$Top_3_Algo | ForEach-Object {$_}}
         if($Top_3_Custom){$Top_3_Custom | ForEach-Object {$AlgoPools.Add($_)} | Out-Null;}
         $Top_3_Algo = $Null;
         $Top_3_Custom = $Null;
@@ -1020,21 +1024,13 @@ While ($true) {
         ##Load Only Needed Algorithm Miners
         [System.Collections.ArrayList]$AlgoMiners = Get-Miners -Platforms $Platform -MinerType $Type -Stats $Stats -Pools $AlgoPools;
 
-        ##Re-Name Instance. This is for linux.
-        if ($Lite -eq "No") {
-            $AlgoMiners | ForEach {
-                $AlgoMiner = $_                            
-                if (-not (Test-Path $AlgoMiner.path)) {
-                    if (Test-Path (Split-Path $Algominer.Path)) {
-                        Set-Location (Split-Path $AlgoMiner.Path)
-                        if (Test-Path "*$($_.Type)*") {
-                            $OldInstance = Get-ChildItem "*$($AlgoMiner.Type)-*"
-                            Rename-Item $OldInstance -NewName "$($AlgoMiner.MinerName)" -force
-                        }
-                        Set-Location $Dir
-                    }
-                }
-            }
+        if($ALgoMiners.Count -eq 0) {
+            $HiveMessage = "No Miners Found! Check Arguments / Configuration"
+            $HiveWarning = @{result = @{command = "timeout"}}
+            if ($HiveOS -eq "Yes") {try {$SendToHive = Start-webcommand -command $HiveWarning -swarm_message $HiveMessage -HiveID $HiveId -HivePassword $HivePassword -HiveMirror $HiveMirror}catch {Write-Warning "Failed To Notify HiveOS"}}
+            Write-Host $HiveMessage
+            start-sleep $Interval; 
+            continue    
         }
 
         ##Download Miners, If Miner fails three times- A ban is created against miner, and it should stop downloading.
@@ -1278,12 +1274,13 @@ While ($true) {
                             if ($_.XProcess = $null) {$_.Status = "Failed"}
                             else {
                                 $_.Status = "Idle"
-                                $PIDDate = ".\build\pid\$($_.Name)_$($_.Coins)_$($_.InstanceName)_date.txt"
-                                if (Test-path $PIDDate) {
-                                    $PIDDateFile = Get-Content $PIDDate | Out-String
-                                    $PIDTime = [DateTime]$PIDDateFile
+                                $MinerInfo = ".\build\pid\$($_.Name)_$($_.Type)_$($_.Coins)_info.txt"
+                                if (Test-path $MinerInfo) {
+                                    $MI = Get-Content $MinerInfo | ConvertFrom-Json
+                                    $PIDTime = [DateTime]$MI.start_date
                                     $_.Active += (Get-Date) - $PIDTime
-                                    Start-Process ".\build\bash\killall.sh" -ArgumentList "$($TypeSel)" -Wait
+                                    Write-Host "Stopping Miner: $($_.Name) on $($_Type) screen" -ForegroundColor Yellow
+                                    Start-Process "start-stop-daemon" -ArgumentList "--stop --name $($MI.miner_exec) --pidfile $($MI.pid_path) --retry 5" -Wait
                                 }
                             }
                         }
@@ -1294,10 +1291,13 @@ While ($true) {
 
         ## This section pulls relavant statics that users require, and then outputs them to screen or file, to be pulled on command.
         if ($ConserveMessage) {$ConserveMessage | % {Write-Host "$_" -ForegroundColor Red}}
+        if($CoinExchange)
+        {
         $Y = [string]$CoinExchange
         $H = [string]$Currency
         $J = [string]'BTC'
         $BTCExchangeRate = Invoke-WebRequest "https://min-api.cryptocompare.com/data/pricemulti?fsyms=$Y&tsyms=$J" -UseBasicParsing | ConvertFrom-Json | Select-Object -ExpandProperty $Y | Select-Object -ExpandProperty $J
+        }
         $MSFile = ".\build\txt\minerstats.txt"
         if (Test-Path $MSFIle) {Clear-Content ".\build\txt\minerstats.txt" -Force}
         $type | foreach {if (Test-Path ".\build\txt\$($_)-hash.txt") {Clear-Content ".\build\txt\$($_)-hash.txt" -Force}}
@@ -1361,11 +1361,19 @@ While ($true) {
                     else {
                         $PreviousMinerPorts.$($_.Type) = "($_.Port)"
                         $_.Status = "Idle"
-                        $PIDDate = ".\build\pid\$($_.Name)_$($_.Coins)_$($_.InstanceName)_date.txt"
+                        $PIDDate = ".\build\pid\$($_.Name)_$($_.Type)_$($_.Coins)_date.txt"
                         if (Test-path $PIDDate) {
-                            $PIDDateFile = Get-Content $PIDDate | Out-String
-                            $PIDTime = [DateTime]$PIDDateFile
-                            $_.Active += (Get-Date) - $PIDTime
+                            else {
+                                $_.Status = "Idle"
+                                $MinerInfo = ".\build\pid\$($_.Name)_$($_.Type)_$($_.Coins)_info.txt"
+                                if (Test-path $MinerInfo) {
+                                    $MI = Get-Content $MinerInfo | ConvertFrom-Json
+                                    $PIDTime = [DateTime]$MI.start_date
+                                    $_.Active += (Get-Date) - $PIDTime
+                                    Write-Host "Stopping Miner: $($_.Name) on $($_Type) screen" -ForegroundColor Yellow
+                                    Start-Process "start-stop-daemon" -ArgumentList "--stop --name $($MI.miner_exec) --pidfile $($MI.pid_path) --retry 5" -Wait
+                                }
+                            }                        
                         }
                     }
                 }
@@ -1378,8 +1386,6 @@ While ($true) {
                     $Current = $_ | ConvertTo-Json -Compress
                     $PreviousPorts = $PreviousMinerPorts | ConvertTo-Json -Compress
                     $_.Xprocess = Start-LaunchCode -PP $PreviousPorts -Platforms $Platform -MinerRound $Current_BestMiners -NewMiner $Current
-                    $_.Instance = ".\build\pid\$($_.Type)-$($Instance)"
-                    $PIDFile = "$($_.Name)_$($_.Coins)_$($_.InstanceName)_pid.txt"
                     $Instance++
                 }
                 if ($Restart -eq $true) {
