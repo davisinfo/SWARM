@@ -40,6 +40,7 @@ function start-update {
         $PreviousVersions += "SWARM.2.0.2"
         $PreviousVersions += "SWARM.2.0.3"
         $PreviousVersions += "SWARM.2.0.4"
+        $PreviousVersions += "SWARM.2.0.5"
 
         Write-Host "User Specfied Updates: Searching For Previous Version" -ForegroundColor Yellow
         Write-Host "Check $Location For any Previous Versions"
@@ -96,10 +97,10 @@ function start-update {
                             if ($ChangeFile -eq "cryptodredge.json") {
                                 $Data | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | foreach {
                                     if ($_ -ne "name") {
-                                        $Data.$_.commands = $Data.$_.commands | Select -ExcludeProperty "blake2s", "exosis", "lbk3", "Lyra2REv2", "lyra2v2", "polytimos", "skein", "lyra2vc0banhash", "masari", "stellite, beam"
-                                        $Data.$_.difficulty = $Data.$_.difficulty | Select -ExcludeProperty "blake2s", "exosis", "lbk3", "Lyra2REv2", "lyra2v2", "polytimos", "skein", "lyra2vc0banhash", "masari", "stellite, beam"
-                                        $Data.$_.naming = $Data.$_.naming | Select -ExcludeProperty "blake2s", "exosis", "lbk3", "Lyra2REv2", "lyra2v2", "polytimos", "skein", "lyra2vc0banhash", "masari", "stellite, beam"
-                                        $Data.$_.oc = $Data.$_.oc | Select -ExcludeProperty "blake2s", "exosis", "lbk3", "Lyra2REv2", "lyra2v2", "polytimos", "skein", "lyra2vc0banhash", "masari", "stellite, beam"
+                                        $Data.$_.commands = $Data.$_.commands | Select -ExcludeProperty "blake2s", "exosis", "lbk3", "Lyra2REv2", "lyra2v2", "polytimos", "skein", "lyra2vc0banhash", "masari", "stellite, beam" -ErrorAction SilentlyContinue
+                                        $Data.$_.difficulty = $Data.$_.difficulty | Select -ExcludeProperty "blake2s", "exosis", "lbk3", "Lyra2REv2", "lyra2v2", "polytimos", "skein", "lyra2vc0banhash", "masari", "stellite, beam" -ErrorAction SilentlyContinue
+                                        $Data.$_.naming = $Data.$_.naming | Select -ExcludeProperty "blake2s", "exosis", "lbk3", "Lyra2REv2", "lyra2v2", "polytimos", "skein", "lyra2vc0banhash", "masari", "stellite, beam" -ErrorAction SilentlyContinue
+                                        $Data.$_.oc = $Data.$_.oc | Select -ExcludeProperty "blake2s", "exosis", "lbk3", "Lyra2REv2", "lyra2v2", "polytimos", "skein", "lyra2vc0banhash", "masari", "stellite, beam" -ErrorAction SilentlyContinue
         
                                         $Data.$_.commands| Add-Member "lyra2v3" "" -ErrorAction SilentlyContinue
                                         $Data.$_.difficulty | Add-Member "lyra2v3" "" -ErrorAction SilentlyContinue
@@ -146,10 +147,10 @@ function start-update {
                             if ($ChangeFile -eq "lolminer.json") {
 
                                 ##2.0.3
-                                $Data.$_.commands = $Data.$_.commands | Select -ExcludeProperty "beam"
-                                $Data.$_.difficulty = $Data.$_.difficulty | Select -ExcludeProperty "beam"
-                                $Data.$_.naming = $Data.$_.naming | Select -ExcludeProperty "beam"
-                                $Data.$_.oc = $Data.$_.oc | Select -ExcludeProperty "beam"
+                                $Data.$_.commands = $Data.$_.commands | Select -ExcludeProperty "beam" -ErrorAction SilentlyContinue
+                                $Data.$_.difficulty = $Data.$_.difficulty | Select -ExcludeProperty "beam" -ErrorAction SilentlyContinue
+                                $Data.$_.naming = $Data.$_.naming | Select -ExcludeProperty "beam" -ErrorAction SilentlyContinue
+                                $Data.$_.oc = $Data.$_.oc | Select -ExcludeProperty "beam" -ErrorAction SilentlyContinue
 
                                 ##2.0.4
                                 $Data.$_.commands| Add-Member "zhash" "--coin AUTO144_5" -ErrorAction SilentlyContinue -Force
@@ -448,6 +449,8 @@ function start-update {
                                $Data | Add-Member "cryptonightr" @{"hiveos_name" = "cryptonight/r"; "pools_to_exclude" = @("add pools here","comma seperated"); "miners_to_exclude" = @("add miners here","comma seperated")} -ErrorAction SilentlyContinue
                                ##2.0.5
                                $Data | Add-Member "rainforest" @{"hiveos_name" = "rainforest"; "pools_to_exclude" = @("add pools here","comma seperated"); "miners_to_exclude" = @("add miners here","comma seperated")} -ErrorAction SilentlyContinue
+                               ##2.0.6
+                               $Data | Add-Member "balloon" @{"hiveos_name" = "balloon"; "pools_to_exclude" = @("add pools here","comma seperated"); "miners_to_exclude" = @("add miners here","comma seperated")} -ErrorAction SilentlyContinue
                                ##2.0.3
                                $Data | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | Foreach {
                                $Data.$_ | Add-Member "miners_to_exclude" @("add miners here","comma seperated") -ErrorAction SilentlyContinue
