@@ -82,6 +82,13 @@ $dir | set-content ".\build\bash\dir.sh"
      Set-Location $Dir     
     }
 
+    if (Test-Path ".\build\export\libcudart.so.10.1.105") {
+      Start-Process ln -ArgumentList "-s $dir/build/export/libcudart.so.10.1.105 $dir/build/export/libcudart.so.10.1" -Wait
+      Set-Location "/"
+      Set-Location $Dir     
+  }
+
+
     if(Test-Path ".\build\export\libmicrohttpd.so.10.34.0")
      {
       Start-Process ln -ArgumentList "-s $dir/build/export/libmicrohttpd.so.10.34.0 $dir/build/export/libmicrohttpd.so.10" -Wait
@@ -117,6 +124,26 @@ $dir | set-content ".\build\bash\dir.sh"
       Set-Location "/"
       Set-Location $Dir     
      }
+
+     if(Test-Path ".\build\export\libnvrtc.so.10.1.105")
+     {
+      Start-Process ln -ArgumentList "-s $dir/build/export/libnvrtc.so.10.2.105 $dir/build/export/libnvrtc.so.10.1" -Wait
+      Set-Location "/"
+      Set-Location $Dir     
+     }
+
+     if (Test-Path ".\build\export\libnvrtc-builtins.so.10.1.105") {
+      Start-Process ln -ArgumentList "-s $dir/build/export/libnvrtc-builtins.so.10.1.105 $dir/build/export/libnvrtc-builtins.so.10.1" -Wait
+      Set-Location "/"
+      Set-Location $Dir
+      Start-Sleep -S 1
+  }
+
+  if (Test-Path ".\build\export\libnvrtc-builtins.so.10.1") {
+      Start-Process ln -ArgumentList "-s $dir/build/export/libnvrtc-builtins.so.10.1 $dir/build/export/libnvrtc-builtins.so" -Wait
+      Set-Location "/"
+      Set-Location $Dir     
+  }
  
     if(Test-Path ".\build\bash\get-oc")
     {
