@@ -1109,18 +1109,21 @@ While ($true) {
                 if ($Platform -eq "linux") {
                     $ActiveMinerPrograms | ForEach {
                         if ($_.BestMiner -eq $false) {
-                            if ($_.XProcess = $null) {$_.Status = "Failed"}
+                            if ($_.XProcess -eq $null) {$_.Status = "Failed"}
                             else {
-                                $_.Status = "Idle"
-                                $MinerInfo = ".\build\pid\$($_.Name)_$($_.Type)_$($_.Coins)_info.txt"
+                                $MinerInfo = ".\build\pid\$($_.InstanceName)_info.txt"
                                 if (Test-path $MinerInfo) {
+                                    $_.Status = "Idle"
+                                    $PreviousMinerPorts.$($_.Type) = "($_.Port)"    
                                     $MI = Get-Content $MinerInfo | ConvertFrom-Json
                                     $PIDTime = [DateTime]$MI.start_date
+                                    $Exec = Split-Path $MI.miner_exec -Leaf
                                     $_.Active += (Get-Date) - $PIDTime
-                                    Write-Host "Stopping Miner: $($_.Name) on $($_Type) screen" -ForegroundColor Yellow
-                                    Start-Process "start-stop-daemon" -ArgumentList "--stop --name $($MI.miner_exec) --pidfile $($MI.pid_path) --retry 5" -Wait
+                                    Start-Process "start-stop-daemon" -ArgumentList "--stop --name $Exec --pidfile $($MI.pid_path) --retry 5" -Wait
+                                    ##Terminate Previous Miner Screens Of That Type.
+                                    Start-Process ".\build\bash\killall.sh" -ArgumentList "$($_.Type)" -Wait
                                 }
-                            }
+                            }                       
                         }
                     }
                 }
@@ -1153,7 +1156,6 @@ While ($true) {
         if (Test-Path $GetStatusMinerBans) {$StatusMinerBans = Get-Content $GetStatusMinerBans | ConvertFrom-Json}
         else {$StatusMinerBans = $null}
         $StatusDate = Get-Date
-        $StatusDate | Out-File ".\build\txt\mineractive.txt"
         $StatusDate | Out-File ".\build\txt\minerstats.txt"
         Get-MinerStatus | Out-File ".\build\txt\minerstats.txt" -Append
         $mcolor = "93"
@@ -1183,7 +1185,7 @@ While ($true) {
 
         ## Records miner run times, and closes them. Starts New Miner instances and records
         ## there tracing information.
-        $ActiveMinerPrograms | ForEach {
+        $ActiveMinerPrograms | ForEach-Object {
            
             ##Miners Not Set To Run
             if ($_.BestMiner -eq $false) {
@@ -1197,15 +1199,13 @@ While ($true) {
                         }
                     }
 
-                elseif($Platform -eq "linux"){
-                        $GetProcess = Get-Process -Id $_.XProcess.Id -ErrorAction SilentlyContinue
+                if($Platform -eq "linux"){
                         if ($_.XProcess -eq $Null) {$_.Status = "Failed"}
-                        elseif ($GetProcess) {
-                            Write-Host "Closing $($_.Name) on $($_.Type)"
-                            $PreviousMinerPorts.$($_.Type) = "($_.Port)"
-                            $_.Status = "Idle"
-                            $MinerInfo = ".\build\pid\$($_.Name)_$($_.Type)_$($_.Coins)_info.txt"
+                        else {
+                            $MinerInfo = ".\build\pid\$($_.InstanceName)_info.txt"
                             if (Test-path $MinerInfo) {
+                                $PreviousMinerPorts.$($_.Type) = "($_.Port)"
+                                $_.Status = "Idle"
                                 $MI = Get-Content $MinerInfo | ConvertFrom-Json
                                 $PIDTime = [DateTime]$MI.start_date
                                 $Exec = Split-Path $MI.miner_exec -Leaf
@@ -1214,11 +1214,13 @@ While ($true) {
                             }
                         }
                     }
-                    
                 }
-
-            ##Miners That Should Be Running
-            elseif ($null -eq $_.XProcess -or $_.XProcess.HasExited -and $Lite -eq "No") {
+        }
+        
+        ##Miners That Should Be Running
+        ##Start them if neccessary
+        $BestActiveMiners | ForEach-Object {
+         if ($null -eq $_.XProcess -or $_.XProcess.HasExited -and $Lite -eq "No") {
                 if ($TimeDeviation -ne 0) {
                     $Restart = $true
                     $_.Activated++
@@ -1308,6 +1310,7 @@ While ($true) {
         }
 
         ##Write Details Of Active Miner And Stats To File
+        $StatusDate | Out-File ".\build\txt\mineractive.txt"
         Get-MinerActive | Out-File ".\build\txt\mineractive.txt" -Append
 
         ##Remove Old Jobs From Memory
