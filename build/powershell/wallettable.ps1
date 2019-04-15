@@ -15,7 +15,7 @@ function Get-WalletTable {
     if(Test-Path ".\wallet\values\*"){Remove-Item ".\wallet\values\*" -Force}
 
     $WalletKeys = [PSCustomObject]@{}
-    Get-ChildItemContent ".\wallet\keys" | ForEach {$WalletKeys | Add-Member $_.Name $_.Content}
+    Get-ChildItemContent ".\wallet\keys" | ForEach {$WalletKeys | Add-Member $_.Name $_.Content} 
 
     if(Test-path ".\wallet\pools"){Get-ChildItemContent ".\wallet\pools"}
 
@@ -37,7 +37,16 @@ function Get-WalletTable {
     }
 
     $Format = @()
-    $Format += $WalletTable
+    $Format += ""
+    $WalletTable | %{
+     $Format += "Address: $($_.Address)"
+     $Format += "Pool: $($_.Pool)"
+     $Format += "Ticker: $($_.Ticker)"
+     $Format += "Unpaid: $($_.Unpaid)"
+     $Format += "Balance: $($_.Balance)"
+     $Format += "Last Checked: $($_."Last Checked")"
+     $Format += ""
+    }
 
     $Sym | %{
      $Grouping = $WalletTable | Where Ticker -eq $_
@@ -47,8 +56,8 @@ function Get-WalletTable {
      $Grouping.Balance | %{$Total_Balance += $_ }
 
      $Format += ""
-     $Format += "Total $($_) Unpaid = $Total_Unpaid"
      $Format += "Total $($_) Balance = $Total_Balance"
+     $Format += "Total $($_) Unpaid = $Total_Unpaid (Reflects Current Total Potential Earnings)"
      $Format += ""
     }
 
