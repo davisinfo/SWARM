@@ -35,6 +35,12 @@ Argument          Options           Explanation
                AMD1,
 	       ASIC]
 
+-ASIC_ALGO [algorithm1,algorithm2]  Algorithms you wish ASIC to mine. This list will be seperate from
+                                    other devices, and therefor ~should~ be able to work on other rigs.
+
+-ASIC_IP   [192.168.0.4]            IP address of your ASIC rig, if SWARM is operating remotely. However,
+                                    "localhost" is enabled by default if not used.
+
 ***********************************************************************************************************
 ***********************************************************************************************************
 ***********************************************************************************************************
@@ -45,11 +51,23 @@ These arguments can be added for additional customization and options
 
 Argument            Options             Explanation
 
+-Auto_Coin      [Yes,No]            Turns on Auto_Coin switching for pools that are capable of it.
+                                    Default is "No".
+
 -Platform      [linux,windows]      Defualt is linux. Specify this if you are using windows. This lets SWARM
                                     know to build itself for Windows operation. SWARM will attempt to detects
                                     if there is a C:\, if not, then it assumes SWARM is operating in linux.
                                     Otherwise, it will assume it is operating in windows. This parameter is
                                     optional.
+
+-Stat_All        [Yes,No]           Default is No. When enabled to Yes, it will pull / save ALL coin stats. 
+                                    However, this is a huge expenditure of CPU and system resources to do. Not
+                                    reccommend on 2 threaded CPUs.
+
+-Custom_Periods    [number]         Default is 1. This will allow the user to specify the number of periods 
+                                    that SWARM should gather its data from, with "periods" defined as each 
+                                    pull from pool. Default is 1 (to reduce use). If used, Stat_Algo and /or
+                                    Stat_Coin should be set to "custom"
 
 -Algorithm   [algorithm,algorithm,etc.] When this is specified, SWARM will not use
                                         Algorithms from pool-algos.json, and defer
@@ -88,7 +106,8 @@ Argument            Options             Explanation
                                     instead of usual http://ipaddress:port/
 
 -CLPlatform    [number]             This will forcefully set the AMD CLPlatform to use for mining.
-                                    Set this if SWARM fails to guess correct platform.
+                                    Set this if SWARM fails to guess correct platform. However,
+                                    SWARM ~should~ auto-detect correct platform.
 
 -Farm_Hash     [address]            This is required for Windows. Specify Farm_Hash in order to use HiveOS
                                     website. Farm_Hash is attained by making a user account in HiveOS.
@@ -104,7 +123,7 @@ Argument            Options             Explanation
 -CoinExchange      [Any]            Coin Symbol Of An Optional AltWallet (Will only work for coins on 
                                     cryptocompare). This will calculate the coin of your choice profit/day
                                     and display on stats screens. Good if you are exchanging into a coin 
-                                    other than BTC.
+                                    other than BTC. This figure does not include power consumption calculations.
 
 -Interval         [1-1000]          Expression is in seconds. Time before miner begins checking pools for 
                                     pricing. Ideal target goal should be miner windows close/open every 
@@ -180,10 +199,20 @@ Argument            Options             Explanation
 
 -Stat_Algo         [Live,		This will allow you to factor period average smoothing. 
         	    Minute_5,		By default everything is live pricing. This will allow you to
-		    Minute_10,		smooth out stat fluctuations if you so desired into the period 
-		    Hour,		specified. Essentially it will allow you choose whether or not 
-		    Day]		you want to base switching on price averages, or live...And if 
-					you choose price averages, what average to base it on.
+		    Minute_15,		smooth out stat fluctuations if you so desired into the period 
+                    Hour                specified. Essentially it will allow you choose whether or not 
+		    Hour4,              you want to base switching on price averages, or live...And if
+		    Day                 you choose price averages, what average to base it on. Default
+                    Custom              is live. If using -Custom_Periods, this must be set to Custom.
+
+-Stat_Coin         [Live,		This will allow you to factor period average smoothing. 
+        	    Minute_5,		By default everything is live pricing. This will allow you to
+		    Minute_15,		smooth out stat fluctuations if you so desired into the period 
+                    Hour                specified. Essentially it will allow you choose whether or not 
+		    Hour4,              you want to base switching on price averages, or live...And if
+		    Day                 you choose price averages, what average to base it on. Default
+                    Custom              is live. If using -Custom_Periods, this must be set to Custom.
+					
 
 -CPUOnly	   [Yes or No]		For CPU only miners- This lets HiveOS know whether or not to
 					stat CPU. Note: Some CPU miners will only send stats on

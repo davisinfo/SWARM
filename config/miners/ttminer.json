@@ -34,6 +34,16 @@
       "lyra2v3": "LYRA2V3-100",
       "lyra2rev3": "LYRA2V3-100"
     },
+    "fee": {
+      "progpow": 1,
+      "ubqhash": 1,
+      "mtp": 1,
+      "daggerhashimoto": 1,
+      "myr-gr": 1,
+      "ethash": 1,
+      "lyra2v3": 1,
+      "lyra2rev3": 1
+    },
     "oc": {
       "progpow": {
         "Power": "",
@@ -69,6 +79,8 @@
         "Power": "",
         "Core": "",
         "Memory": "",
+        "ETHPill": "",
+        "PillDelay": "",
         "Fans": ""
       },
       "lyra2v3": {
@@ -119,6 +131,16 @@
       "lyra2v3": "LYRA2V3-100",
       "lyra2rev3": "LYRA2V3-100"
     },
+    "fee": {
+      "progpow": 1,
+      "ubqhash": 1,
+      "mtp": 1,
+      "daggerhashimoto": 1,
+      "myr-gr": 1,
+      "ethash": 1,
+      "lyra2v3": 1,
+      "lyra2rev3": 1
+    },
     "oc": {
       "progpow": {
         "Power": "",
@@ -142,6 +164,8 @@
         "Power": "",
         "Core": "",
         "Memory": "",
+        "ETHPill": "",
+        "PillDelay": "",
         "Fans": ""
       },
       "myr-gr": {
@@ -204,6 +228,16 @@
       "lyra2v3": "LYRA2V3-100",
       "lyra2rev3": "LYRA2V3-100"
     },
+    "fee": {
+      "progpow": 1,
+      "ubqhash": 1,
+      "mtp": 1,
+      "daggerhashimoto": 1,
+      "myr-gr": 1,
+      "ethash": 1,
+      "lyra2v3": 1,
+      "lyra2rev3": 1
+    },
     "oc": {
       "progpow": {
         "Power": "",
@@ -227,6 +261,8 @@
         "Power": "",
         "Core": "",
         "Memory": "",
+        "ETHPill": "",
+        "PillDelay": "",
         "Fans": ""
       },
       "myr-gr": {
