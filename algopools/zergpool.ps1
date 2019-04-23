@@ -19,18 +19,22 @@ if ($Poolname -eq $Name) {
             if ($Bad_pools.$Zergpool_Algorithm -notcontains $Name) {
                 $Zergpool_Port = $Zergpool_Request.$_.port
                 $Zergpool_Host = "$($Zergpool_Algorithm).mine.zergpool.com"
-
                 $Divisor = (1000000 * $Zergpool_Request.$_.mbtc_mh_factor)
                 $Global:DivisorTable.zergpool.Add($Zergpool_Algorithm,$Zergpool_Request.$_.mbtc_mh_factor)
-
                 $Fees = $Zergpool_Request.$_.fees
                 $Global:FeeTable.zergpool.Add($Zergpool_Algorithm,$Zergpool_Request.$_.fees)
+                $StatPath = ".\stats\($Name)_$($Zergpool_Algorithm)_profit.txt"
+                $Hashrate = $Zergpool_Request.$_.hashrate
 
-                $Estimate = if ($Stat_Algo -eq "Day") { [Double]$Zergpool_Request.$_.estimate_last24h }else { [Double]$Zergpool_Request.$_.estimate_current }
+                if (-not (Test-Path $StatPath)) {
+                    $Stat = Set-Stat -Name "$($Name)_$($Zergpool_Algorithm)_profit" -HashRate $HashRate -Value ( [Double]$Zergpool_Request.$_.estimate_last24h / $Divisor * (1 - ($Zergpool_Request.$_.fees / 100)))
+                } 
+                else {
+                    $Stat = Set-Stat -Name "$($Name)_$($Zergpool_Algorithm)_profit" -HashRate $HashRate -Value ( [Double]$Zergpool_Request.$_.estimate_current / $Divisor * (1 - ($Zergpool_Request.$_.fees / 100)))
+                }
 
-                $Stat = Set-Stat -Name "$($Name)_$($Zergpool_Algorithm)_profit" -Value ([Double]$Estimate / $Divisor * (1 - ($Zergpool_Request.$_.fees / 100)))
-                if ($Stat_Algo -eq "Day") { $CStat = $Stat.Live }else { $CStat = $Stat.$Stat_Algo }
-            
+                if(-not $global:Pool_Hashrates.$Zergpool_Algorithm){$global:Pool_Hashrates.Add("$Zergpool_Algorithm",@{})}
+                $global:Pool_Hashrates.$Zergpool_Algorithm.Add("$Name",@{HashRate = "$($Stat.HashRate)"; Percent = ""})
 
                     $Pass1 = $global:Wallets.Wallet1.Keys
                     $User1 = $global:Wallets.Wallet1.$Passwordcurrency1.address
@@ -69,9 +73,7 @@ if ($Poolname -eq $Name) {
                     Symbol        = "$Zergpool_Algorithm-Algo"
                     Mining        = $Zergpool_Algorithm
                     Algorithm     = $Zergpool_Algorithm
-                    Price         = $CStat
-                    StablePrice   = $Stat.Week
-                    MarginOfError = $Stat.Fluctuation
+                    Price         = $Stat.$Stat_Algo
                     Protocol      = "stratum+tcp"
                     Host          = $Zergpool_Host
                     Port          = $Zergpool_Port

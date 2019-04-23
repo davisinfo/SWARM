@@ -26,31 +26,8 @@ function start-update {
     if ($Platforms -eq "linux" -and $Update -eq "No") {$StartUpdate = $false}
 
     if ($StartUpdate -eq $true) {
-        $PreviousVersions = @()
-        $PreviousVersions += "SWARM.1.9.2"
-        $PreviousVersions += "SWARM.1.9.3"
-        $PreviousVersions += "SWARM.1.9.4"
-        $PreviousVersions += "SWARM.1.9.5"
-        $PreviousVersions += "SWARM.1.9.6"
-        $PreviousVersions += "SWARM.1.9.7"
-        $PreviousVersions += "SWARM.1.9.8"
-        $PreviousVersions += "SWARM.1.9.9"
-        $PreviousVersions += "SWARM.2.0.0"
-        $PreviousVersions += "SWARM.2.0.1"
-        $PreviousVersions += "SWARM.2.0.2"
-        $PreviousVersions += "SWARM.2.0.3"
-        $PreviousVersions += "SWARM.2.0.4"
-        $PreviousVersions += "SWARM.2.0.5"
-        $PreviousVersions += "SWARM.2.0.6"
-        $PreviousVersions += "SWARM.2.0.7"
-        $PreviousVersions += "SWARM.2.0.8"
-        $PreviousVersions += "SWARM.2.0.9"
-        $PreviousVersions += "SWARM.2.1.0"
-        $PreviousVersions += "SWARM.2.1.1"
-        $PreviousVersions += "SWARM.2.1.2"
-        $PreviousVersions += "SWARM.2.1.3"
-        $PreviousVersions += "SWARM.2.1.4"
-        $PreviousVersions += "SWARM.2.1.5"
+        #$PreviousVersions = @()
+        $PreviousVersions += "SWARM.2.1.8"
 
         Write-Host "User Specfied Updates: Searching For Previous Version" -ForegroundColor Yellow
         Write-Host "Check $Location For any Previous Versions"
@@ -256,9 +233,10 @@ function start-update {
                                 $Data | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | foreach {
                                     if ($_ -ne "name") {
                                         ##2.0.1 
-                                        $Data.$_.commands."ethash" = "-proto 2 -rate 1"
-                                        $Data.$_.commands."daggerhashimoto" = "-proto 4 -stales 0"
-                                        $Data.$_.commands."dagger" = "-proto 2"
+                                        $Data.$_.commands| Add-Member "progpow" "-coin bci -proto 1" -ErrorAction SilentlyContinue
+                                        $Data.$_.difficulty | Add-Member "progpow" "" -ErrorAction SilentlyContinue
+                                        $Data.$_.naming | Add-Member "progpow" "progpow" -Force -ErrorAction SilentlyContinue
+                                        $Data.$_.oc | Add-Member "progpow" @{dpm = ""; v = ""; core = ""; mem = ""; mdpm = ""; fans = ""} -ErrorAction SilentlyContinue
                                     }
                                 }
                             }

@@ -17,8 +17,6 @@ function Get-Miners {
         [Parameter(Mandatory = $true)]
         [Array]$MinerType,
         [Parameter(Mandatory = $true)]
-        [Array]$Stats,
-        [Parameter(Mandatory = $true)]
         [Array]$Pools
     )
 
@@ -140,7 +138,7 @@ function Get-Miners {
     }
     
     $ScreenedMiners | ForEach-Object { $GetMiners.Remove($_) } | Out-Null;
-    if ($Note) { $Note | ForEach-Object { Write-Host "$($_)" -ForegroundColor Magenta } }
+    if ($Note) { $Note | ForEach-Object { Write-Host "[$(Get-Date)]: " -foreground yellow -nonewline; Write-Host "$($_)" -ForegroundColor Magenta } }
     $GetMiners
 }
 
@@ -208,8 +206,6 @@ function Get-minerfiles {
 function start-minersorting {
     param (
         [Parameter(Mandatory = $true)]
-        [array]$Stats,
-        [Parameter(Mandatory = $true)]
         [array]$SortMiners,
         [Parameter(Mandatory = $true)]
         [decimal]$WattCalc
@@ -220,11 +216,14 @@ function start-minersorting {
 
         $Miner_HashRates = [PSCustomObject]@{ }
         $Miner_Profits = [PSCustomObject]@{ }
+        $Miner_Unbias = [PSCustomObject]@{ }
         $Miner_PowerX = [PSCustomObject]@{ }
-        $Miner_Pool_Estimate = [PSCustomObject]@{ }
+        $Miner_Pool_Estimates = [PSCustomObject]@{ }
+        $Miner_Vol = [PSCustomObject]@{ }
      
         $Miner_Types = $Miner.Type | Select-Object -Unique
-     
+        $MinerPool = $Miner.MinerPool | Select-Object -Unique
+
         $Miner.HashRates | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
             if ($Miner.PowerX.$_ -ne $null) {
                 $Day = 24;
@@ -234,38 +233,50 @@ function start-minersorting {
                 $WattCalc3 = [Decimal]$WattCalc2 * $WattCalc;
             }
             else { $WattCalc3 = 0 }
+            if ($global:Pool_Hashrates.$_.$MinerPool.Percent -gt 0) {
+                if($global:Pool_Hashrates.$_.$MinerPool.Percent -eq 1){$Hash_Percent = 1}
+                else{$Hash_Percent = (1 - $global:Pool_Hashrates.$_.$MinerPool.Percent)}
+            }
+            else {$Hash_Percent = 1}
             $Miner_HashRates | Add-Member $_ ([Double]$Miner.HashRates.$_)
             $Miner_PowerX | Add-Member $_ ([Double]$Miner.PowerX.$_)
-            $Miner_Profits | Add-Member $_ ([Decimal]($Miner.Quote - $WattCalc3))
-            $Miner_Pool_Estimate | Add-Member $_ ([Decimal]($Miner.Quote))
+            $Miner_Profits | Add-Member $_  (([Decimal]($Miner.Quote) * (1 - ($Miner.fees / 100))) * $Hash_Percent)
+            $Miner_Unbias | Add-Member $_  ([Decimal]($Miner.Quote - $WattCalc3) * (1 - ($Miner.fees / 100)))
+            $Miner_Pool_Estimates | Add-Member $_ ([Decimal]($Miner.Quote) * (1 - ($Miner.fees / 100)))
+            $Miner_Vol | Add-Member $_ $( if($global:Pool_Hashrates.$_.$MinerPool.Percent -ne 1){[Double]$global:Pool_Hashrates.$_.$MinerPool.Percent * 100} else { 0 } )
         }
             
         $Miner_Power = [Double]($Miner_PowerX.PSObject.Properties.Value | Measure-Object -Sum).Sum
         $Miner_Profit = [Double]($Miner_Profits.PSObject.Properties.Value | Measure-Object -Sum).Sum
-        $Miner_Pool_Estimate = [Double]($Miner_Pool_Estimate.PSObject.Properties.Value | Measure-Object -Sum).sum
+        $Miner_Unbiased = [Double]($Miner_Unbias.PSObject.Properties.Value | Measure-Object -Sum).Sum
+        $Miner_Pool_Estimate = [Double]($Miner_Pool_Estimates.PSObject.Properties.Value | Measure-Object -Sum).sum
+        $Miner_Volume = [Double]($Miner_Vol.PSObject.Properties.Value | Measure-Object -Sum).sum
 
         $Miner.HashRates | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
             if ((-not [String]$Miner.HashRates.$_) -or (-not [String]$Miner.PowerX.$_)) {
                 $Miner_HashRates.$_ = $null
                 $Miner_PowerX.$_ = $null
                 $Miner_Profit = $null
+                $Miner_Unbiased = $null
                 $Miner_Power = $null
+                $Miner_Pool_Estimate = $null
+                $Miner_Volume = $null
             }
         }
 
         $Miner.HashRates = $Miner_HashRates
         $Miner.PowerX = $Miner_PowerX
         $Miner | Add-Member Profit $Miner_Profit
+        $Miner | Add-Member Profit_Unbiased $Miner_Unbiased
         $Miner | Add-Member Power $Miner_Power
-        $Miner | Add-Member Pool_Estimate $Miner_Pool_Estimate   
+        $Miner | Add-Member Pool_Estimate $Miner_Pool_Estimate
+        $Miner | Add-Member Volume $Miner_Volume
     }
 }
 
 function Start-MinerReduction {
 
     param (
-        [Parameter(Mandatory = $true)]
-        [array]$Stats,
         [Parameter(Mandatory = $true)]
         [array]$SortMiners,
         [Parameter(Mandatory = $true)]

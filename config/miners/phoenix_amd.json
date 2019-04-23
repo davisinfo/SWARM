@@ -12,17 +12,26 @@
     "commands": {
       "ethash": "-proto 2 -rate 1",
       "daggerhashimoto": "-proto 4 -stales 0",
-      "dagger": "-proto 2"
+      "dagger": "-proto 2",
+      "progpow": "-coin bci -proto 1"
     },
     "difficulty": {
       "ethash": "",
       "daggerhashimoto": "",
-      "dagger": ""
+      "dagger": "",
+      "progpow": ""
     },
     "naming": {
       "ethash": "ethash",
       "daggerhashimoto": "daggerhashimoto",
-      "dagger": "dagger"
+      "dagger": "dagger",
+      "progpow": "progpow"
+    },
+    "fee": {
+      "ethash": 0.65,
+      "daggerhashimoto": 0.65,
+      "dagger": 0.65,
+      "progpow": 0.65
     },
     "oc": {
       "ethash": {
@@ -46,6 +55,14 @@
         "v": "825 825 825 825 825 825",
         "core": "1175 1175 1150 1175 1175 1175",
         "mem": "2125;800 2125;800 2125;800 2125;800 2100;825 2125;800",
+        "mdpm": "",
+        "fans": ""
+      },
+      "progpow": {
+        "dpm": "",
+        "v": "",
+        "core": "",
+        "mem": "",
         "mdpm": "",
         "fans": ""
       }

@@ -120,7 +120,8 @@ function Get-MinerStatus {
                     @{Label = "$Y/Day"; Expression = { $($_.Pool_Estimate) | ForEach-Object { if ($null -ne $_) { ($_ / $BTCExchangeRate).ToString("N5") }else { "Bench" } } }; Align = 'right' },
                     @{Label = "$Currency/Day"; Expression = { $($_.Profits) | ForEach-Object { if ($null -ne $_) { ($_ * $Rates.$Currency).ToString("N2") }else { "Bench" } } }; Align = 'center' },
                     @{Label = "Pool"; Expression = { $($_.MinerPool) }; Align = 'center' },
-                    @{Label = "Shares"; Expression = { $($_.Shares -as [Decimal]).ToString("N3") }; Align = 'left' }
+                    @{Label = "Shares"; Expression = { $($_.Shares -as [Decimal]).ToString("N2") }; Align = 'center' },
+                    @{Label = "Vol."; Expression = { $($_.Volume) | ForEach-Object { if ($null -ne $_) { $_.ToString("N2") }else { "Bench" } } }; Align = 'left' }
                 )
             }
             else {
@@ -132,7 +133,8 @@ function Get-MinerStatus {
                     @{Label = "BTC/Day"; Expression = { $($_.Profits) | ForEach-Object { if ($null -ne $_) { $_.ToString("N5") }else { "Bench" } } }; Align = 'right' },
                     @{Label = "$Currency/Day"; Expression = { $($_.Profits) | ForEach-Object { if ($null -ne $_) { ($_ * $Rates.$Currency).ToString("N2") }else { "Bench" } } }; Align = 'center' },
                     @{Label = "Pool"; Expression = { $($_.MinerPool) }; Align = 'center' },
-                    @{Label = "Shares"; Expression = { $($_.Shares -as [Decimal]).ToString("N3") }; Align = 'left' }
+                    @{Label = "Shares"; Expression = { $($_.Shares -as [Decimal]).ToString("N2") }; Align = 'center' },
+                    @{Label = "Vol."; Expression = { $($_.Volume) | ForEach-Object { if ($null -ne $_) { $_.ToString("N2") }else { "Bench" } } }; Align = 'left' }
                 )
             }
         }
@@ -146,7 +148,8 @@ function Get-MinerStatus {
                     @{Label = "$Y/Day"; Expression = { $($_.Pool_Estimate) | ForEach-Object { if ($null -ne $_) { ($_ / $BTCExchangeRate).ToString("N5") }else { "Bench" } } }; Align = 'right' },
                     @{Label = "$Currency/Day"; Expression = { $($_.Profits) | ForEach-Object { if ($null -ne $_) { ($_ * $Rates.$Currency).ToString("N2") }else { "Bench" } } }; Align = 'center' },
                     @{Label = "Pool"; Expression = { $($_.MinerPool) }; Align = 'center' },
-                    @{Label = "Shares"; Expression = { $($_.Shares -as [Decimal]).ToString("N3") }; Align = 'left' }        
+                    @{Label = "Shares"; Expression = { $($_.Shares -as [Decimal]).ToString("N2") }; Align = 'center' },
+                    @{Label = "Vol."; Expression = { $($_.Volume) | ForEach-Object { if ($null -ne $_) { $_.ToString("N2") }else { "Bench" } } }; Align = 'left' }
                 )
             }
             else {
@@ -157,7 +160,8 @@ function Get-MinerStatus {
                     @{Label = "BTC/Day"; Expression = { $($_.Profits) | ForEach-Object { if ($null -ne $_) { $_.ToString("N5") }else { "Bench" } } }; Align = 'right' },
                     @{Label = "$Currency/Day"; Expression = { $($_.Profits) | ForEach-Object { if ($null -ne $_) { ($_ * $Rates.$Currency).ToString("N2") }else { "Bench" } } }; Align = 'center' },
                     @{Label = "Pool"; Expression = { $($_.MinerPool) }; Align = 'center' },
-                    @{Label = "Shares"; Expression = { $($_.Shares -as [Decimal]).ToString("N3") }; Align = 'left' }      
+                    @{Label = "Shares"; Expression = { $($_.Shares -as [Decimal]).ToString("N2") }; Align = 'center' },
+                    @{Label = "Vol."; Expression = { $($_.Volume) | ForEach-Object { if ($null -ne $_) { $_.ToString("N2") }else { "Bench" } } }; Align = 'left' }
                 )
             }
 
@@ -239,7 +243,7 @@ Waiting 15 Seconds For Miners To Load & Restarting Background Tracking
 
 Type 'get-screen [MinerType]' to see last 100 lines of log- This IS a remote command!
 
-https://github.com/MaynardMiner/SWARM/wiki/HiveOS-management >> Right Click 'Open URL In Browser'  
+https://github.com/MaynardMiner/SWARM/wiki/Commands-&-Suggested-Apps For More Info'  
 
 " -ForegroundColor Magenta
     }
@@ -351,6 +355,7 @@ function Restart-Miner {
                 }
                 else {
                     $_.Status = "Running"
+                    Write-Host "[$(Get-Date)]: " -foreground yellow -nonewline
                     Write-Host "$($_.MinerName) Is Running!" -ForegroundColor Green
                 }
                 Write-Host "
@@ -372,23 +377,31 @@ function Restart-Miner {
 
 function Get-MinerHashRate {
     $BestActiveMiners | ForEach-Object {
+        if($_.Profit_Day -ne "bench"){ $ScreenProfit = "$(($_.Profit_Day * $Rates.$Currency).ToString("N2")) $Currency/Day" } else{ $ScreenProfit = "Benchmarking" }
+        if($_.Fiat_Day -ne "bench"){ $CurrentProfit = "$($_.Fiat_Day) $Currency/Day" } else { $CurrentProfit = "Benchmarking" }
         if ($null -eq $_.Xprocess -or $_.XProcess.HasExited) { $_.Status = "Failed" }
         $Miner_HashRates = Get-HashRate -Type $_.Type
         $GetDayStat = Get-Stat "$($_.Name)_$($_.Algo)_HashRate"
         $DayStat = "$($GetDayStat.Day)"
         $MinerPrevious = "$($DayStat | ConvertTo-Hash)"
         $ScreenHash = "$($Miner_HashRates | ConvertTo-Hash)"
-        Write-Host "[$(Get-Date)]:" -foreground yellow -nonewline
-        Write-Host " $($_.Type) is currently" -foreground green -nonewline
+        Write-Host "[$(Get-Date)]: " -foreground yellow -nonewline
+        Write-Host "$($_.Type) is currently" -foreground green -nonewline
         if ($_.Status -eq "Running") { $MinerStatus = Write-Host " Running: " -ForegroundColor green -nonewline }
         if ($_.Status -eq "Failed") { $MinerStatus = Write-Host " Not Running: " -ForegroundColor darkred -nonewline } 
         $MinerStatus
         Write-Host "$($_.Name) current hashrate for $($_.Symbol) is" -nonewline
         Write-Host " $ScreenHash/s" -foreground green
+        Write-Host "[$(Get-Date)]: " -foreground yellow -nonewline
         Write-Host "$($_.Type) is currently mining on $($_.MinerPool)" -foregroundcolor Cyan
+        Write-Host "[$(Get-Date)]: " -foreground yellow -nonewline
         Write-Host "$($_.Type) previous hashrates for $($_.Symbol) is" -nonewline
-        Write-Host " $MinerPrevious/s
- " -foreground yellow
+        Write-Host " $MinerPrevious/s" -foreground yellow
+        Write-Host "[$(Get-Date)]: " -foreground yellow -nonewline
+        Write-Host "Current Profit Rating: $CurrentProfit"
+        Write-Host "[$(Get-Date)]: " -foreground yellow -nonewline
+        Write-Host "Current Daily Profit: $ScreenProfit
+"
     }
 }
 
@@ -397,6 +410,7 @@ function Set-Countdown {
     else { $Countdown = ([math]::Round(($MinerInterval - 20) - $MinerWatch.Elapsed.TotalSeconds)) }
     if ($SWARM_Mode -eq "Yes" -and $BenchmarkMode -eq $false) { $CountMessage = "SWARM Mode Starts: $($Countdown) seconds" }
     else { $CountMessage = "Time Left Until Database Starts: $($Countdown) seconds" }
+    Write-Host "[$(Get-Date)]: " -foreground yellow -nonewline
     Write-Host "$CountMessage 
 "-foreground DarkMagenta
 }

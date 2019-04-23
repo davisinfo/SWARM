@@ -28,20 +28,25 @@ if ($Poolname -eq $Name) {
                 $Divisor = (1000000 * $phiphipool_Request.$_.mbtc_mh_factor)
                 $Fees = $phiphipool_Request.$_.fees
                 $Workers = $phiphipool_Request.$_.Workers
-                $Estimate = if ($Stat_Algo -eq "Day") { [Double]$phiphipool_Request.$_.estimate_last24h }else { [Double]$phiphipool_Request.$_.estimate_current }
+                $StatPath = ".\stats\($Name)_$($phiphipool_Algorithm)_profit.txt"
+                $Hashrate = $phiphipool_Request.$_.hashrate
 
-                $SmallestValue = 1E-20
-                $Stat = Set-Stat -Name "$($Name)_$($phiphipool_Algorithm)_profit" -Value ([Double]$Estimate / $Divisor * (1 - ($phiphipool_Request.$_.fees / 100)))
-                if ($Stat_Algo -eq "Day") { $CStat = $Stat.Live }else { $CStat = $Stat.$Stat_Algo }
+                if (-not (Test-Path $StatPath)) {
+                    $Stat = Set-Stat -Name "$($Name)_$($phiphipool_Algorithm)_profit" -HashRate $HashRate -Value ( [Double]$phiphipool_Request.$_.estimate_last24h / $Divisor * (1 - ($phiphipool_Request.$_.fees / 100)))
+                } 
+                else {
+                    $Stat = Set-Stat -Name "$($Name)_$($phiphipool_Algorithm)_profit" -HashRate $HashRate -Value ( [Double]$phiphipool_Request.$_.estimate_current / $Divisor * (1 - ($phiphipool_Request.$_.fees / 100)))
+                }
+
+                if(-not $global:Pool_Hashrates.$phiphipool_Algorithm){$global:Pool_Hashrates.Add("$phiphipool_Algorithm",@{})}
+                $global:Pool_Hashrates.$phiphipool_Algorithm.Add("$Name",@{HashRate = "$($Stat.HashRate)"; Percent = ""})
 
                 [PSCustomObject]@{
                     Priority      = $Priorities.Pool_Priorities.$Name
                     Symbol        = "$phiphipool_Algorithm-Algo"
                     Mining        = $phiphipool_Algorithm
                     Algorithm     = $phiphipool_Algorithm
-                    Price         = $CStat
-                    StablePrice   = $Stat.Week
-                    MarginOfError = $Stat.Fluctuation
+                    Price         = $Stat.$Stat_Algo
                     Protocol      = "stratum+tcp"
                     Host          = $phiphipool_Host
                     Port          = $phiphipool_Port
