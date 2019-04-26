@@ -138,7 +138,7 @@ function Get-Miners {
     }
     
     $ScreenedMiners | ForEach-Object { $GetMiners.Remove($_) } | Out-Null;
-    if ($Note) { $Note | ForEach-Object { Write-Host "[$(Get-Date)]: " -foreground yellow -nonewline; Write-Host "$($_)" -ForegroundColor Magenta } }
+    if ($Note) { $Note | ForEach-Object { Write-Log "$($_)" -ForegroundColor Magenta } }
     $GetMiners
 }
 
@@ -219,9 +219,11 @@ function start-minersorting {
         $Miner_Unbias = [PSCustomObject]@{ }
         $Miner_PowerX = [PSCustomObject]@{ }
         $Miner_Pool_Estimates = [PSCustomObject]@{ }
+        $Miner_Vol = [PSCustomObject]@{ }
      
         $Miner_Types = $Miner.Type | Select-Object -Unique
-     
+        $MinerPool = $Miner.MinerPool | Select-Object -Unique
+
         $Miner.HashRates | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
             if ($Miner.PowerX.$_ -ne $null) {
                 $Day = 24;
@@ -231,17 +233,20 @@ function start-minersorting {
                 $WattCalc3 = [Decimal]$WattCalc2 * $WattCalc;
             }
             else { $WattCalc3 = 0 }
+            if ($global:Pool_Hashrates.$_.$MinerPool.Percent -gt 0) {$Hash_Percent = $global:Pool_Hashrates.$_.$MinerPool.Percent * 100}
             $Miner_HashRates | Add-Member $_ ([Double]$Miner.HashRates.$_)
             $Miner_PowerX | Add-Member $_ ([Double]$Miner.PowerX.$_)
-            $Miner_Profits | Add-Member $_ ([Decimal]($Miner.Quote - $WattCalc3) * (1 - ($Miner.fees / 100)))
+            $Miner_Profits | Add-Member $_  (([Decimal]($Miner.Quote) * (1 - ($Miner.fees / 100))) * (1 - $Hash_Percent/100))
             $Miner_Unbias | Add-Member $_  ([Decimal]($Miner.Quote - $WattCalc3) * (1 - ($Miner.fees / 100)))
             $Miner_Pool_Estimates | Add-Member $_ ([Decimal]($Miner.Quote) * (1 - ($Miner.fees / 100)))
+            $Miner_Vol | Add-Member $_ $( if($global:Pool_Hashrates.$_.$MinerPool.Percent -gt 0){[Double]$global:Pool_Hashrates.$_.$MinerPool.Percent * 100} else { 0 } )
         }
             
         $Miner_Power = [Double]($Miner_PowerX.PSObject.Properties.Value | Measure-Object -Sum).Sum
         $Miner_Profit = [Double]($Miner_Profits.PSObject.Properties.Value | Measure-Object -Sum).Sum
         $Miner_Unbiased = [Double]($Miner_Unbias.PSObject.Properties.Value | Measure-Object -Sum).Sum
         $Miner_Pool_Estimate = [Double]($Miner_Pool_Estimates.PSObject.Properties.Value | Measure-Object -Sum).sum
+        $Miner_Volume = [Double]($Miner_Vol.PSObject.Properties.Value | Measure-Object -Sum).sum
 
         $Miner.HashRates | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
             if ((-not [String]$Miner.HashRates.$_) -or (-not [String]$Miner.PowerX.$_)) {
@@ -251,6 +256,7 @@ function start-minersorting {
                 $Miner_Unbiased = $null
                 $Miner_Power = $null
                 $Miner_Pool_Estimate = $null
+                $Miner_Volume = $null
             }
         }
 
@@ -259,7 +265,8 @@ function start-minersorting {
         $Miner | Add-Member Profit $Miner_Profit
         $Miner | Add-Member Profit_Unbiased $Miner_Unbiased
         $Miner | Add-Member Power $Miner_Power
-        $Miner | Add-Member Pool_Estimate $Miner_Pool_Estimate   
+        $Miner | Add-Member Pool_Estimate $Miner_Pool_Estimate
+        $Miner | Add-Member Volume $Miner_Volume
     }
 }
 
@@ -298,4 +305,53 @@ function Start-MinerReduction {
     }
 
     $CutMiners
+}
+
+function Get-MinerHashTable {
+        Invoke-Expression ".\build\powershell\get.ps1 benchmarks all -asjson" | Tee-Object -Variable Miner_HashTable | Out-Null
+        if($Miner_HashTable -and $Miner_HashTable -ne "No Stats Found"){
+            $Miner_HashTable = $Miner_HashTable | ConvertFrom-Json
+        }else{$Miner_HashTable = $null}
+
+        if($Miner_HashTable) {
+            $TypeTable = @{};
+            if($Type -like "*NVIDIA*") {
+                $Search = Get-ChildItem ".\miners\gpu\nvidia"
+                $Search.Basename | %{
+                $TypeTable.Add("$($_)-1","NVIDIA1")
+                $TypeTable.ADD("$($_)-2","NVIDIA2")
+                $TypeTable.ADD("$($_)-3","NVIDIA3")
+                }
+            }
+
+            if($Type -like "*AMD*") {
+                $Search = Get-ChildItem ".\miners\gpu\amd"
+                $Search.Basename | %{
+                $TypeTable.Add("$($_)-1","AMD1")
+                }
+            }
+
+            if($Type -like "*CPU*") {
+                $Search = Get-ChildItem ".\miners\cpu"
+                $Search.Basename | %{
+                $TypeTable.Add("$($_)","CPU")
+                }
+            }
+
+            if($Type -eq "ASIC") {$TypeTable.Add("cgminer","ASIC")}
+
+            $Miner_HashTable | %{$_ | Add-Member "Type" $TypeTable.$($_.Miner)}
+            $NotBest = @()
+            $Miner_HashTable.Algo | %{
+                $A = $_
+                $Type | %{
+                    $T = $_
+                    $Sel = $Miner_HashTable | Where Algo -eq $A | Where Type -EQ $T
+                    $NotBest += $Sel | Sort-Object RAW -Descending | Select-Object -Skip 1
+                }
+            }
+
+            $Miner_HashTable | % {$Sel = $NotBest | Where Miner -eq $_.Miner | Where Algo -eq $_.Algo | Where Type -eq $_.Type; if($Sel){$_.Raw = "Bad"}}
+        }
+        $Miner_HashTable
 }

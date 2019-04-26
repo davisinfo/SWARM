@@ -1,5 +1,5 @@
 {
-  "name": "ehssand_amd",
+  "name": "progminer-amd",
   "AMD1": {
     "name": "AMD1",
     "delay": "1",
@@ -10,23 +10,23 @@
       "export GPU_MAX_ALLOC_PERCENT=100"
     ],
     "commands": {
-      "argon2d-dyn": "-g 2"
+      "progpow": ""
     },
     "difficulty": {
-      "argon2d-dyn": ""
+      "progpow": ""
     },
     "naming": {
-      "argon2d-dyn": "argon2d"
+      "progpow": "progpow"
     },
     "fee": {
-      "argon2d-dyn": 0
+      "progpow": 0
     },
     "oc": {
-      "argon2d-dyn": {
+      "progpow": {
         "dpm": "",
-        "v": "",
-        "core": "",
-        "mem": "",
+        "v": "825 825 825 850 825 825",
+        "core": "1150 1150 1150 1100 1150 1100",
+        "mem": "2100;800 2050;825 2075;800 2100;825 2100;800 2075;800",
         "mdpm": "",
         "fans": ""
       }

@@ -54,10 +54,23 @@ function get-stats {
 
 }
 
+function Get-Alpha($X) { (2 / ($X + 1) ) }
+
+function Get-Theta { 
+    param (
+        [Parameter(Mandatory=$true)]
+        [Int]$Calcs,
+        [Parameter(Mandatory=$true)]
+        [Array]$Values
+    )
+    $Values | Select -Last $Calcs | Measure-Object -Sum }
+
 function Set-Stat {
     param(
         [Parameter(Mandatory = $true)]
         [String]$Name, 
+        [Parameter(Mandatory = $false)]
+        [Double]$HashRate,
         [Parameter(Mandatory = $true)]
         [Double]$Value, 
         [Parameter(Mandatory = $false)]
@@ -74,15 +87,33 @@ function Set-Stat {
         Custom    = [Math]::Max([Math]::Round($Custom_Periods), 1)
     }
 
-    function Get-Alpha($X) { (2 / ($X + 1) ) }
-    function Get-Theta($Y) { $Stat.Values | Select -Last $Y | Measure-Object -Sum }
+    if($HashRate) {
+        $Calcs.Add("Hashrate",[Math]::Max([Math]::Round(3600 / $Interval), 1))
+    }
 
     $Max_Periods = 288
+    $Hash_Max = 15
     if ($name -eq "load-average") { $Max_Periods = 90; $Path = "build\txt\$Name.txt" }
     else { $Path = "stats\$Name.txt" }
     $SmallestValue = 1E-20
 
-    if (Test-Path $Path) { 
+    if ((Test-Path $Path) -and $HashRate) {
+        $Stat = Get-Content $Path | ConvertFrom-Json 
+        $Stat = [PSCustomObject]@{
+            Live      = [Double]$Value
+            Minute    = [Double]$Stat.Minute
+            Minute_5  = [Double]$Stat.Minute_5
+            Minute_15 = [Double]$Stat.Minute_15
+            Hour      = [Double]$Stat.Hour
+            Hour_4    = [Double]$Stat.Hour_4
+            Day       = [Double]$Stat.Day
+            Custom    = [Double]$Stat.Custom
+            Hashrate  = [Double]$Stat.Hashrate
+            Hash_Val  = $Stat.Hash_Val
+            Values    = $Stat.Values
+        }
+    } 
+    elseif (Test-Path $Path) {
         $Stat = Get-Content $Path | ConvertFrom-Json 
         $Stat = [PSCustomObject]@{
             Live      = [Double]$Value
@@ -95,8 +126,23 @@ function Set-Stat {
             Custom    = [Double]$Stat.Custom
             Values    = $Stat.Values
         }
-    } 
-    else {
+    }
+    elseif($HashRate) {
+        $Stat = [PSCustomObject]@{
+            Live      = $Value
+            Minute    = $Value
+            Minute_5  = $Value
+            Minute_15 = $Value
+            Hour      = $Value
+            Hour_4    = $Value
+            Day       = $Value
+            Custom    = $Value
+            Hashrate  = $HashRate
+            Hash_Val  = @()
+            Values    = @()
+        }
+    }
+    else{
         $Stat = [PSCustomObject]@{
             Live      = $Value
             Minute    = $Value
@@ -110,11 +156,24 @@ function Set-Stat {
         }
     }
 
-    $Stat.Values += [decimal]$Value
+    $DoStat = $true
+    if($Stat.Values.Count -gt 2){
+    $Previous = $Stat.Values | Select -Last 3
+    $Previous | % {$Increase = $Value - $_; $PInc = ($Increase/$_)*100; if($PInc -gt 70 -or $PInc -lt -69){$DoStat = $False}}
+    }
+
+    if($DoStat -eq $true) {$Stat.Values += [decimal]$Value}
     if ($Stat.Values.Count -gt $Max_Periods) { $Stat.Values = $Stat.Values | Select -Skip 1 }
-        
+
+    if($HashRate){
+        $Stat.Hash_Val += [decimal]$Hashrate
+        if ($Stat.Hash_Val.Count -gt $Hash_Max) { $Stat.Hash_Val = $Stat.Hash_Val | Select -Skip 1 }
+    }
+
     $Calcs.keys | foreach {
-        $Theta = (Get-Theta($Calcs.$_))
+        if($_ -eq "Hashrate"){$T = $Stat.Hash_Val}
+        else{$T = $Stat.Values}
+        $Theta = (Get-Theta -Calcs $Calcs.$_ -Values $T)
         $Alpha = [Double](Get-Alpha($Theta.Count))
         $Zeta = [Double]$Theta.Sum / $Theta.Count
         $Stat.$_ = [Math]::Max( ( $Zeta * $Alpha + $($Stat.$_) * (1 - $Alpha) ) , $SmallestValue )
@@ -123,18 +182,36 @@ function Set-Stat {
     if (-not (Test-Path "stats")) { New-Item "stats" -ItemType "directory" }
 
     $Stat.Values = @( $Stat.Values | % { [Decimal]$_ } )
+    if($Stat.Hash_Val){$Stat.Hash_Val = @( $Stat.Hash_Val | % { [Decimal]$_ } )}
 
-    [PSCustomObject]@{
-        Live      = [Decimal]$Value
-        Minute    = [Decimal]$Stat.Minute
-        Minute_5  = [Decimal]$Stat.Minute_5
-        Minute_15 = [Decimal]$Stat.Minute_15
-        Hour      = [Decimal]$Stat.Hour
-        Hour_4    = [Decimal]$Stat.Hour_4
-        Day       = [Decimal]$Stat.Day
-        Custom    = [Decimal]$Stat.Custom
-        Values    = $Stat.Values
-    } | ConvertTo-Json | Set-Content $Path
+    if($HashRate) {
+        [PSCustomObject]@{
+            Live      = [Decimal]$Value
+            Minute    = [Decimal]$Stat.Minute
+            Minute_5  = [Decimal]$Stat.Minute_5
+            Minute_15 = [Decimal]$Stat.Minute_15
+            Hour      = [Decimal]$Stat.Hour
+            Hour_4    = [Decimal]$Stat.Hour_4
+            Day       = [Decimal]$Stat.Day
+            Custom    = [Decimal]$Stat.Custom
+            Hashrate  = [Decimal]$Stat.Hashrate
+            Values    = $Stat.Values
+            Hash_Val  = $Stat.Hash_Val
+        } | ConvertTo-Json | Set-Content $Path
+    }
+    else {
+        [PSCustomObject]@{
+            Live      = [Decimal]$Value
+            Minute    = [Decimal]$Stat.Minute
+            Minute_5  = [Decimal]$Stat.Minute_5
+            Minute_15 = [Decimal]$Stat.Minute_15
+            Hour      = [Decimal]$Stat.Hour
+            Hour_4    = [Decimal]$Stat.Hour_4
+            Day       = [Decimal]$Stat.Day
+            Custom    = [Decimal]$Stat.Custom
+            Values    = $Stat.Values
+        } | ConvertTo-Json | Set-Content $Path
+    }
 
     $Stat
 
