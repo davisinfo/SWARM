@@ -9,8 +9,6 @@ $NVIDIATypes | ForEach-Object {
     else { $Uri = "None" }
     if ($nvidia.zjazz.minername) { $MinerName = "$($nvidia.zjazz.minername)" }
     else { $MinerName = "None" }
-    if ($Platform -eq "linux") { $Build = "Tar" }
-    elseif ($Platform -eq "windows") { $Build = "Zip" }
 
     $User = "User$Num"; $Pass = "Pass$Num"; $Name = "zjazz-$Num"; $Port = "6100$Num";
 
@@ -30,7 +28,7 @@ $NVIDIATypes | ForEach-Object {
     ##Get Configuration File
     $GetConfig = "$dir\config\miners\zjazz.json"
     try { $Config = Get-Content $GetConfig | ConvertFrom-Json }
-    catch { Write-Warning "Warning: No config found at $GetConfig" }
+    catch { Write-Log "Warning: No config found at $GetConfig" }
 
     ##Export would be /path/to/[SWARMVERSION]/build/export##
     $ExportDir = Join-Path $dir "build\export"
@@ -42,13 +40,18 @@ $NVIDIATypes | ForEach-Object {
     $PreStart += "export LD_LIBRARY_PATH=$ExportDir"
     $Config.$ConfigType.prestart | ForEach-Object { $Prestart += "$($_)" }
 
-    ##Build Miner Settings
-    if ($CoinAlgo -eq $null) {
-        $Config.$ConfigType.commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
-            $MinerAlgo = $_
+    if ($Coins -eq $true) { $Pools = $CoinPools }else { $Pools = $AlgoPools }
+
+    $Config.$ConfigType.commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
+
+        $MinerAlgo = $_
+
+        if ($MinerAlgo -in $Algorithm -and $Name -notin $global:Exclusions.$MinerAlgo.exclusions -and $ConfigType -notin $global:Exclusions.$MinerAlgo.exclusions -and $Name -notin $global:banhammer) {
             $Stat = Get-Stat -Name "$($Name)_$($MinerAlgo)_hashrate"
+            $Check = $Global:Miner_HashTable | Where Miner -eq $Name | Where Algo -eq $MinerAlgo | Where Type -Eq $ConfigType
+            
             $Pools | Where-Object Algorithm -eq $MinerAlgo | ForEach-Object {
-                if ($Algorithm -eq "$($_.Algorithm)" -and $Bad_Miners.$($_.Algorithm) -notcontains $Name) {
+                if ($Check.RAW -ne "Bad") {
                     if ($Config.$ConfigType.difficulty.$($_.Algorithm)) { $Diff = ",d=$($Config.$ConfigType.difficulty.$($_.Algorithm))" }else { $Diff = "" }
                     [PSCustomObject]@{
                         MName      = $Name
@@ -74,11 +77,9 @@ $NVIDIATypes | ForEach-Object {
                         FullName   = "$($_.Mining)"
                         Port       = $Port
                         API        = "Ccminer"
-                        Wrap       = $false
                         Wallet     = "$($_.$User)"
                         URI        = $Uri
                         Server     = "localhost"
-                        BUILD      = $Build
                         Algo       = "$($_.Algorithm)"
                         Log        = $Log 
                     }

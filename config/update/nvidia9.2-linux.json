@@ -40,12 +40,12 @@
     "version":"0.6.2", 
     "uri":"https://github.com/MaynardMiner/MM.Compiled-Miners/releases/download/v4.0/zm-Linux.tar.gz"
 }, 
-  "enemy": {
-    "name":"enemy", 
+  "z-enemy": {
+    "name":"z-enemy", 
     "type":"nvidia", 
-    "NVIDIA1":".\\bin\\enemy-1\\z-enemy", 
-    "NVIDIA2":".\\bin\\enemy-2\\z-enemy", 
-    "NVIDIA3":".\\bin\\enemy-3\\z-enemy", 
+    "NVIDIA1":".\\bin\\z-enemy-1\\z-enemy", 
+    "NVIDIA2":".\\bin\\z-enemy-2\\z-enemy", 
+    "NVIDIA3":".\\bin\\z-enemy-3\\z-enemy", 
     "minername":"z-enemy", 
     "version":"1.28", 
     "uri":"https://github.com/MaynardMiner/MM.Compiled-Miners/releases/download/v4.0/z-enemy-linux-9-2.tar.gz"
@@ -128,7 +128,7 @@
     "NVIDIA3":".\\bin\\gminer-3\\miner", 
     "minername":"miner", 
     "version":"1.37", 
-    "uri":"https://github.com/MaynardMiner/MM.Compiled-Miners/releases/download/v4.0/gminer-linux.tar.gz"
+    "uri":"https://github.com/develsoftware/GMinerRelease/releases/download/1.39/gminer_1_39_linux64.tar.xz"
 }, 
   "bminer": {
     "name":"bminer", 
@@ -137,7 +137,7 @@
     "NVIDIA2":".\\bin\\bminer-2\\bminer", 
     "NVIDIA3":".\\bin\\bminer-3\\bminer", 
     "minername":"bminer", 
-    "version":"15.5.0", 
+    "version":"15.5.1", 
     "uri":"https://github.com/MaynardMiner/MM.Compiled-Miners/releases/download/v4.0/bminer-linux.tar.gz"
 }
 }

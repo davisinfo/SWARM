@@ -11,10 +11,12 @@ if ($Coins -eq $true) { $Pools = $CoinPools }else { $Pools = $AlgoPools }
 $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName
 
 $ASIC_ALGO | ForEach-Object {
+
     $MinerAlgo = $_
     $Stat = Get-Stat -Name "$($Name)_$($MinerAlgo)_hashrate"
-    $Pools | Where-Object Algorithm -eq $MinerAlgo | ForEach-Object {
-        if ($ASIC_ALGO -eq "$($_.Algorithm)" -and $Bad_Miners.$($_.Algorithm) -notcontains $Name) {
+
+    if ($MinerAlgo -in $Algorithm -and $Name -notin $global:Exclusions.$MinerAlgo.exclusions -and $ConfigType -notin $global:Exclusions.$MinerAlgo.exclusions -and $Name -notin $global:banhammer) {
+        $Pools | Where-Object Algorithm -eq $MinerAlgo | ForEach-Object {
             $Pass = $_.Pass1 -replace ",", "`\,"
             [PSCustomObject]@{
                 Coin       = $Coins
@@ -23,7 +25,7 @@ $ASIC_ALGO | ForEach-Object {
                 Platform   = $Platform
                 Symbol     = "$($_.Symbol)"
                 MinerName  = $MinerName
-                Type       = $ConfigType 
+                Type       = $ConfigType
                 Path       = $Path
                 Devices    = $Devices
                 DeviceCall = "cgminer"
@@ -36,7 +38,6 @@ $ASIC_ALGO | ForEach-Object {
                 FullName   = "$($_.Mining)"
                 Port       = 4028
                 API        = "cgminer"
-                Wrap       = $false
                 URI        = $Uri
                 Server     = $ASIC_IP
                 BUILD      = $Build
