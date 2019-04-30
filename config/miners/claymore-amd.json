@@ -10,9 +10,9 @@
       "export GPU_MAX_ALLOC_PERCENT=100"
     ],
     "commands": {
-      "ethash": "",
-      "daggerhashimoto": "-esm 3 -estale 0",
-      "dagger": "-esm 2"
+      "ethash":  " -dcri 12,6,6,24,6,22",
+      "daggerhashimoto":  "-esm 3 -estale 0 -dcri 12,6,6,24,6,22",
+      "dagger":  "-esm 2 -dcri 12,6,6,24,6,22"
     },
     "difficulty": {
       "ethash": "",

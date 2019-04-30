@@ -10,9 +10,9 @@
       "export GPU_MAX_ALLOC_PERCENT=100"
     ],
     "commands": {
-      "ethash": "-proto 2 -rate 1",
-      "daggerhashimoto": "-proto 4 -stales 0",
-      "dagger": "-proto 2",
+      "ethash": "-proto 2 -rate 1 -mi 14 -gt 46,49,46,66,44,62",
+      "daggerhashimoto": "-proto 4 -stales 0 -mi 14 -gt 46,49,46,66,44,62",
+      "dagger": "-proto 2 -mi 14 -gt 46,49,46,66,44,62",
       "progpow": "-coin bci -proto 1"
     },
     "difficulty": {

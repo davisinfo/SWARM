@@ -330,14 +330,14 @@
     "NVIDIA1_Watts":  "",
     "NVIDIA2_Watts":  "",
     "NVIDIA3_Watts":  "",
-    "AMD1_Watts":  "545",
+    "AMD1_Watts":  "445",
     "CPU_Watts":  ""
   },
   "phi2":  {
     "NVIDIA1_Watts":  "",
     "NVIDIA2_Watts":  "",
     "NVIDIA3_Watts":  "",
-    "AMD1_Watts":  "680",
+    "AMD1_Watts":  "415",
     "CPU_Watts":  ""
   },
   "polytimos":  {
@@ -551,7 +551,7 @@
     "NVIDIA1_Watts":  ""
   },
   "beam":  {
-    "AMD1_Watts":  "705",
+    "AMD1_Watts":  "600",
     "CPU_Watts":  "",
     "NVIDIA2_Watts":  "",
     "NVIDIA3_Watts":  "",
@@ -573,6 +573,13 @@
   },
   "padihash":  {
     "AMD1_Watts":  "740",
+    "CPU_Watts":  "",
+    "NVIDIA2_Watts":  "",
+    "NVIDIA3_Watts":  "",
+    "NVIDIA1_Watts":  ""
+  },
+  "rainforest":  {
+    "AMD1_Watts":  "335",
     "CPU_Watts":  "",
     "NVIDIA2_Watts":  "",
     "NVIDIA3_Watts":  "",
