@@ -2,7 +2,8 @@
 $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName 
 $ahashpool_Request = [PSCustomObject]@{ } 
 [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
- 
+if($XNSub -eq "Yes"){$X = "#xnsub"}
+
 if ($Poolname -eq $Name) {
     try { $ahashpool_Request = Invoke-RestMethod "https://www.ahashpool.com/api/status" -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop } 
     catch { Write-Log "SWARM contacted ($Name) but there was no response."; return }
@@ -10,20 +11,20 @@ if ($Poolname -eq $Name) {
     if (($ahashpool_Request | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Measure-Object Name).Count -le 1) { 
         Write-Log "SWARM contacted ($Name) but ($Name) the response was empty." 
         return 
-    } 
+    }
   
-    $ahashpool_Request | 
+    $ahashpool_Request |
     Get-Member -MemberType NoteProperty -ErrorAction Ignore | 
     Select-Object -ExpandProperty Name | 
     Where-Object { $ahashpool_Request.$_.hashrate -gt 0 } | 
-    Where-Object { $Naming.$($ahashpool_Request.$_.name) } | 
+    Where-Object { $global:Exclusions.$($ahashpool_Request.$_.name) } |
     ForEach-Object {
  
         $ahashpool_Algorithm = $ahashpool_Request.$_.name.ToLower()
 
         if ($Algorithm -contains $ahashpool_Algorithm -or $ASIC_ALGO -contains $ahashpool_Algorithm) {
-            if ($Bad_pools.$ahashpool_Algorithm -notcontains $Name) {
-                $ahashpool_Host = "$_.mine.ahashpool.com"
+            if ($Name -notin $global:Exclusions.$ahashpool_Algorithm.exclusions -and $ahashpool_Algorithm -notin $Global:banhammer) {
+                $ahashpool_Host = "$_.mine.ahashpool.com$X"
                 $ahashpool_Port = $ahashpool_Request.$_.port
                 $Fees = $ahashpool_Request.$_.fees
                 $Divisor = (1000000 * $ahashpool_Request.$_.mbtc_mh_factor)

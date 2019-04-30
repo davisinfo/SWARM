@@ -228,17 +228,23 @@ function start-minersorting {
             if ($Miner.PowerX.$_ -ne $null) {
                 $Day = 24;
                 $Kilo = 1000;
-                $WattCalc1 = (([Decimal]$Miner.PowerX.$_) * $Day)
-                $WattCalc2 = [Decimal]$WattCalc1 / $Kilo;
-                $WattCalc3 = [Decimal]$WattCalc2 * $WattCalc;
+                $WattCalc1 = (([Double]$Miner.PowerX.$_) * $Day)
+                $WattCalc2 = [Double]$WattCalc1 / $Kilo;
+                $WattCalc3 = [Double](($WattCalc2 * $WattCalc) * -1)
             }
             else { $WattCalc3 = 0 }
+            
             if ($global:Pool_Hashrates.$_.$MinerPool.Percent -gt 0) {$Hash_Percent = $global:Pool_Hashrates.$_.$MinerPool.Percent * 100}
+            else{$Hash_Percent = 0}
+
+            $Miner_Volume = ([Double]($Miner.Quote * (1 - ($Hash_Percent / 100))))
+            $Miner_Modified = ([Double]($Miner_Volume * (1 - ($Miner.Fees / 100))))
+
             $Miner_HashRates | Add-Member $_ ([Double]$Miner.HashRates.$_)
             $Miner_PowerX | Add-Member $_ ([Double]$Miner.PowerX.$_)
-            $Miner_Profits | Add-Member $_  (([Decimal]($Miner.Quote) * (1 - ($Miner.fees / 100))) * (1 - $Hash_Percent/100))
-            $Miner_Unbias | Add-Member $_  ([Decimal]($Miner.Quote - $WattCalc3) * (1 - ($Miner.fees / 100)))
-            $Miner_Pool_Estimates | Add-Member $_ ([Decimal]($Miner.Quote) * (1 - ($Miner.fees / 100)))
+            $Miner_Profits | Add-Member $_  ([Double]($Miner_Modified + $WattCalc3))  ##Used to calculate BTC/Day and sort miners
+            $Miner_Unbias | Add-Member $_  ([Double]($Miner_Modified + $WattCalc3))  ##Uset to calculate Daily profit/day moving averages
+            $Miner_Pool_Estimates | Add-Member $_ ([Double]($Miner.Quote)) ##RAW calculation for Live Value (Used On screen)
             $Miner_Vol | Add-Member $_ $( if($global:Pool_Hashrates.$_.$MinerPool.Percent -gt 0){[Double]$global:Pool_Hashrates.$_.$MinerPool.Percent * 100} else { 0 } )
         }
             
@@ -307,6 +313,34 @@ function Start-MinerReduction {
     $CutMiners
 }
 
+function Get-TypeTable {
+    $TypeTable = @{};
+    if($Type -like "*NVIDIA*") {
+        $Search = Get-ChildItem ".\miners\gpu\nvidia"
+        $Search.Basename | %{
+        $TypeTable.Add("$($_)-1","NVIDIA1")
+        $TypeTable.ADD("$($_)-2","NVIDIA2")
+        $TypeTable.ADD("$($_)-3","NVIDIA3")
+        }
+    }
+
+    if($Type -like "*AMD*") {
+        $Search = Get-ChildItem ".\miners\gpu\amd"
+        $Search.Basename | %{
+        $TypeTable.Add("$($_)-1","AMD1")
+        }
+    }
+
+    if($Type -like "*CPU*") {
+        $Search = Get-ChildItem ".\miners\cpu"
+        $Search.Basename | %{
+        $TypeTable.Add("$($_)","CPU")
+        }
+    }
+    if($Type -eq "ASIC") {$TypeTable.Add("cgminer","ASIC")}
+    $TypeTable
+}
+
 function Get-MinerHashTable {
         Invoke-Expression ".\build\powershell\get.ps1 benchmarks all -asjson" | Tee-Object -Variable Miner_HashTable | Out-Null
         if($Miner_HashTable -and $Miner_HashTable -ne "No Stats Found"){
@@ -314,33 +348,7 @@ function Get-MinerHashTable {
         }else{$Miner_HashTable = $null}
 
         if($Miner_HashTable) {
-            $TypeTable = @{};
-            if($Type -like "*NVIDIA*") {
-                $Search = Get-ChildItem ".\miners\gpu\nvidia"
-                $Search.Basename | %{
-                $TypeTable.Add("$($_)-1","NVIDIA1")
-                $TypeTable.ADD("$($_)-2","NVIDIA2")
-                $TypeTable.ADD("$($_)-3","NVIDIA3")
-                }
-            }
-
-            if($Type -like "*AMD*") {
-                $Search = Get-ChildItem ".\miners\gpu\amd"
-                $Search.Basename | %{
-                $TypeTable.Add("$($_)-1","AMD1")
-                }
-            }
-
-            if($Type -like "*CPU*") {
-                $Search = Get-ChildItem ".\miners\cpu"
-                $Search.Basename | %{
-                $TypeTable.Add("$($_)","CPU")
-                }
-            }
-
-            if($Type -eq "ASIC") {$TypeTable.Add("cgminer","ASIC")}
-
-            $Miner_HashTable | %{$_ | Add-Member "Type" $TypeTable.$($_.Miner)}
+            $Miner_HashTable | %{$_ | Add-Member "Type" $global:TypeTable.$($_.Miner)}
             $NotBest = @()
             $Miner_HashTable.Algo | %{
                 $A = $_

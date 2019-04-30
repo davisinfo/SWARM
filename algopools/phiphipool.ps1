@@ -1,6 +1,7 @@
 $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName 
 $phiphipool_Request = [PSCustomObject]@{ } 
 [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
+if($XNSub -eq "Yes"){$X = "#xnsub"}
 
 if ($Poolname -eq $Name) {
     try { $phiphipool_Request = Invoke-RestMethod "https://www.phi-phi-pool.com/api/status" -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop } 
@@ -21,15 +22,15 @@ if ($Poolname -eq $Name) {
     Get-Member -MemberType NoteProperty -ErrorAction Ignore | 
     Select-Object -ExpandProperty Name | 
     Where-Object { $phiphipool_Request.$_.hashrate -gt 0 } | 
-    Where-Object { $Naming.$($phiphipool_Request.$_.name) } | 
+    Where-Object { $global:Exclusions.$($phiphipool_Request.$_.name) } |
     ForEach-Object {
 
         $phiphipool_Algorithm = $phiphipool_Request.$_.name.ToLower()
 
         if ($Algorithm -contains $phiphipool_Algorithm -or $ASIC_ALGO -contains $phiphipool_Algorithm) {
-            if ($Bad_pools.$phiphipool_Algorithm -notcontains $Name) {
+            if ($Name -notin $global:Exclusions.$phiphipool_Algorithm.exclusions -and $phiphipool_Algorithm -notin $Global:banhammer) {
                 $phiphipool_Port = $phiphipool_Request.$_.port
-                $phiphipool_Host = "$($Region).phi-phi-pool.com"
+                $phiphipool_Host = "$($Region).phi-phi-pool.com$X"
                 $Divisor = (1000000 * $phiphipool_Request.$_.mbtc_mh_factor)
                 $Fees = $phiphipool_Request.$_.fees
                 $Workers = $phiphipool_Request.$_.Workers

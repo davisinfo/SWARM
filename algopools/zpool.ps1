@@ -1,6 +1,7 @@
 $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName 
 $Zpool_Request = [PSCustomObject]@{ } 
-[Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls" 
+[Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
+if($XNSub -eq "Yes"){$X = "#xnsub"} 
  
 if ($Poolname -eq $Name) {
     try { $Zpool_Request = Invoke-RestMethod "http://www.zpool.ca/api/status" -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop } 
@@ -21,34 +22,31 @@ if ($Poolname -eq $Name) {
     Get-Member -MemberType NoteProperty -ErrorAction Ignore | 
     Select-Object -ExpandProperty Name | 
     Where-Object { $Zpool_Request.$_.hashrate -gt 0 } | 
-    Where-Object { $Naming.$($Zpool_Request.$_.name) } | 
+    Where-Object { $global:Exclusions.$($Zpool_Request.$_.name) } |
     ForEach-Object {
     
         $Zpool_Algorithm = $Zpool_Request.$_.name.ToLower()
   
         if ($Algorithm -contains $Zpool_Algorithm -or $ASIC_ALGO -contains $Zpool_Algorithm) {
-            if ($Bad_pools.$Zpool_Algorithm -notcontains $Name) {
+            if ($Name -notin $global:Exclusions.$Zpool_Algorithm.exclusions -and $Zpool_Algorithm -notin $Global:banhammer) {
                 $Zpool_Port = $Zpool_Request.$_.port
-                $Zpool_Host = "$($ZPool_Algorithm).$($region).mine.zpool.ca"
+                $Zpool_Host = "$($ZPool_Algorithm).$($region).mine.zpool.ca$X"
                 $Divisor = (1000000 * $Zpool_Request.$_.mbtc_mh_factor)
-                $Global:DivisorTable.zpool.Add($Zpool_Algorithm, $Zpool_Request.$_.mbtc_mh_factor)
                 $Fees = $Zpool_Request.$_.fees
-                $Global:FeeTable.zpool.Add($Zpool_Algorithm, $Zpool_Request.$_.fees)
                 $Workers = $Zpool_Request.$_.Workers
-                $StatPath = ".\stats\($Name)_$($Zpool_Algorithm)_profit.txt"
                 $Hashrate = $Zpool_Request.$_.hashrate
 
+                $Global:DivisorTable.zpool.Add($Zpool_Algorithm, $Divisor)
+                $Global:FeeTable.zpool.Add($Zpool_Algorithm, $Fees)
+
+                $StatPath = ".\stats\($Name)_$($Zpool_Algorithm)_profit.txt"
                 $Estimate = if (-not (Test-Path $StatPath)) { [Double]$Zpool_Request.$_.estimate_last24h } else { [Double]$Zpool_Request.$_.estimate_current }
 
-                ## ZPool fees are calculated differently, due to pool fee structure.
                 $Cut = ConvertFrom-Fees $Fees $Workers $Estimate
+                $Stat = Set-Stat -Name "$($Name)_$($Zpool_Algorithm)_profit" -HashRate $HashRate -Value ([Double]$Cut / $Divisor)
 
-                $Stat = Set-Stat -HashRate $HashRate -Name "$($Name)_$($Zpool_Algorithm)_profit" -Value ([Double]$Cut / $Divisor)
-
-                if (-not $global:Pool_Hashrates.$Zpool_Algorithm) { $global:Pool_Hashrates.Add("$Zpool_Algorithm", @{ })
-                }
-                if (-not $global:Pool_Hashrates.$Zpool_Algorithm.$Name) { $global:Pool_Hashrates.$Zpool_Algorithm.Add("$Name", @{HashRate = "$($Stat.HashRate)"; Percent = "" })
-                }
+                if (-not $global:Pool_Hashrates.$Zpool_Algorithm) { $global:Pool_Hashrates.Add("$Zpool_Algorithm", @{ }) }
+                if (-not $global:Pool_Hashrates.$Zpool_Algorithm.$Name) { $global:Pool_Hashrates.$Zpool_Algorithm.Add("$Name", @{HashRate = "$($Stat.HashRate)"; Percent = "" }) }
          
                 $Pass1 = $global:Wallets.Wallet1.Keys
                 $User1 = $global:Wallets.Wallet1.$Passwordcurrency1.address
@@ -87,7 +85,7 @@ if ($Poolname -eq $Name) {
                     Symbol    = "$Zpool_Algorithm-Algo"
                     Mining    = $Zpool_Algorithm
                     Algorithm = $Zpool_Algorithm
-                    Price     = $Stat.Stat_Algo
+                    Price     = $Stat.$Stat_Algo
                     Protocol  = "stratum+tcp"
                     Host      = $Zpool_Host
                     Port      = $Zpool_Port

@@ -2,6 +2,7 @@
 $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName 
 $blazepool_Request = [PSCustomObject]@{ } 
 [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
+if($XNSub -eq "Yes"){$X = "#xnsub"}
  
 if ($Poolname -eq $Name) {
     try { $blazepool_Request = Invoke-RestMethod "http://api.blazepool.com/status" -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop } 
@@ -16,14 +17,14 @@ if ($Poolname -eq $Name) {
     Get-Member -MemberType NoteProperty -ErrorAction Ignore | 
     Select-Object -ExpandProperty Name | 
     Where-Object { $blazepool_Request.$_.hashrate -gt 0 } | 
-    Where-Object { $Naming.$($blazepool_Request.$_.name) } | 
+    Where-Object { $global:Exclusions.$($blazepool_Request.$_.name) } |
     ForEach-Object {
 
         $blazepool_Algorithm = $blazepool_Request.$_.name.ToLower()
 
         if ($Algorithm -contains $blazepool_Algorithm -or $ASIC_ALGO -contains $blazepool_Algorithm) {
-            if ($Bad_pools.$blazepool_Algorithm -notcontains $Name) {
-                $blazepool_Host = "$_.mine.blazepool.com"
+            if ($Name -notin $global:Exclusions.$blazepool_Algorithm.exclusions -and $blazepool_Algorithm -notin $Global:banhammer) {
+                $blazepool_Host = "$_.mine.blazepool.com$X"
                 $blazepool_Port = $blazepool_Request.$_.port
                 $Divisor = (1000000 * $blazepool_Request.$_.mbtc_mh_factor)
                 $Fees = $blazepool_Request.$_.fees

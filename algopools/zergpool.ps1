@@ -1,6 +1,7 @@
 $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName 
 $Zergpool_Request = [PSCustomObject]@{ } 
-[Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls" 
+[Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
+if($XNSub -eq "Yes"){$X = "#xnsub"} 
  
 if ($Poolname -eq $Name) {
     try { $Zergpool_Request = Invoke-RestMethod "http://api.zergpool.com:8080/api/status" -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop } 
@@ -15,15 +16,15 @@ if ($Poolname -eq $Name) {
     Get-Member -MemberType NoteProperty -ErrorAction Ignore | 
     Select-Object -ExpandProperty Name | 
     Where-Object { $Zergpool_Request.$_.hashrate -gt 0 } | 
-    Where-Object { $Naming.$($Zergpool_Request.$_.name) } | 
+    Where-Object { $global:Exclusions.$($Zergpool_Request.$_.name) } |
     ForEach-Object {
     
         $Zergpool_Algorithm = $Zergpool_Request.$_.name.ToLower()
   
         if ($Algorithm -contains $Zergpool_Algorithm -or $ASIC_ALGO -contains $Zergpool_Algorithm) {
-            if ($Bad_pools.$Zergpool_Algorithm -notcontains $Name) {
+            if ($Name -notin $global:Exclusions.$Zergpool_Algorithm.exclusions -and $Zergpool_Algorithm -notin $Global:banhammer) {
                 $Zergpool_Port = $Zergpool_Request.$_.port
-                $Zergpool_Host = "$($Zergpool_Algorithm).mine.zergpool.com"
+                $Zergpool_Host = "$($Zergpool_Algorithm).mine.zergpool.com$X"
                 $Divisor = (1000000 * $Zergpool_Request.$_.mbtc_mh_factor)
                 $Global:DivisorTable.zergpool.Add($Zergpool_Algorithm, $Zergpool_Request.$_.mbtc_mh_factor)
                 $Fees = $Zergpool_Request.$_.fees

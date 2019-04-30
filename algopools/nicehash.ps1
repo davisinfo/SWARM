@@ -2,6 +2,7 @@
 $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName 
 $nicehash_Request = [PSCustomObject]@{ } 
 [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
+if($XNSub -eq "Yes"){$X = "#xnsub"}
  
 if ($Poolname -eq $Name) {
     try { $nicehash_Request = Invoke-RestMethod "https://api.nicehash.com/api?method=simplemultialgo.info" -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop } 
@@ -21,13 +22,13 @@ if ($Poolname -eq $Name) {
     $nicehash_Request.result | 
     Select-Object -ExpandProperty simplemultialgo | 
     Where-Object paying -ne 0 | 
-    Where-Object { $Naming.$($_.Name) } | 
+    Where-Object { $global:Exclusions.$($_.name) } |
     ForEach-Object {
     
         $nicehash_Algorithm = $_.name.ToLower()
 
         if ($Algorithm -contains $nicehash_Algorithm -or $ASIC_ALGO -contains $nicehash_Algorithm) {
-            if ($Bad_pools.$nicehash_Algorithm -notcontains $Name) {
+            if ($Name -notin $global:Exclusions.$nicehash_Algorithm.exclusions -and $nicehash_Algorithm -notin $Global:banhammer) {
 
                 ## Nicehash 'Gets' you with the fees. If you read the fine print,
                 ## If you do not use a nicehash wallet- Your total fee will end up
@@ -38,8 +39,8 @@ if ($Poolname -eq $Name) {
                 if (-not $Nicehash_Wallet2) { $NH_Wallet2 = $Wallet2; [Double]$Fee = 5; }else { $NH_Wallet2 = $Nicehash_Wallet2; [Double]$Fee = $NiceHash_Fee }
                 if (-not $Nicehash_Wallet3) { $NH_Wallet3 = $Wallet3; [Double]$Fee = 5; }else { $NH_Wallet3 = $Nicehash_Wallet3; [Double]$Fee = $NiceHash_Fee }
 
-                $nicehash_Host = "$($_.name).$Region.nicehash.com"
-                $nicehash_excavator = "nhmp.$Region.nicehash.com"
+                $nicehash_Host = "$($_.name).$Region.nicehash.com$X"
+                $nicehash_excavator = "nhmp.$Region.nicehash.com$X"
                 $nicehash_Port = $_.port
                 $Divisor = 1000000000
 
