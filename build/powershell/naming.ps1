@@ -11,47 +11,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #>
 
-function Get-Nvidia {
-    param(
-        [Parameter(Mandatory = $true)]
-        [String]$Coin
-    )
-
-    $Coins = Get-Content ".\config\naming\get-nvidia.json" | ConvertFrom-Json
-
-    $Coin = (Get-Culture).TextInfo.ToTitleCase(($Coin -replace "_", " ")) -replace " "
-
-    if ($Coins.$Coin) {$Coins.$Coin}
-    else {$Coin}
-}
-
-function Get-CPU {
-    param(
-        [Parameter(Mandatory = $true)]
-        [String]$Coin
-    )
-
-    $Coins = Get-Content ".\config\naming\get-cpu.json" | ConvertFrom-Json
-
-    $Coin = (Get-Culture).TextInfo.ToTitleCase(($Coin -replace "_", " ")) -replace " "
-
-    if ($Coins.$Coin) {$Coins.$Coin}
-    else {$Coin}
-}
-
-function Get-AMD {
-    param(
-        [Parameter(Mandatory = $true)]
-        [String]$Coin
-    )
-
-    $Coins = Get-Content ".\config\naming\get-amd.json" | ConvertFrom-Json
-
-    $Coin = (Get-Culture).TextInfo.ToTitleCase(($Coin -replace "_", " ")) -replace " "
-
-    if ($Coins.$Coin) {$Coins.$Coin}
-    else {$Coin}
-}
 
 function Get-Algorithm {
     param(
@@ -94,4 +53,18 @@ function Get-BadMiners {
     $Badpools = @()
     $Pool_Json.PSObject.Properties.Name | %{$Badpools +=  [PSCustomObject]@{"$_" = $Pool_Json.$_.miners_to_exclude}}
     $Badpools
+}
+
+function Add-ASIC_ALGO {
+        ##Add ASIC_ALGO to pool-algos.txt for bans, etc
+        $Algolist = Get-Content ".\config\pools\pool-algos.json" | ConvertFrom-Json
+        $Algolist = Get-Content ".\config\pools\pool-algos.json" | ConvertFrom-Json
+
+        if($ASIC_ALGO -and $ASIC_ALGO -ne "") {
+            $ASIC_ALGO | ForEach-Object {
+                if($_ -notin $Algolist.PSObject.Properties.Name) {
+                $Algolist | Add-Member $_ @{"hiveos_name" = $_; exclusions = @("add pool or miner here","comma seperated")}
+                }
+        } 
+    }
 }
