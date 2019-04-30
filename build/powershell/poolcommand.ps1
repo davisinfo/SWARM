@@ -14,9 +14,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 function Get-Pools {
     param (
         [Parameter(Mandatory = $true)]
-        [String]$PoolType,
-        [Parameter(Mandatory = $false)]
-        [Array]$Stats
+        [String]$PoolType
     )
 
     Switch($PoolType)
@@ -39,5 +37,14 @@ function Sort-Pools {
     $PoolPriority1 = @()
     $PoolPriority2 = @()
     $PoolPriority3 = @()
+}
 
+function Get-Volume {
+    $global:Pool_Hashrates.keys | ForEach-Object {
+        $SortAlgo = $_
+        $Sorted = @()
+        $global:Pool_HashRates.$SortAlgo.keys | ForEach-Object {$Sorted += [PSCustomObject]@{Name = "$($_)"; HashRate = [Decimal]$global:Pool_HashRates.$SortAlgo.$_.HashRate}}
+        $BestHash = [Decimal]$($Sorted | Sort-Object HashRate -Descending | Select -First 1).HashRate
+        $global:Pool_HashRates.$SortAlgo.keys | ForEach-Object {$global:Pool_HashRates.$SortAlgo.$_.Percent = (([Decimal]$BestHash - [Decimal]$global:Pool_HashRates.$SortAlgo.$_.HashRate) / [decimal]$BestHash)}
+    }
 }

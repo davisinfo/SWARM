@@ -1,0 +1,71 @@
+{
+  "name": "phoenix-amd",
+  "AMD1": {
+    "name": "AMD1",
+    "delay": "1",
+    "prestart": [
+      "export GPU_MAX_HEAP_SIZE=100",
+      "export GPU_USE_SYNC_OBJECTS=1",
+      "export GPU_SINGLE_ALLOC_PERCENT=100",
+      "export GPU_MAX_ALLOC_PERCENT=100"
+    ],
+    "commands": {
+      "ethash": "-proto 2 -rate 1",
+      "daggerhashimoto": "-proto 4 -stales 0",
+      "dagger": "-proto 2",
+      "progpow": "-coin bci -proto 1"
+    },
+    "difficulty": {
+      "ethash": "",
+      "daggerhashimoto": "",
+      "dagger": "",
+      "progpow": ""
+    },
+    "naming": {
+      "ethash": "ethash",
+      "daggerhashimoto": "daggerhashimoto",
+      "dagger": "dagger",
+      "progpow": "progpow"
+    },
+    "fee": {
+      "ethash": 0.65,
+      "daggerhashimoto": 0.65,
+      "dagger": 0.65,
+      "progpow": 0.65
+    },
+    "oc": {
+      "ethash": {
+        "dpm": "",
+        "v": "825 825 825 825 825 825",
+        "core": "1150 1150 1150 1150 1150 1150",
+        "mem": "2050;800 2125;800 2075;800 2125;800 2125;825 2125;800",
+        "mdpm": "",
+        "fans": ""
+      },
+      "daggerhashimoto": {
+        "dpm": "",
+        "v": "825 825 825 825 825 825",
+        "core": "1150 1150 1150 1150 1150 1150",
+        "mem": "2050;800 2125;800 2075;800 2125;800 2125;825 2125;800",
+        "mdpm": "",
+        "fans": ""
+      },
+      "dagger": {
+        "dpm": "",
+        "v": "825 825 825 825 825 825",
+        "core": "1150 1150 1150 1150 1150 1150",
+        "mem": "2050;800 2125;800 2075;800 2125;800 2125;825 2125;800",
+        "mdpm": "",
+        "fans": ""
+      },
+      "progpow": {
+        "dpm": "",
+        "v": "",
+        "core": "",
+        "mem": "",
+        "mdpm": "",
+        "fans": ""
+      }
+    }
+  }
+}

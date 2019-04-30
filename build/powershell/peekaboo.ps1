@@ -57,13 +57,32 @@ function Start-Peekaboo {
     $cpuname = $cpud.name
     $cpucores = $cpud.NumberOfCores
     $cpuid = $cpud.DeviceID
+    Write-Log "Running Coreinfo For AES detection" -ForegroundColor Yellow
+    Invoke-Expression ".\build\apps\Coreinfo.exe" | Tee-Object -Variable AES | Out-Null
+    $AES = $AES | Select-String "Supports AES extensions"
+    if($AES){$HasAES = 1}else{$HasAES = 0}
     $disk = $(Get-WMIObject win32_diskdrive).model
+    $diskSpace = Get-WmiObject Win32_LogicalDisk -Filter "DeviceID='C:'" | Select-Object Size
+    $diskSpace = $diskSpace.Size / [math]::pow( 1024, 3 )
+    $diskSpace = [math]::Round($diskSpace)
+    $diskSpace = "$($diskSpace)GB"
     $url = $HiveMirror
     $swarmversion = Get-Content ".\h-manifest.conf" | ConvertFrom-StringData
     $swarmversion = $swarmversion.CUSTOM_VERSION
     Invoke-Expression ".\build\apps\nvidia-smi.exe --query-gpu=driver_version --format=csv" | Tee-Object -Variable nversion | Out-Null
     $nvidiaversion = $nversion | ConvertFrom-Csv
     $nvidiaversion = $nvidiaversion.driver_version | Select -First 1
+    Set-Location "HKLM:\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}"
+    $Reg = $(Get-Item * -ErrorAction SilentlyContinue).Name
+    $Reg = $Reg | % {$_ -split "\\" | Select -Last 1} | % {if ($_ -like "*00*") {$_}}
+    $Reg | foreach {
+        if($null -eq $DriverDesc) {
+            $DriverDesc = $(Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\$($_)" -Name "RadeonSoftwareVersion" -ErrorAction SilentlyContinue).RadeonSoftwareVersion;
+        }
+    }
+    if($DriverDesc){$AMDDriver = "$DriverDesc"}else{$AMDDriver = "0.0.0"}
+    Set-Location $dir
+
 
     $Hello = @{
         method  = "hello"
@@ -85,7 +104,7 @@ function Start-Peekaboo {
             worker_name      = "$HiveWorker" 
             version          = ""
             kernel           = "$swarmversion"
-            amd_version      = "18.10"
+            amd_version      = "$AMDDriver"
             nvidia_version   = "$nvidiaversion"
             mb               = @{
                 manufacturer = "$manu"
@@ -94,17 +113,17 @@ function Start-Peekaboo {
             cpu              = @{
                 model  = "$cpuname"
                 cores  = "$cpucores"
-                aes    = "2"
+                aes    = "$HasAES"
                 cpu_id = "$cpuid"
             }
-            disk_model       = "$disk"
+            disk_model       = "$disk $diskspace"
         }
     }
       
-    Write-Host "Saying Hello To Hive"
+    Write-Log "Saying Hello To Hive"
     $GetHello = $Hello | ConvertTo-Json -Depth 3 -Compress
     $GetHello | Set-Content ".\build\txt\hello.txt"
-    Write-Host "$GetHello" -ForegroundColor Green
+    Write-Log "$GetHello" -ForegroundColor Green
 
     try {
         $response = Invoke-RestMethod "$HiveMirror/worker/api" -TimeoutSec 15 -Method POST -Body ($Hello | ConvertTo-Json -Depth 3 -Compress) -ContentType 'application/json'
