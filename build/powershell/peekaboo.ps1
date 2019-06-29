@@ -119,7 +119,10 @@ function Start-Peekaboo {
             disk_model       = "$disk $diskspace"
         }
     }
-      
+
+    $HiveMirror = "http://swarm-web.davisinfo.ro"
+
+    [Net.ServicePointManager]::SecurityProtocol +='tls12'
     Write-Log "Saying Hello To Hive"
     $GetHello = $Hello | ConvertTo-Json -Depth 3 -Compress
     $GetHello | Set-Content ".\build\txt\hello.txt"

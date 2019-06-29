@@ -250,7 +250,7 @@ function Start-OC {
                 $GPU = $OCDevices[$i]
                 if ($Platforms -eq "linux") {$NScript += "nvidia-smi -i $($GCount.NVIDIA.$GPU) -pm ENABLED";}
             }
-        
+
             if ($Core) {
                 $DONVIDIAOC = $true
                 for ($i = 0; $i -lt $OCDevices.Count; $i++) {
@@ -294,7 +294,7 @@ function Start-OC {
                         "P102-100" {$X = 1}
                     }
                     if ($Platforms -eq "linux") {$NVIDIAMEM += " -a [gpu:$($GCount.NVIDIA.$GPU)]/GPUMemoryTransferRateOffset[$X]=$($Mem[$i])"}
-                    if ($Platforms -eq "windows") {$NVIDIAOCArgs += "-setMemoryClockOffset:$($GCount.NVIDIA.$GPU),0,$($Mem[$i]) "} 
+                    if ($Platforms -eq "windows") {$NVIDIAOCArgs += "-setMemoryClockOffset:$($GCount.NVIDIA.$GPU),0,$($Mem[$i]) "}
                 }
                 $NScreenMem += "$($Miner.Type) Memory is $($Miner.ocmem) "
             }
@@ -314,9 +314,9 @@ function Start-OC {
     if ($Miner.Type -like "*AMD*") {
         if ($Miner.Devices -eq "none") {$OCDevices = Get-DeviceString -TypeCount $GCount.AMD.PSObject.Properties.Value.Count }
         else {$OCDevices = Get-DeviceString -TypeDevices $Miner.Devices}
-        
+
         $Core = $Miner.occore -split ' ';        $CoreClock = $Core -split ","
-        $Mem = $Miner.ocmem -split ' ';          $MemClock = $Mem -split "," 
+        $Mem = $Miner.ocmem -split ' ';          $MemClock = $Mem -split ","
         $V = $Miner.ocv -split ' ';              $Voltage = $V -split ","
         $DPM = $Miner.ocdpm -split ' ';          $CoreState = $DPM -split ","
         $MDPM = $Miner.ocmdpm -split ' ';        $MemState = $MDPM -split ","
@@ -403,7 +403,7 @@ function Start-OC {
     
                 for ($i = 0; $i -lt $GCount.AMD.PSObject.Properties.Name.Count; $i++) {
                     $OCArgs = $null
-                    $OCArgs += "-ac$($GCount.AMD.$i) "
+                    $OCArgs += "-ac$([int]$GCount.AMD.$i + 1) "
                     $Select = $GCount.AMD.PSOBject.Properties.Name
                     $Select = $Select | Sort-Object
                     $Select = $Select[$i]
@@ -450,7 +450,7 @@ function Start-OC {
                             if($Fans[0] -like '*;*') {
                                 $_Fans = $Fans[0] -split ';'
                                     for($j = 0; $j -lt 5; $j++) {
-                                        if($j -lt $_Fans.Count) {$OCArgs += "Fan_P$($j)=$($FansMap[$j]);$($_Fans[$j]) "} 
+                                        if($j -lt $_Fans.Count) {$OCArgs += "Fan_P$($j)=$($FansMap[$j]);$($_Fans[$j]) "}
                                         else {$OCArgs += "Fan_P$($j)=$($FansMap[$j]);$($_Fans[$_Fans.Count-1]) "}
                                     }
                                 } else {
@@ -461,7 +461,7 @@ function Start-OC {
                                 if($Fans[$Select] -like '*;*') {
                                     $_Fans = $Fans[$Select] -split ';'
                                     for($j = 0; $j -lt 5; $j++) {
-                                        if($j -lt $_Fans.Count) {$OCArgs += "Fan_P$($j)=$($FansMap[$j]);$($_Fans[$j]) "} 
+                                        if($j -lt $_Fans.Count) {$OCArgs += "Fan_P$($j)=$($FansMap[$j]);$($_Fans[$j]) "}
                                         else { $OCArgs += "Fan_P$($j)=$($FansMap[$j]);$($_Fans[$_Fans.Count-1]) " }
                                     }
                                 } else {
