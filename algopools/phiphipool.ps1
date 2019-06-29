@@ -1,18 +1,18 @@
 $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName 
 $phiphipool_Request = [PSCustomObject]@{ } 
-[Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
-if($XNSub -eq "Yes"){$X = "#xnsub"}
 
-if ($Poolname -eq $Name) {
+if($(arg).xnsub -eq "Yes"){$X = "#xnsub"}
+
+if ($Name -in $(arg).PoolName) {
     try { $phiphipool_Request = Invoke-RestMethod "https://www.phi-phi-pool.com/api/status" -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop } 
-    catch { Write-Log "SWARM contacted ($Name) but there was no response."; return }
+    catch { Global:Write-Log "SWARM contacted ($Name) but there was no response."; return }
  
     if (($phiphipool_Request | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Measure-Object Name).Count -le 1) { 
-        Write-Log "SWARM contacted ($Name) but ($Name) the response was empty." 
+        Global:Write-Log "SWARM contacted ($Name) but ($Name) the response was empty." 
         return 
     }
   
-    switch ($Location) {
+    switch ($(arg).Location) {
         "ASIA" { $region = "asia" }
         "US" { $region = "us" }
         "EUROPE" { $Region = "eu" }
@@ -22,13 +22,14 @@ if ($Poolname -eq $Name) {
     Get-Member -MemberType NoteProperty -ErrorAction Ignore | 
     Select-Object -ExpandProperty Name | 
     Where-Object { $phiphipool_Request.$_.hashrate -gt 0 } | 
-    Where-Object { $global:Exclusions.$($phiphipool_Request.$_.name) } |
+    Where-Object {
+        $Algo = $phiphipool_Request.$_.name.ToLower();
+        $local:phiphipool_Algorithm = $global:Config.Pool_Algos.PSObject.Properties.Name | Where { $Algo -in $global:Config.Pool_Algos.$_.alt_names }
+        return $phiphipool_Algorithm
+    } |
     ForEach-Object {
-
-        $phiphipool_Algorithm = $phiphipool_Request.$_.name.ToLower()
-
-        if ($Algorithm -contains $phiphipool_Algorithm -or $ASIC_ALGO -contains $phiphipool_Algorithm) {
-            if ($Name -notin $global:Exclusions.$phiphipool_Algorithm.exclusions -and $phiphipool_Algorithm -notin $Global:banhammer) {
+        if ($(vars).Algorithm -contains $phiphipool_Algorithm -or $(arg).ASIC_ALGO -contains $phiphipool_Algorithm) {
+            if ($Name -notin $global:Config.Pool_Algos.$phiphipool_Algorithm.exclusions -and $phiphipool_Algorithm -notin $(vars).BanHammer) {
                 $phiphipool_Port = $phiphipool_Request.$_.port
                 $phiphipool_Host = "$($Region).phi-phi-pool.com$X"
                 $Divisor = (1000000 * $phiphipool_Request.$_.mbtc_mh_factor)
@@ -38,36 +39,32 @@ if ($Poolname -eq $Name) {
                 $Hashrate = $phiphipool_Request.$_.hashrate
 
                 if (-not (Test-Path $StatPath)) {
-                    $Stat = Set-Stat -Name "$($Name)_$($phiphipool_Algorithm)_profit" -HashRate $HashRate -Value ( [Double]$phiphipool_Request.$_.estimate_last24h / $Divisor * (1 - ($phiphipool_Request.$_.fees / 100)))
+                    $StatAlgo = $phiphipool_Algorithm -replace "`_","`-"
+                    $Stat = Global:Set-Stat -Name "$($Name)_$($StatAlgo)_profit" -HashRate $HashRate -Value ( [Double]$phiphipool_Request.$_.estimate_last24h / $Divisor * (1 - ($phiphipool_Request.$_.fees / 100)))
                 } 
                 else {
-                    $Stat = Set-Stat -Name "$($Name)_$($phiphipool_Algorithm)_profit" -HashRate $HashRate -Value ( [Double]$phiphipool_Request.$_.estimate_current / $Divisor * (1 - ($phiphipool_Request.$_.fees / 100)))
+                    $StatAlgo = $phiphipool_Algorithm -replace "`_","`-"
+                    $Stat = Global:Set-Stat -Name "$($Name)_$($StatAlgo)_profit" -HashRate $HashRate -Value ( [Double]$phiphipool_Request.$_.estimate_current / $Divisor * (1 - ($phiphipool_Request.$_.fees / 100)))
                 }
 
-                if (-not $global:Pool_Hashrates.$phiphipool_Algorithm) { $global:Pool_Hashrates.Add("$phiphipool_Algorithm", @{ })
+                if (-not $(vars).Pool_Hashrates.$phiphipool_Algorithm) { $(vars).Pool_Hashrates.Add("$phiphipool_Algorithm", @{ })
                 }
-                if (-not $global:Pool_Hashrates.$phiphipool_Algorithm.$Name) { $global:Pool_Hashrates.$phiphipool_Algorithm.Add("$Name", @{HashRate = "$($Stat.HashRate)"; Percent = "" })
+                if (-not $(vars).Pool_Hashrates.$phiphipool_Algorithm.$Name) { $(vars).Pool_Hashrates.$phiphipool_Algorithm.Add("$Name", @{HashRate = "$($Stat.HashRate)"; Percent = "" })
                 }
 
                 [PSCustomObject]@{
-                    Priority  = $Priorities.Pool_Priorities.$Name
                     Symbol    = "$phiphipool_Algorithm-Algo"
-                    Mining    = $phiphipool_Algorithm
                     Algorithm = $phiphipool_Algorithm
-                    Price     = $Stat.$Stat_Algo
+                    Price     = $Stat.$($(arg).Stat_Algo)
                     Protocol  = "stratum+tcp"
                     Host      = $phiphipool_Host
                     Port      = $phiphipool_Port
-                    User1     = $global:Wallets.Wallet1.$PasswordCurrency1.address
-                    User2     = $global:Wallets.Wallet2.$PasswordCurrency2.address
-                    User3     = $global:Wallets.Wallet3.$PasswordCurrency3.address
-                    CPUser    = $global:Wallets.Wallet1.$PasswordCurrency1.address                    
-                    CPUPass   = "c=$($global:Wallets.Wallet1.keys),id=$Rigname1"
-                    Pass1     = "c=$($global:Wallets.Wallet1.keys),id=$Rigname1"
-                    Pass2     = "c=$($global:Wallets.Wallet2.keys),id=$Rigname2"
-                    Pass3     = "c=$($global:Wallets.Wallet3.keys),id=$Rigname3"
-                    Location  = $Location
-                    SSL       = $false
+                    User1     = $global:Wallets.Wallet1.$($(arg).Passwordcurrency1).address
+                    User2     = $global:Wallets.Wallet2.$($(arg).Passwordcurrency2).address
+                    User3     = $global:Wallets.Wallet3.$($(arg).Passwordcurrency3).address
+                    Pass1     = "c=$($global:Wallets.Wallet1.keys),id=$($(arg).RigName1)"
+                    Pass2     = "c=$($global:Wallets.Wallet2.keys),id=$($(arg).RigName2)"
+                    Pass3     = "c=$($global:Wallets.Wallet3.keys),id=$($(arg).RigName3)"
                 }
             }
         }

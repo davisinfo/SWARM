@@ -1,14 +1,14 @@
 $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName
 $nlpool_Request = [PSCustomObject]@{ }
-[Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
-if($XNSub -eq "Yes"){$X = "#xnsub"}
 
-if ($Poolname -eq $Name) {
+if($(arg).xnsub -eq "Yes"){$X = "#xnsub"}
+
+if ($Name -in $(arg).PoolName) {
     try { $nlpool_Request = Invoke-RestMethod "https://nlpool.nl/api/status" -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop }
-    catch { Write-Log "SWARM contacted ($Name) but there was no response."; return }
+    catch { Global:Write-Log "SWARM contacted ($Name) but there was no response."; return }
    
     if (($nlpool_Request | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Measure-Object Name).Count -le 1) {
-        Write-Log "SWARM contacted ($Name) but ($Name) the response was empty." 
+        Global:Write-Log "SWARM contacted ($Name) but ($Name) the response was empty." 
         return
     }
 
@@ -18,15 +18,16 @@ if ($Poolname -eq $Name) {
     Get-Member -MemberType NoteProperty -ErrorAction Ignore | 
     Select-Object -ExpandProperty Name | 
     Where-Object { $nlpool_Request.$_.hashrate -gt 0 } | 
-    Where-Object { $global:Exclusions.$($nlpool_Request.$_.name) } |
     Where-Object { $nlpool_Request.$_.name -NE "sha256" } | 
-    Where-Object { $($nlpool_Request.$_.estimate_current) -gt 0 } | 
+    Where-Object { $($nlpool_Request.$_.estimate_current) -gt 0 } |
+    Where-Object {
+        $Algo = $nlpool_Request.$_.name.ToLower();
+        $local:nlpoolAlgo_Algorithm = $global:Config.Pool_Algos.PSObject.Properties.Name | Where { $Algo -in $global:Config.Pool_Algos.$_.alt_names }
+        return $nlpoolAlgo_Algorithm
+    } |
     ForEach-Object {
-        
-        $nlpoolAlgo_Algorithm = $nlpool_Request.$_.name.ToLower()
-
-        if ($Algorithm -contains $nlpoolAlgo_Algorithm -or $ASIC_ALGO -contains $nlpoolAlgo_Algorithm) {
-            if ($Name -notin $global:Exclusions.$nlpoolAlgo_Algorithm.exclusions -and $nlpoolAlgo_Algorithm -notin $Global:banhammer) {
+        if ($(vars).Algorithm -contains $nlpoolAlgo_Algorithm -or $(arg).ASIC_ALGO -contains $nlpoolAlgo_Algorithm) {
+            if ($Name -notin $global:Config.Pool_Algos.$nlpoolAlgo_Algorithm.exclusions -and $nlpoolAlgo_Algorithm -notin $(vars).BanHammer) {
                 $nlpoolAlgo_Host = "mine.nlpool.nl$X"
                 $nlpoolAlgo_Port = $nlpool_Request.$_.port
                 $Divisor = (1000000 * $nlpool_Request.$_.mbtc_mh_factor)
@@ -34,23 +35,25 @@ if ($Poolname -eq $Name) {
                 $Hashrate = $nlpool_Request.$_.hashrate
 
                 if (-not (Test-Path $StatPath)) {
-                    $Stat = Set-Stat -Name "$($Name)_$($nlpoolAlgo_Algorithm)_profit" -Hashrate $Hashrate -Value ( [Double]$nlpool_Request.$_.estimate_last24h / $Divisor * (1 - ($nlpool_Request.$_.fees / 100)))
+                    $StatAlgo = $nlpoolAlgo_Algorithm -replace "`_","`-"
+                    $Stat = Global:Set-Stat -Name "$($Name)_$($StatAlgo)_profit" -Hashrate $Hashrate -Value ( [Double]$nlpool_Request.$_.estimate_last24h / $Divisor * (1 - ($nlpool_Request.$_.fees / 100)))
                 } 
                 else {
-                    $Stat = Set-Stat -Name "$($Name)_$($nlpoolAlgo_Algorithm)_profit" -Hashrate $HashRates -Value ( [Double]$nlpool_Request.$_.estimate_current / $Divisor * (1 - ($nlpool_Request.$_.fees / 100)))
+                    $StatAlgo = $nlpoolAlgo_Algorithm -replace "`_","`-"
+                    $Stat = Global:Set-Stat -Name "$($Name)_$($StatAlgo)_profit" -Hashrate $HashRates -Value ( [Double]$nlpool_Request.$_.estimate_current / $Divisor * (1 - ($nlpool_Request.$_.fees / 100)))
                 }
 
-                if (-not $global:Pool_Hashrates.$nlpoolAlgo_Algorithm) { $global:Pool_Hashrates.Add("$nlpoolAlgo_Algorithm", @{ })
+                if (-not $(vars).Pool_Hashrates.$nlpoolAlgo_Algorithm) { $(vars).Pool_Hashrates.Add("$nlpoolAlgo_Algorithm", @{ })
                 }
-                if (-not $global:Pool_Hashrates.$nlpoolAlgo_Algorithm.$Name) { $global:Pool_Hashrates.$nlpoolAlgo_Algorithm.Add("$Name", @{HashRate = "$($Stat.HashRate)"; Percent = "" })
+                if (-not $(vars).Pool_Hashrates.$nlpoolAlgo_Algorithm.$Name) { $(vars).Pool_Hashrates.$nlpoolAlgo_Algorithm.Add("$Name", @{HashRate = "$($Stat.HashRate)"; Percent = "" })
                 }
         
                 $Pass1 = $global:Wallets.Wallet1.Keys
-                $User1 = $global:Wallets.Wallet1.$Passwordcurrency1.address
+                $User1 = $global:Wallets.Wallet1.$($(arg).Passwordcurrency1).address
                 $Pass2 = $global:Wallets.Wallet2.Keys
-                $User2 = $global:Wallets.Wallet2.$Passwordcurrency2.address
+                $User2 = $global:Wallets.Wallet2.$($(arg).Passwordcurrency2).address
                 $Pass3 = $global:Wallets.Wallet3.Keys
-                $User3 = $global:Wallets.Wallet3.$Passwordcurrency3.address
+                $User3 = $global:Wallets.Wallet3.$($(arg).Passwordcurrency3).address
 
                 if ($global:Wallets.AltWallet1.keys) {
                     $global:Wallets.AltWallet1.Keys | ForEach-Object {
@@ -78,24 +81,18 @@ if ($Poolname -eq $Name) {
                 }
                             
                 [PSCustomObject]@{
-                    Priority  = $Priorities.Pool_Priorities.$Name
                     Symbol    = "$nlpoolAlgo_Algorithm-Algo"
-                    Mining    = $nlpoolAlgo_Algorithm
                     Algorithm = $nlpoolAlgo_Algorithm
-                    Price     = $Stat.$Stat_Algo
+                    Price     = $Stat.$($(arg).Stat_Algo)
                     Protocol  = "stratum+tcp"
                     Host      = $nlpoolAlgo_Host
                     Port      = $nlpoolAlgo_Port
                     User1     = $User1
                     User2     = $User2
                     User3     = $User3
-                    CPUser    = $User1
-                    CPUPass   = "c=$Pass1,id=$Rigname1"
-                    Pass1     = "c=$Pass1,id=$Rigname1"
-                    Pass2     = "c=$Pass2,id=$Rigname2"
-                    Pass3     = "c=$Pass3,id=$Rigname3"
-                    Location  = $Location
-                    SSL       = $false
+                    Pass1     = "c=$Pass1,id=$($(arg).RigName1)"
+                    Pass2     = "c=$Pass2,id=$($(arg).RigName2)"
+                    Pass3     = "c=$Pass3,id=$($(arg).RigName3)"
                 }
             }
         }

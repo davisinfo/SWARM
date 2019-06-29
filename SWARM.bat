@@ -1,6 +1,11 @@
 @echo off
 
 REM ************QUICK ARGUMENTS CHEAT SHEET**************************************************
+REM
+REM
+REM NOTE: YOU CAN RUN ".\startup.ps1 -Help" for a guided configuration
+REM
+REM
 REM Rigname: Name of your rig
 REM Currency: Preferred Fiat Currency
 REM CoinExchange: AltCoin Coin Pricing (Besides BTC).
@@ -13,10 +18,10 @@ REM Type: -ASIC_IP and -ASIC_ALGO must be used with -Type ASIC (see help on argu
 REM Wallet1: Your BTC Wallet. Add -Wallet2 or -Wallet3 if using -Type NVIDIA2 or NVIDIA3
 REM Donate: Donation in percent
 REM WattOMeter: Use Watt Calculations (Default is 0.10 / kwh). Can be modified. See Wiki
-REM Farm_Hash: HiveOS Farm Hash
+REM Hive_Hash: HiveOS Farm Hash
 
 REM ************NOTE***********************
 REM If you do not intend to use HiveOS, add -HiveOS No
 REM FOR ALL ARGUMENTS: SEE help folder. Explanation on how to use -Type NVIDIA1,NVIDIA2,NVIDIA3 is provided.
 
-powershell -executionpolicy Bypass -command ".\startup.ps1 -RigName1 SERVER08 -Currency USD -CoinExchange BTC -Location EUROPE -PoolName hashrefinery,starpool,fairpool,nicehash,nlpool,phiphipool,zpool,ahashpool,whalesburg,zergpool -Type AMD1 -Wallet1 1MGwuGQrAVLa8XCMAXJ6FcUJ1kmWvYMtxT -Donate .5 -WattOMeter No -platform windows -Farm_Hash 463753fb9d12d8bb4415a37c6a15fbe6aef6b56c -SWARM_Mode Yes -ETH 0x5146cda01a47B0168311DA2c56A3aB5d941BF8C5 -Worker SERVER08 -Nicehash_Wallet1 3CJFwLJVg7ZREAmD1kNPZypCx4PDUZuvGh -Switch_Threshold 3 -Stat_Algo Minute_10 -StatsInterval 1000"
+pwsh -executionpolicy Bypass -command ".\startup.ps1 -Auto_Coin No -RigName1 SWARM1 -Currency USD -CoinExchange LTC -Location US -PoolName hashrefinery,zergpool,fairpool,nicehash,nlpool,blockmasters,phiphipool,zpool,blazepool,ahashpool -Type NVIDIA1,CPU -CPUThreads 2 -Wallet1 1FpuMha1QPaWS4PTPZpU1zGRzKMevnDpwg -Donate .5 -WattOMeter Yes -Hive_Hash xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"

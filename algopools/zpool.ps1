@@ -1,18 +1,18 @@
 $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName 
 $Zpool_Request = [PSCustomObject]@{ } 
-[Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
-if($XNSub -eq "Yes"){$X = "#xnsub"} 
+
+if($(arg).xnsub -eq "Yes"){$X = "#xnsub"} 
  
-if ($Poolname -eq $Name) {
+if ($Name -in $(arg).PoolName) {
     try { $Zpool_Request = Invoke-RestMethod "http://www.zpool.ca/api/status" -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop } 
-    catch { Write-Log "SWARM contacted ($Name) but there was no response."; return }
+    catch { Global:Write-Log "SWARM contacted ($Name) but there was no response."; return }
   
     if (($Zpool_Request | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Measure-Object Name).Count -le 1) { 
-        Write-Log "SWARM contacted ($Name) but ($Name) the response was empty." 
+        Global:Write-Log "SWARM contacted ($Name) but ($Name) the response was empty." 
         return
     } 
    
-    Switch ($Location) {
+    Switch ($(arg).Location) {
         "US" { $region = "na" }
         "EUROPE" { $region = "eu" }
         "ASIA" { $region = "sea" }
@@ -22,38 +22,40 @@ if ($Poolname -eq $Name) {
     Get-Member -MemberType NoteProperty -ErrorAction Ignore | 
     Select-Object -ExpandProperty Name | 
     Where-Object { $Zpool_Request.$_.hashrate -gt 0 } | 
-    Where-Object { $global:Exclusions.$($Zpool_Request.$_.name) } |
+    Where-Object {
+        $Algo = $Zpool_Request.$_.name.ToLower();
+        $local:Zpool_Algorithm = $global:Config.Pool_Algos.PSObject.Properties.Name | Where { $Algo -in $global:Config.Pool_Algos.$_.alt_names }
+        return $Zpool_Algorithm
+    } |
     ForEach-Object {
-    
-        $Zpool_Algorithm = $Zpool_Request.$_.name.ToLower()
-  
-        if ($Algorithm -contains $Zpool_Algorithm -or $ASIC_ALGO -contains $Zpool_Algorithm) {
-            if ($Name -notin $global:Exclusions.$Zpool_Algorithm.exclusions -and $Zpool_Algorithm -notin $Global:banhammer) {
+        if ($(vars).Algorithm -contains $Zpool_Algorithm -or $(arg).ASIC_ALGO -contains $Zpool_Algorithm) {
+            if ($Name -notin $global:Config.Pool_Algos.$Zpool_Algorithm.exclusions -and $Zpool_Algorithm -notin $(vars).BanHammer) {
                 $Zpool_Port = $Zpool_Request.$_.port
-                $Zpool_Host = "$($ZPool_Algorithm).$($region).mine.zpool.ca$X"
+                $Zpool_Host = "$($Zpool_Request.$_.name.ToLower()).$($region).mine.zpool.ca$X"
                 $Divisor = (1000000 * $Zpool_Request.$_.mbtc_mh_factor)
                 $Fees = $Zpool_Request.$_.fees
                 $Workers = $Zpool_Request.$_.Workers
                 $Hashrate = $Zpool_Request.$_.hashrate
 
-                $Global:DivisorTable.zpool.Add($Zpool_Algorithm, $Divisor)
+                $Global:DivisorTable.zpool.Add($Zpool_Algorithm, $Zpool_Request.$_.mbtc_mh_factor)
                 $Global:FeeTable.zpool.Add($Zpool_Algorithm, $Fees)
 
                 $StatPath = ".\stats\($Name)_$($Zpool_Algorithm)_profit.txt"
                 $Estimate = if (-not (Test-Path $StatPath)) { [Double]$Zpool_Request.$_.estimate_last24h } else { [Double]$Zpool_Request.$_.estimate_current }
 
-                $Cut = ConvertFrom-Fees $Fees $Workers $Estimate
-                $Stat = Set-Stat -Name "$($Name)_$($Zpool_Algorithm)_profit" -HashRate $HashRate -Value ([Double]$Cut / $Divisor)
+                $Cut = ConvertFrom-Fees $Fees $Workers $Estimate $Divisor
+                $StatAlgo = $Zpool_Algorithm -replace "`_","`-"
+                $Stat = Global:Set-Stat -Name "$($Name)_$($StatAlgo)_profit" -HashRate $HashRate -Value $Cut
 
-                if (-not $global:Pool_Hashrates.$Zpool_Algorithm) { $global:Pool_Hashrates.Add("$Zpool_Algorithm", @{ }) }
-                if (-not $global:Pool_Hashrates.$Zpool_Algorithm.$Name) { $global:Pool_Hashrates.$Zpool_Algorithm.Add("$Name", @{HashRate = "$($Stat.HashRate)"; Percent = "" }) }
+                if (-not $(vars).Pool_Hashrates.$Zpool_Algorithm) { $(vars).Pool_Hashrates.Add("$Zpool_Algorithm", @{ }) }
+                if (-not $(vars).Pool_Hashrates.$Zpool_Algorithm.$Name) { $(vars).Pool_Hashrates.$Zpool_Algorithm.Add("$Name", @{HashRate = "$($Stat.HashRate)"; Percent = "" }) }
          
                 $Pass1 = $global:Wallets.Wallet1.Keys
-                $User1 = $global:Wallets.Wallet1.$Passwordcurrency1.address
+                $User1 = $global:Wallets.Wallet1.$($(arg).Passwordcurrency1).address
                 $Pass2 = $global:Wallets.Wallet2.Keys
-                $User2 = $global:Wallets.Wallet2.$Passwordcurrency2.address
+                $User2 = $global:Wallets.Wallet2.$($(arg).Passwordcurrency2).address
                 $Pass3 = $global:Wallets.Wallet3.Keys
-                $User3 = $global:Wallets.Wallet3.$Passwordcurrency3.address
+                $User3 = $global:Wallets.Wallet3.$($(arg).Passwordcurrency3).address
 
                 if ($global:Wallets.AltWallet1.keys) {
                     $global:Wallets.AltWallet1.Keys | ForEach-Object {
@@ -81,24 +83,18 @@ if ($Poolname -eq $Name) {
                 }
                 
                 [PSCustomObject]@{
-                    Priority  = $Priorities.Pool_Priorities.$Name
                     Symbol    = "$Zpool_Algorithm-Algo"
-                    Mining    = $Zpool_Algorithm
                     Algorithm = $Zpool_Algorithm
-                    Price     = $Stat.$Stat_Algo
+                    Price     = $Stat.$($(arg).Stat_Algo)
                     Protocol  = "stratum+tcp"
                     Host      = $Zpool_Host
                     Port      = $Zpool_Port
                     User1     = $User1
                     User2     = $User2
                     User3     = $User3
-                    CPUser    = $User1
-                    CPUPass   = "c=$Pass1,id=$Rigname1"
-                    Pass1     = "c=$Pass1,id=$Rigname1"
-                    Pass2     = "c=$Pass2,id=$Rigname2"
-                    Pass3     = "c=$Pass3,id=$Rigname3"
-                    Location  = $Location
-                    SSL       = $false
+                    Pass1     = "c=$Pass1,id=$($(arg).RigName1)"
+                    Pass2     = "c=$Pass2,id=$($(arg).RigName2)"
+                    Pass3     = "c=$Pass3,id=$($(arg).RigName3)"
                 }
             }
         }

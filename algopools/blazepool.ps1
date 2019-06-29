@@ -1,15 +1,16 @@
 
 $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName 
 $blazepool_Request = [PSCustomObject]@{ } 
-[Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
-if($XNSub -eq "Yes"){$X = "#xnsub"}
+
+
+if($(arg).xnsub -eq "Yes"){$X = "#xnsub"}
  
-if ($Poolname -eq $Name) {
+if ($Name -in $(arg).PoolName) {
     try { $blazepool_Request = Invoke-RestMethod "http://api.blazepool.com/status" -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop } 
-    catch { Write-Log "SWARM contacted ($Name) but there was no response."; return }
+    catch { Global:Write-Log "SWARM contacted ($Name) but there was no response."; return }
  
     if (($blazepool_Request | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Measure-Object Name).Count -le 1) { 
-        Write-Log "SWARM contacted ($Name) but ($Name) the response was empty." 
+        Global:Write-Log "SWARM contacted ($Name) but ($Name) the response was empty." 
         return 
     }   
   
@@ -17,13 +18,14 @@ if ($Poolname -eq $Name) {
     Get-Member -MemberType NoteProperty -ErrorAction Ignore | 
     Select-Object -ExpandProperty Name | 
     Where-Object { $blazepool_Request.$_.hashrate -gt 0 } | 
-    Where-Object { $global:Exclusions.$($blazepool_Request.$_.name) } |
+    Where-Object {
+        $Algo = $blazepool_Request.$_.name.ToLower();
+        $local:blazepool_Algorithm = $global:Config.Pool_Algos.PSObject.Properties.Name | Where { $Algo -in $global:Config.Pool_Algos.$_.alt_names }
+        return $blazepool_Algorithm
+    } |
     ForEach-Object {
-
-        $blazepool_Algorithm = $blazepool_Request.$_.name.ToLower()
-
-        if ($Algorithm -contains $blazepool_Algorithm -or $ASIC_ALGO -contains $blazepool_Algorithm) {
-            if ($Name -notin $global:Exclusions.$blazepool_Algorithm.exclusions -and $blazepool_Algorithm -notin $Global:banhammer) {
+        if ($(vars).Algorithm -contains $blazepool_Algorithm -or $(arg).ASIC_ALGO -contains $blazepool_Algorithm) {
+            if ($Name -notin $global:Config.Pool_Algos.$blazepool_Algorithm.exclusions -and $blazepool_Algorithm -notin $(vars).BanHammer) {
                 $blazepool_Host = "$_.mine.blazepool.com$X"
                 $blazepool_Port = $blazepool_Request.$_.port
                 $Divisor = (1000000 * $blazepool_Request.$_.mbtc_mh_factor)
@@ -33,36 +35,32 @@ if ($Poolname -eq $Name) {
                 $Hashrate = $blazepool_Request.$_.hashrate
 
                 if (-not (Test-Path $StatPath)) {
-                    $Stat = Set-Stat -Name "$($Name)_$($blazepool_Algorithm)_profit" -HashRate $HashRate -Value ( [Double]$blazepool_Request.$_.estimate_last24h / $Divisor * (1 - ($blazepool_Request.$_.fees / 100)))
+                    $StatAlgo = $blazepool_Algorithm -replace "`_","`-"
+                    $Stat = Global:Set-Stat -Name "$($Name)_$($StatAlgo)_profit" -HashRate $HashRate -Value ( [Double]$blazepool_Request.$_.estimate_last24h / $Divisor * (1 - ($blazepool_Request.$_.fees / 100)))
                 } 
                 else {
-                    $Stat = Set-Stat -Name "$($Name)_$($blazepool_Algorithm)_profit" -HashRate $HashRate -Value ( [Double]$blazepool_Request.$_.estimate_current / $Divisor * (1 - ($blazepool_Request.$_.fees / 100)))
+                    $StatAlgo = $blazepool_Algorithm -replace "`_","`-"
+                    $Stat = Global:Set-Stat -Name "$($Name)_$($StatAlgo)_profit" -HashRate $HashRate -Value ( [Double]$blazepool_Request.$_.estimate_current / $Divisor * (1 - ($blazepool_Request.$_.fees / 100)))
                 }
 
-                if (-not $global:Pool_Hashrates.$blazepool_Algorithm) { $global:Pool_Hashrates.Add("$blazepool_Algorithm", @{ })
+                if (-not $(vars).Pool_Hashrates.$blazepool_Algorithm) { $(vars).Pool_Hashrates.Add("$blazepool_Algorithm", @{ })
                 }
-                if (-not $global:Pool_Hashrates.$blazepool_Algorithm.$Name) { $global:Pool_Hashrates.$blazepool_Algorithm.Add("$Name", @{HashRate = "$($Stat.HashRate)"; Percent = "" })
+                if (-not $(vars).Pool_Hashrates.$blazepool_Algorithm.$Name) { $(vars).Pool_Hashrates.$blazepool_Algorithm.Add("$Name", @{HashRate = "$($Stat.HashRate)"; Percent = "" })
                 }
     
                 [PSCustomObject]@{
-                    Priority  = $Priorities.Pool_Priorities.$Name
                     Symbol    = "$blazepool_Algorithm-Algo"
-                    Mining    = $blazepool_Algorithm
                     Algorithm = $blazepool_Algorithm
-                    Price     = $Stat.$Stat_Algo
+                    Price     = $Stat.$($(arg).Stat_Algo)
                     Protocol  = "stratum+tcp"
                     Host      = $blazepool_Host
                     Port      = $blazepool_Port
-                    User1     = $global:Wallets.Wallet1.$PasswordCurrency1.address
-                    User2     = $global:Wallets.Wallet2.$PasswordCurrency2.address
-                    User3     = $global:Wallets.Wallet3.$PasswordCurrency3.address
-                    CPUser    = $global:Wallets.Wallet1.$PasswordCurrency1.address                    
-                    CPUPass   = "c=$($global:Wallets.Wallet1.keys),id=$Rigname1"
-                    Pass1     = "c=$($global:Wallets.Wallet1.keys),id=$Rigname1"
-                    Pass2     = "c=$($global:Wallets.Wallet2.keys),id=$Rigname2"
-                    Pass3     = "c=$($global:Wallets.Wallet3.keys),id=$Rigname3"
-                    Location  = $Location
-                    SSL       = $false
+                    User1     = $global:Wallets.Wallet1.$($(arg).Passwordcurrency1).address
+                    User2     = $global:Wallets.Wallet2.$($(arg).Passwordcurrency2).address
+                    User3     = $global:Wallets.Wallet3.$($(arg).Passwordcurrency3).address
+                    Pass1     = "c=$($global:Wallets.Wallet1.keys),id=$($(arg).RigName1)"
+                    Pass2     = "c=$($global:Wallets.Wallet2.keys),id=$($(arg).RigName2)"
+                    Pass3     = "c=$($global:Wallets.Wallet3.keys),id=$($(arg).RigName3)"
                 }
             }
         }

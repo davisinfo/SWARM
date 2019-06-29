@@ -283,7 +283,7 @@ Did not get to fixing anything on AMD side. Still working on it.
 There is going to be no c version. b version should now work in Ubuntu:
 
 -download/clone MM.Test (beta version).
--run install.sh as root : sudo ./install.sh. This will install all bash commands.
+-run install.sh as root : ./install.sh. This will install all bash commands.
 -open/edit StartMM with your specified arguments.
 -Launch MM.Hash (Not as superuser!) ./StartMM
 -Operates just like Hive-OS version, just open a new terminal and type desired command.
@@ -339,7 +339,7 @@ If you are running a different OS, it must be added: -HiveOS NO
 
 If you wish to use on a Unix OS other than hive:
 run:
-sudo ./install.sh
+./install.sh
 Note: You may have to edit ./install.sh depending on flavor
 edit 'swarm' in main directory with your arguments
 launch miner by 
@@ -2071,7 +2071,7 @@ Note: Am aware that XMRig and XMRstak have Updates
 -Added reboot.ps1
 -Cleaned up Claymore/ethminer style API for windows agent errors.
 -Removed -pers auto args on grin algo launches- Did not add to remote update.
--Added cryptonight/r
+-Added cyrtponight-r
 -Removed lyra2z from fancyIX- It would just crash cards.
 
 2.0.5
@@ -2767,3 +2767,779 @@ API overhaul:
   Note: Update will not transfer pool-algos.json this release
         This means you must add bans again, if done through
         command.
+
+  2.2.3
+
+  Note: This is a mainly a patch for the below issues:
+
+  -Fixed WattOMeter for Linux/AMD (both HiveOS and generic *nix)
+  -Added GPUWatts to background screen for linux / fixed
+  -Added "mining" to ``get stats lite``
+  -Latest Bleeding Edge now supported for HiveOS!
+  -Latest Vega Image now supported for HiveOS!
+  -Fixed .tgz extraction issue with teamredminer.
+   * Swarm will now handle .tgz files.
+  -Fixed linux watchdog (close all screen on exit).
+
+  -gminer updated
+
+
+  2.2.4
+
+  Windows USERS: SWARM now requires latest .NET and Powershell:
+  * https://github.com/PowerShell/PowerShell/releases
+  * https://dotnet.microsoft.com/download/dotnet-framework/net472
+
+  SWARM should support latest NVIDIA Drivers, and Adrenaline Drivers
+
+  NEW FEATURES!
+
+  -SWARM now works in Windows 7/8 (Expiremental)
+   * If you use- Please let me know if there are
+     issues with miners.
+
+  -SWARM will handle oc for AMD, even with onboard cards.
+
+  -Updated WMI to v2
+  -Fixed Windows cpuminer screen output
+  -Fixed Directory Parsing with spaces (Windows)
+  -Enforced En-US Culture for Math & Time
+  -``benchmark timeout`` will now clear download blocks
+  -MiniZ updated
+  -Bminer updated
+
+  2.2.5
+
+  Note: All miner.json, oc, pools, and other files have been changed.
+  It was too much to code Transferring.
+
+  Update will only transfer stats & backup.
+
+  -gminer updated
+  -Crytpodredge updated
+  -argon algos added
+  -rfv2 algo added
+   * if you have issues- Add "-i 11" in cc-rfv2.json under "commands"
+  -New ProgPOW for AMD (Windows- Compiled for latest OpenCL, slightly optimized).
+   * Does not require older drivers to be installed. Can use latest.
+   * More 'tweaking' coming soon + ethash-ProgPOW support.
+
+  New Features:
+
+  -OC by algorithm, not miner. oc-algos.json has been added.
+  -New startup method.
+   * Allows either arguments, or users can pre-set ".\config\parameters\arguments.json"
+   * If newarguments.json is created- It will be used at startup instead.
+  
+  ASIC: Mutliple ASICS on 1 SWARM.
+   * example: ``-ASIC_IP 192.168.0.1:Rig1,192.168.02:Rig2``  etc. [ip address]:[nickname]
+   * asics can be added via ".\config\asic\asic-list.json" (Do not use -ASIC_IP then).
+   * no limit.
+
+  ``get asic`` now can specify which asic details to get: ``get asic ASIC1``
+
+  NOTE: I do not own a lot of ASICS. My testing was limited. Let me know if you have issues.
+
+  -Fixed Windows 7/8 automatic gpu detection. #123
+  -Fixed minor screen logging issues.
+
+  2.2.6
+
+  Note: It is not recommended to update if you are using SWARM.2.2.3 or
+  earlier. Use fresh install.
+
+  -nbminer updated
+  -wildrig updated
+  -bminer updated
+  -miniz updated (It was notated as "test" version)
+
+  -ASIC is now working. Report if issues with new
+   multiple ASIC feature has issues. There was typos
+   I missed which broke it.
+
+  -OC for SWARM should now be working. It was redone
+   to match HiveOS's system for OC, and code staging
+   for oc through HiveOS flight sheets (not ready yet)
+
+  -Fixed various small typos in codebase. Removed old /
+   erroneous code.
+
+  -multiminer-amd should now be working.
+
+  -Fixed "alhpa_testing" error.
+
+  -NEW ARGUMENTS!
+
+  ``-Max_Periods``
+  * Allows users to define the maximum periods Recorded
+    for Profit files. Will reduced stat file size, should not
+    go below time frame(in seconds) / interval. Default
+    is 288.
+
+    Example:
+    -Stat_Algo Minute_15(900) / -Interval 300 = 3 periods minimum.
+  
+  ``-Track_Shares``
+  * Allows the tracking of current shares on pool, where applicable.
+    Default is "Yes"
+
+ -New Features!
+  * Will only display volume, shares, and watt/day if values are greater
+    than zero on ``get stats``.
+
+  -TCP enabled.
+  * SWARM now utilizes TCP for data collection, and HiveOS contacts
+    SWARM through TCP port 6099. Seperate ports are open (SWARM 5099),
+    (HiveOS 6099) in case there is issues with one.
+  * This will dramatically reduce read/writes.
+  * This slightly increases RAM use.
+
+
+  2.2.7
+
+  -Hashrates are now based on hourly averages.
+  -Defaulted maximum hashrate periods to 12 periods.
+   * Should speed up miner loadtimes.
+
+  SWARM now pre-loads miner.json's at the start of each loop
+  * Slightly increased RAM use, but faster miner load times.
+  * Miner.json can be edited while SWARM is running.
+
+  -Wildrig updated (Note: Vega Users Caution)
+  -tt-miner updated
+  
+  xevan added to miner files.
+
+  This update will exclude the following .json files:
+    -trex.json
+    -ttminer.json
+
+  Sugarchain CPU miner configuration fixed.
+
+  Fixed ``get stats lite`` Currency/Day
+
+  Multiminer-AMD (Linux version) binary fixed.
+
+
+   2.2.9
+
+   NOTE: Updating to 2.2.9 is not possible. Due to the nature of changes, the amount of changes,
+   and the requirements of these changes: It is recommeneded to rebenchmark and fresh install SWARM.
+
+   FIXES
+
+   * Fixed Memory for nvidia OC in linux
+   * Fixed ETHPill (export display) in linux
+   * Renamed all instances of Hashrates.Day to
+     Hashrates.Hour - Some where missed. This will
+     Fix ASIC issues, as well as some issues on screen.
+   * Found small typos in miner files.
+   * Removed -Version 5.0 in powershell startups
+   * OC for amd displayed on main screen.
+
+   NEW FEATURES:
+
+   Expiremental:
+   * HiveOS / SWARM name conformity for all algorithms.
+   * Note: For commands and arguments: all
+     equihash algos have "_" instead of " "
+     example:
+       equihash_144/5
+       equihash_150/5
+       etc.
+
+   Expiremental:
+   * HiveOS OC SYCRONIZATION!
+     * This allows you to use oc_profiles with swarm
+     * A working -API_Key from HiveOS must be specified.
+     * See Details Here: https://github.com/MaynardMiner/SWARM/wiki/HiveOS-OC-Tuning
+       for limitations and how it operates.
+
+
+      2.3.0
+
+  * SWARM adds to windows defender exclusion path.
+  * SWARM adds to windows firewall exception.
+  * Miners added to windows firewall exception.
+
+  NEW FEATURES !
+
+  experimental:
+  SWARM only download miners when needed.
+  * SWARM will download miners on demand.
+  * SWARM will block miners from bad downloads
+    on demand.
+
+  expiremental:
+  SWARM will migrate previous miners if 
+  their version did not change.
+
+  -gminer updated
+   * cuckatoo31 added back in.
+  -wildrig updated
+  -t-rex updated
+   * x25x algo added.
+
+
+  2.3.1
+
+  NOTE: Updating will transfer old stats, but not
+  Miner.json. This is due to the number of typos
+  that were fixed across multiple files.
+
+  This if final version / work through of both betas:
+
+  Corrections:
+
+  -There was an issue in which SWARM was continuously
+   adding firewall exceptions for miner each time a new
+   one started- Leaving a fairly long list of exceptions.
+   This version fixes that issue, and will clear all the
+   extra exceptions on startup (will only do it once, ever).
+
+  -typo for cryptonight-r: Fixed.
+
+  -teamredminer download issue: Fixed.
+
+  New FEATURES:
+
+  SWARM can now accept .json in flight sheet user config section!
+  * You can now copy .\config\parameters\defaults.json
+    and edit as neccessary. Then paste into user config.
+  * Windows will write parameters to .\config\parameters\newarguments.json
+    as always.
+  * HiveOS version will write to config.json in SWARM main dir.
+
+  Ban notices on HiveOS is displayed [algorithm]:[name].
+  * This allows copy/paste of bans into arguments.
+
+  2.3.2
+
+  NOTE: 15,000 Code changes happened between last release and
+  this one. However, none of the statistics system was changed-
+  Should be good to update.
+
+  -Miners were update.
+
+  Fixes:
+
+  -Weird glitching occurred with loading gpu bus:
+   Attempted fix was applied.
+  -Fixed ETHPill for HiveOS in Windows.
+  -Fixed oc from locking up from HiveOS (if it timed out).
+  -Made improvements / fixes to ASIC system.
+  -Coinpools like Algopools wil select more than one pool
+   as top pool, so a rollover pool is available due to a
+   pool ban.
+
+  NEW FEATURES:
+
+  -Modules
+   * Swarm is setup for user created .psm1 modules.
+   * Users can used (remotely) ``modules`` command to add
+     new modules.
+   * examples:
+       ``modules "C:\hello.psm1" looping``
+         This injects a module directly into SWARM's codebase
+         "looping" means it will run at each new loop.
+         ``modules "C:\hello.psm1" single``
+         "single" means it will run once at startup.
+   * Most important values in SWARM have become $global
+     variables, meaning your modules can change / affect them.
+   * If you make a module and would like to share- Send me module,
+     and I will upload to a repo.
+   * Note: powershell can run most linux commands natively.
+     Pro-Tip: You can save linux commands to powershell variables easily:
+      ```
+      invoke-expression "echo hello" | Tee-Object -Variable hello | Out-Null
+      $hello
+      hello
+      ```       
+   * This allows you to add settings / print extra infmation in logs (Write-Log),
+     Uses are kind of endless.
+
+   -Net-Modules
+    * SWARM is now setup to run other statistic sites, though none have been added
+      as of yet. However, you can now eventually import/export net modules for each
+      website, and send data to them. More uses for this will come soon.
+
+   -API by default is set to no, which should reduce RAM use.
+
+   -If HiveOS fails to change OC (times out), SWARM will now run its own internal oc
+    if it is set (as a backup).
+
+   -All miners download at once, again per user requests.
+
+   -You no longer need to stop SWARM to modify watt files.
+
+   -Watt reading are now averages.
+
+   -SWARM now is module based, meaning it will only load code in
+    when needed, and will remove code when finished. This greatly
+    reduces SWARM's Memory footprint.
+
+
+
+   
+  2.3.3 [2.3.2 final]
+
+  IMPORTANT: -WattOMeter No is no longer used!
+  Either use -WattOMeter Yes or -WattOMeter [Decimal Value]
+  or don't specify at all ("" in .json).
+
+  -Miners up to date.
+
+  -Modules:
+  https://github.com/MaynardMiner/SWARM/wiki/Modules
+
+  -JSON config:
+  https://github.com/MaynardMiner/SWARM/wiki/Arguments-(Miner-Configuration)
+
+  -API by default is set to no, which should reduce RAM use.
+
+  -If HiveOS fails to change OC (times out), SWARM will now run its own internal oc
+   if it is set (as a backup).
+
+  -All miners download at once, again per user requests.
+
+  -You no longer need to stop SWARM to modify watt files.
+
+  -Watt reading are now averages.
+
+  -Reduced SWARM's Memory footprint.
+
+  -NIST sync only if "SWARM_MODE": "Yes"
+
+  -Bug in Crash Reporting fixed.
+  
+  -``get wallets -asjson`` created
+
+  -``get benchmarks -asjson`` created
+
+  -GPUData for NVIDIA cards in linux (later use).
+
+  -Small Fixes for Windows 7/8 compatibility.
+
+  -Removed all instances of 'sudo' in codebase.
+   * It still recommeneded and in most cases
+     required to run SWARM with root privelages.
+
+  2.3.4
+
+  -wattometer restored to Yes or No.
+  
+  NEW ARGUMENT:
+
+  ``-kwh`` set hourly electricity rate.
+
+  -Found bug where a needed value wasn't being passed into module
+   for ttminer and phoenix miner, which could have resulted in
+   incorrect hashrates: Fixed.
+
+  -Added equihash_96/5 to lolminer
+  -Added back nv-lolminer miner.
+   * Cannot use with AMD/NVIDIA
+     Platforms together. One or the other.
+   * Becuase of this - it was added to
+     optional miners folder.
+
+  -Further Effort Was Made To Reduce
+   Memory footprint.
+
+  -Attempted fix of Windows ``get update``
+   commands. Since it was broken last release-
+   It will work updating next version forward.
+
+  
+ 2.3.5
+
+ -cpuminer-opt (sugarchain) updated
+ -fixed path assertion in backgroun agent
+  which prevented certain remote commands from
+  working.
+
+  Note: CPU miners are safe to use with GPU mining.
+  You must use -CPUthreads argument, and it is
+  recommended to leave a thread free on larger
+  rigs.
+
+  -Volume argument added to help.txt.
+
+  -Max_Periods argument added to help.txt.
+
+  -API_Key argument added to help.txt.
+
+  -Track_Shares argument added to help.txt.
+
+
+ 2.3.6
+
+ Expiremental Version:
+
+ This is an alternative update to 2.3.5,
+ for users that would like to help me develop
+ SWARM faster by testing larger changes.
+
+ this is from ``alpha_testing`` branch.
+
+ -NEW FEATURES
+
+ -Global Functions
+  * All functions in SWARM are shared globally
+  * This allows .psm1 modules to call functions
+  * This help self-developers create modules for
+    SWARM using SWARM's code base along with their
+    created module.
+
+ -Memory footprint reduced further (10%).
+ -Since memory use is low, increased interval
+  period to send stats to HiveOS.
+  * This should allow for better/more accurate stats
+    on site, and less "dead space" in which no data
+    is shown on rig.
+
+  2.3.7
+
+  Beta Test Version:
+
+  NOTE: There is A LOT of changes on this release.
+  Carefully run tests before simply loading in all rigs.
+
+  VERY IMPORTANT NOTICE! 
+  ``-Farm_Hash`` has change to ``-hive_hash``
+
+  NEW FEATURES:
+
+  -Type Argument no longer needed if using just GPU's.
+   This means currently you need only two arguments to 
+   run SWARM- The rest can be automated. However -Type
+   parameter still exists in case you wish to force
+   types (such as using CPU and NVIDIA2/3 etc).
+
+  -After first miner starts- SWARM will always stat a value
+  to HiveOS. If hashrate is zero, SWARM will stat 1 h/s
+  for all GPUs / khs total. This is to let you know that
+  SWARM is working, just current miner has not outputted
+  hashrate in their API yet.
+
+  -``features`` command added for windows. Will list CPU
+    features. Reserved code for further use (auto CPU 
+    mining detection).
+
+  -x25x added properly to miners
+  
+  -Added skein2 algo (nvidia only, sgminer for skein2 is too old).
+
+  New arguments:
+
+  ```
+  -Optional     [array,   
+                  of,                 
+                miner,               
+               filenames]           
+Default is empty array. Specifying this parameter will move
+an optiona/old miner into the main miners directory.
+the name used is the name of the .ps1 filename minus the .ps1
+example: -optional zjazz,avermore  /  "optional": ["avermore","zjazz"]
+```
+  ```
+  -No_GLT         [Yes or No]         
+  Default is "Yes". Disables GLT coin. Most users and statistics
+  has shown that GLT never pays out what it states that it should.
+  Reducing profit. May improve returns, especially with -auto_coin
+  ```
+
+  ```
+  -TCP            [Yes or No]         
+  Default is No. Activates TCP port for API on -API_Port. Note:
+  If SWARM is in HiveOS, it will turn on automatically.
+  ```
+
+  ```
+  -TCP_Port       [Int]               
+  Default is 6099. Activates TCP Port for API.
+  ```
+
+  "All_Altwallets" in wallets.json allow solo mining and party mining:
+
+    example:
+    ```
+    "XZC,m=solo": "a9087sdfa0s08790dfs0awer9dfglksj"
+    ```
+
+  SideNote: Latest dredge release -No-NVML was not working
+  for some users. I removed, so this will increase load for
+  his miner (double ques to drivers), and potentially lower
+  hashrates.
+
+  -TPC_API.txt added to help folder.
+
+  -Web methods were udpated.
+
+  Miners were updated.
+
+
+  2.3.8
+
+  -Removed NVIDIA1 as default type, so AMD cards can be
+   auto detected.
+
+  -Added README.md to some of the config folders. (Will add more)
+
+  -Per user debate, rollbacked minimum hashrates. SWARM will stat 0
+   hashrates while miners are loading. This is going to show N/A
+   on HiveOS website. I can't fix- It is HiveOS. But this makes
+   hashrate watchdog more viable.
+
+  -Per user debate, changed argument ``-NO_GLT`` to ``-Ban_GLT``
+   as the double negative ``-No_GLT No`` is confusing.
+
+  -Fixed rig.conf parsing for HiveOS, which was causing warning
+   notification issues in beta.
+
+  -Fixed auto GPU detection of AMD from beta version.
+
+  -Wildrig updated, anime algo added
+
+  -cc-rfv2 updated (speed increase)
+
+  -Added more to (vars), allowing more
+   variables to be passed into user
+   created modules. A full list
+   of varibles and their definitions
+   will come soon.
+
+  -Further Resource use reduction. (marginal)
+
+
+  2.3.9
+
+  NEW FEATURES!
+
+  SMOS Support:
+
+  https://github.com/MaynardMiner/SWARM/wiki/SMOS-Install
+
+  -Fixed Log Cylcing Issues.
+  -Windows: Fixed Bus Sorting of GPUs.
+  -Fixed ``version update`` command
+  -Fixed ``get parameters`` command for Windows (was showing arguments.json always).
+
+  -Notification Miner Port is being cleared on screen (linux).
+  * SWARM will wait until miner port is cleared (indefinitely, if such is the case,
+   notifying user there is issue with rig).
+  * I am doing this, because there is a growing issue with latest miners having
+    ports hang in linux- This is developer issues of miners themselves. 
+    This way can go to developers and let them know their miners won't 
+    close ports properly on exit.
+
+  -T-Rex updated
+  -TeamRedMiner updated, x16 algos added.
+  -xmrig amd updated
+  -xmrig nvidia updated (windows, need to compile for linux still).
+  -xmrstak updated.
+
+  -Added more to ``vars`` parameter for modules.
+  -Wiki was updated.
+
+
+  2.4.0
+
+  Note- This is beta version from beta_testing branch
+
+   GUIDED HELP
+   * There are four different ways to start guided help:
+     * run command ``swarm_help`` after SWARM has started in HiveOS/Windows
+     * [Linux] Run sudo ./help.sh (will install SWARM first, then run help)
+     * [Windows] Run Help.bat
+     * [ALL] opening either SWARM.bat or ./swarm, and adding ``-help``
+   * Will allow users to set up a basic configuration
+   * After basic config is created, will allow users to modify advanced settings.
+   * Everything is guided, and additional information beyond help.txt is supplied.
+   * Guided help will save your configuration to newarguments.json, as well as
+     provide a copy/paste of arguments for flighsheets/configs.
+
+    NEW ARGUMENTS!
+
+  ``-TypeBanCount``
+
+  Like PoolBanCount,MinerBanCount, and AlgoBanCount, TypeBanCount will take
+  action if a device type (AMD1,CPU,NVIDIA1,etc.) has x consecutive banned
+  miners in a row- Where x is -TypeBanCount. When x has been reached, SWARM
+  will reset all timeouts, then restart computer.
+
+  ``-TCP_IP``
+   Default is 127.0.0.1. Sets IP for tcp api.
+
+   -NEW FEATURES!
+
+  -Removed CoreInfo for AES detection
+  -Better GPU detection (windows)
+   * Lists Correct VRAM
+   * AMD lists vbios version
+   * AMD lists memory vendor
+
+  -Fixed issue if more than one active logfile was present
+
+  -Code staging for a guided step-by-step tutorial to set up SWARM.
+
+  -SWARM should display a message is a miner was skipped over due to ``-threshold``
+
+  -Per user request- Removed FancyIX's suggest settings for mtp (-p 0,strict,verbose,d=700)
+
+  -Test-Path HiveOS oc log first to prevent error generation
+
+  -``get active screen`` displays differently
+   * removed "Days", as it wasn't needed.
+   * added "#", which is the instance number
+   * ordered by instance- Greatest (most recently ran miners) to least.
+
+  -Improved CPU metrics (Windows)
+
+  -TCP api now shows "WorkerName"
+
+  -fixed html api (I didn't notice I broke it. It is restored).
+
+  -There was a rare issue in windows when the background script controlloing active miner
+   would crash. This would result in the SWARM launching a new miner while
+   the active miner continued to run. When SWARM restarts/closes miners, it will now
+   close all child process associated with that starting script. This includes if users added 
+   pre-starting scripts. Linux - The screen window is closes, meaning all processes in that 
+   screen are closed with it...Hence it is not needed.
+
+  -Windows: It is common that if a miner card has crashed, the miner window will not close.
+   if user specifies ``-Startup Yes`` (Default is Yes), SWARM will restart computer after
+   2 minutes of the window staying open. It will notify HiveOS this is the case.
+
+  -xmrig linux update
+  -xmr-stak linux updated
+  -cpuminer updated (note- avx2 only!!)
+  -cc-mtp updated
+  -nminer updated
+  -teamredminer updated
+
+  SWARM 2.4.1
+
+   GUIDED HELP
+   * There are four different ways to start guided help:
+     * run command ``swarm_help`` after SWARM has started in HiveOS/Windows
+     * [Linux] Run sudo ./help.sh (will install SWARM first, then run help)
+     * [Windows] Run Help.bat
+     * [ALL] opening either SWARM.bat or ./swarm, and adding ``-help``
+   * Will allow users to set up a basic configuration
+   * After basic config is created, will allow users to modify advanced settings.
+   * Everything is guided, and additional information beyond help.txt is supplied.
+   * Guided help will save your configuration to newarguments.json, as well as
+     provide a copy/paste of arguments for flighsheets/configs.
+
+  -Fixed bug in Windows which would freeze SWARM when miner retroactively crashes
+  -Fixed auto-install of swarm_help for hiveos
+  -Using different method for PCI bus changes in Windows.
+  -Hive_Windows_Reset.bat will reset gpu count as well.
+  -WildRig updated skein2 added
+  -T-rex updated honeycomb added
+  -Claymore updated
+  -Attempted to add kbminer- Does not work on nicehash
+  -Added more params to global vars parameter (for modules)
+  -TypeBanCount added to help files
+  -Slowed background timer for stats down - 5 second interval.
+  -Miner name will show in get stats lite
+
+
+  SWARM 2.4.2
+
+   GUIDED HELP
+   * There are four different ways to start guided help:
+     * run command ``swarm_help`` after SWARM has started in HiveOS/Windows
+     * [Linux] Run sudo ./help.sh (will install SWARM first, then run help)
+     * [Windows] Run Help.bat
+     * [ALL] opening either SWARM.bat or ./swarm, and adding ``-help``
+   * Will allow users to set up a basic configuration
+   * After basic config is created, will allow users to modify advanced settings.
+   * Everything is guided, and additional information beyond help.txt is supplied.
+   * Guided help will save your configuration to newarguments.json, as well as
+     provide a copy/paste of arguments for flighsheets/configs.
+
+    -Critical fix for AMD Linux miners
+    -Fixes SWARM freeze at "waiting for port" for grin miner
+    -Fixes grin-miner API
+    -Fixes grin-miner launch.
+    -These items were missed during beta-testing.
+
+
+
+    SWARM 2.4.3
+
+    NOTE: Powershell 7.0.0 has issues with the command ``invoke-restmethod`` in linux.
+    Do not use it!
+
+   GUIDED HELP
+   * There are four different ways to start guided help:
+     * run command ``swarm_help`` after SWARM has started in HiveOS/Windows
+     * [Linux] Run sudo ./help.sh (will install SWARM first, then run help)
+     * [Windows] Run Help.bat
+     * [ALL] opening either SWARM.bat or ./swarm, and adding ``-help``
+   * Will allow users to set up a basic configuration
+   * After basic config is created, will allow users to modify advanced settings.
+   * Everything is guided, and additional information beyond help.txt is supplied.
+   * Guided help will save your configuration to newarguments.json, as well as
+     provide a copy/paste of arguments for flighsheets/configs.
+
+     NEW FEATURES!
+
+    -Windows: Hashrate Watchdog in HiveOS now works!
+     * LA reboot is not working- coming soon.
+    
+    -Windows: Push Interval works on HiveOS.
+
+    -Windows: GPU watchdog works on HiveOS.
+     * If a GPU shows a temperature of 0,
+       SWARM reboots computer
+
+    -Windows: Miner Delay works on HiveOS.
+     * SWARM starts, but goes to sleep.
+
+    -HiveOS: Auto-Upgrade of pwsh to 6.2.0
+
+    -SWARM will now save version of miner to
+    swarm-version.txt in bin folder of miner.
+
+    -if version in swarm-version.txt and update.json
+     are a mismatch- SWARM will download miner to
+     latest version.
+    
+    -Version checking is useuful for users cloning
+     SWARM rather than downloading new version.
+    
+    -Wildrig updated
+    -gminer updated
+
+    FIXES
+
+    -There was a bug with oc-tuning for SWARM that was causing it to not start.
+     This version fixes.
+     
+    -Fixed culture info of datetime errors.
+
+    -Windows 7/8: https://github.com/PowerShell/PowerShell/issues/6561
+     fixed -wait parameter issues- Known powershell bug.
+    
+    -Windows ASIC: Prevent GPU-detection from running if only ASIC specified.
+
+        -``version update`` commmand for Windows is now
+      working again. Tested it repeatedly. It still
+      works for linux. To use:
+
+      ``version update [miner name] [version number] [download uri]``
+       (Still must be a direct download, Mega will not work)
+
+      If you are unsure of the denoted name SWARM uses for miner-
+      use the ``version query`` command.
+
+    -For All_Altwallets
+     * Since your mining the coin directly, mc= / zap= is not needed .
+     * SWARM will now remove the mc= / zap= .
+
+    -``swarm_help`` in linux was glitching out during selection of
+     advanced paramters- Fixed.
+

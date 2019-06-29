@@ -1,107 +1,57 @@
 {
-  "name": "teamredminer",
-  "AMD1": {
-    "name": "AMD1",
-    "delay": "1",
-    "prestart": [
-      "export GPU_MAX_HEAP_SIZE=100",
-      "export GPU_USE_SYNC_OBJECTS=1",
-      "export GPU_SINGLE_ALLOC_PERCENT=100",
-      "export GPU_MAX_ALLOC_PERCENT=100"
-    ],
-    "commands": {
-      "phi2": "",
-      "lyra2z": "",
-      "cryptonightv8": "",
-      "lyra2re": "",
-      "lyra2rev3": "",
-      "lyra2v3": "",
-      "cryptonightr": ""
-    },
-    "difficulty": {
-      "phi2": "",
-      "lyra2z": "",
-      "cryptonightv8": "",
-      "lyra2re": "",
-      "lyra2rev3": "",
-      "lyra2v3": "",
-      "cryptonightr": ""
-    },
-    "naming": {
-      "phi2": "phi2",
-      "lyra2z": "lyra2z",
-      "cryptonightv8": "cnv8",
-      "lyra2re": "lyra2z",
-      "lyra2rev3": "lyra2rev3",
-      "lyra2v3": "lyra2rev3",
-      "cryptonightr": "cnr"
-    },
-    "fee": {
-      "phi2": 3,
-      "lyra2z": 3,
-      "cryptonightv8": 2.5,
-      "lyra2re": 3,
-      "lyra2rev3": 2.5,
-      "lyra2v3": 2.5,
-      "cryptonightr": 2.5
-    },
-    "oc": {
-      "phi2": {
-        "dpm": "",
-        "v": "",
-        "core": "",
-        "mem": "300;750 300;750 300;750 300;750 300;750 300;750",
-        "mdpm": "",
-        "fans": ""
-      },
-      "lyra2z": {
-        "dpm": "",
-        "v": "825 825 825 850 825 825",
-        "core": "1150 1150 1150 1100 1150 1100",
-        "mem": "300;750 300;750 300;750 300;750 300;750 300;750",
-        "mdpm": "",
-        "fans": ""
-      },
-      "cryptonightv8": {
-        "dpm": "",
-        "v": "900 900 900 925 900 900",
-        "core": "1225 1225 1225 1200 1225 1200",
-        "mem": "2100;900 2050;900 2075;900 2100;900 2100;900 2075;900",
-        "mdpm": "",
-        "fans": ""
-      },
-      "lyra2re": {
-        "dpm": "",
-        "v": "825 825 825 850 825 825",
-        "core": "1150 1150 1150 1100 1150 1100",
-        "mem": "300;750 300;750 300;750 300;750 300;750 300;750",
-        "mdpm": "",
-        "fans": ""
-      },
-      "lyra2rev3": {
-        "dpm": "",
-        "v": "825 825 825 850 825 825",
-        "core": "1150 1150 1150 1100 1150 1100",
-        "mem": "300;750 300;750 300;750 300;750 300;750 300;750",
-        "mdpm": "",
-        "fans": ""
-      },
-      "lyra2v3": {
-        "dpm": "",
-        "v": "825 825 825 850 825 825",
-        "core": "1150 1150 1150 1100 1150 1100",
-        "mem": "300;750 300;750 300;750 300;750 300;750 300;750",
-        "mdpm": "",
-        "fans": ""
-      },
-      "cryptonightr": {
-        "dpm": "",
-        "v": "900 900 900 925 900 900",
-        "core": "1225 1225 1225 1200 1225 1200",
-        "mem": "2100;900 2050;900 2075;900 2100;900 2100;900 2075;900",
-        "mdpm": "",
-        "fans": ""
-      }
+    "name": "teamredminer",
+    "AMD1": {
+        "name": "AMD1",
+        "delay": "1",
+        "prestart": [
+            "export GPU_MAX_HEAP_SIZE=100",
+            "export GPU_USE_SYNC_OBJECTS=1",
+            "export GPU_SINGLE_ALLOC_PERCENT=100",
+            "export GPU_MAX_ALLOC_PERCENT=100"
+        ],
+        "commands": {
+            "phi2": "",
+            "cryptonight-v8": "",
+            "lyra2re": "",
+            "lyra2rev3": "",
+            "cryptonight-r": "",
+            "x16r" : "",
+            "x16s" : "",
+            "x16rt" : "",
+            "veil": ""
+        },
+        "difficulty": {
+            "phi2": "",
+            "cryptonight-v8": "",
+            "lyra2re": "",
+            "lyra2rev3": "",
+            "cryptonight-r": "",
+            "x16r" : "",
+            "x16s" : "",
+            "x16rt" : "",
+            "veil": ""
+        },
+        "naming": {
+            "phi2": "phi2",
+            "cryptonight-v8": "cnv8",
+            "lyra2re": "lyra2z",
+            "lyra2rev3": "lyra2rev3",
+            "cryptonight-r": "cnr",
+            "x16r" : "x16r",
+            "x16s" : "x16s",
+            "x16rt" : "x16rt",
+            "veil": "x16rt"
+        },
+        "fee": {
+            "phi2": 3,
+            "cryptonight-v8": 2.5,
+            "lyra2re": 3,
+            "lyra2rev3": 2.5,
+            "cryptonight-r": 2.5,
+            "x16r" : 2.5,
+            "x16s" : 2.5,
+            "x16rt" : 2.5,
+            "veil": 2.5
+        }
     }
-  }
 }

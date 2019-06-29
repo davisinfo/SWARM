@@ -1,35 +1,26 @@
 {
-  "name": "progminer-amd",
-  "AMD1": {
-    "name": "AMD1",
-    "delay": "1",
-    "prestart": [
-      "export GPU_MAX_HEAP_SIZE=100",
-      "export GPU_USE_SYNC_OBJECTS=1",
-      "export GPU_SINGLE_ALLOC_PERCENT=100",
-      "export GPU_MAX_ALLOC_PERCENT=100"
-    ],
-    "commands": {
-      "progpow": ""
-    },
-    "difficulty": {
-      "progpow": ""
-    },
-    "naming": {
-      "progpow": "progpow"
-    },
-    "fee": {
-      "progpow": 0
-    },
-    "oc": {
-      "progpow": {
-        "dpm": "",
-        "v": "825 825 825 850 825 825",
-        "core": "1150 1150 1150 1100 1150 1100",
-        "mem": "2100;800 2050;825 2075;800 2100;825 2100;800 2075;800",
-        "mdpm": "",
-        "fans": ""
-      }
+    "name": "progminer-amd",
+    "AMD1": {
+        "name": "AMD1",
+        "delay": "1",
+        "prestart": [
+            "export GPU_FORCE_64BIT_PTR 0",
+            "export GPU_MAX_HEAP_SIZE=100",
+            "export GPU_USE_SYNC_OBJECTS=1",
+            "export GPU_SINGLE_ALLOC_PERCENT=100",
+            "export GPU_MAX_ALLOC_PERCENT=100"
+        ],
+        "commands": {
+            "progpow": ""
+        },
+        "difficulty": {
+            "progpow": ""
+        },
+        "naming": {
+            "progpow": "progpow"
+        },
+        "fee": {
+            "progpow": 0
+        }
     }
-  }
 }

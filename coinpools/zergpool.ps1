@@ -4,28 +4,33 @@ $Zergpool_Sorted = [PSCustomObject]@{ }
 $Zergpool_UnSorted = [PSCustomObject]@{ }
 
 $DoAutoCoin = $false
-if($Coin.Count -eq 0){$DoAutoCoin = $true}
-$Coin | %{ if($_ -eq ""){$DoAutoCoin = $true}}
+if($(arg).Coin.Count -eq 0){$DoAutoCoin = $true}
+$(arg).Coin | %{ if($_ -eq ""){$DoAutoCoin = $true}}
+if($(arg).Ban_GLT -eq "Yes"){$NoGLT = "GLT"}
 
-[Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
-if ($XNSub -eq "Yes") { $X = "#xnsub" } 
+if ($(arg).xnsub -eq "Yes") { $X = "#xnsub" } 
 
-if ($Poolname -eq $Name) {
+if ($Name -in $(arg).PoolName) {
     try { $zergpool_Request = Invoke-RestMethod "http://zergpool.com:8080/api/currencies" -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop }
     catch {
-        Write-Log "SWARM contacted ($Name) for a failed API check. (Coins)"; 
+        Global:Write-Log "SWARM contacted ($Name) for a failed API check. (Coins)"; 
         return
     }
 
     if (($Zergpool_Request | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Measure-Object Name).Count -le 1) { 
-        Write-Log "SWARM contacted ($Name) but ($Name) the response was empty." 
+        Global:Write-Log "SWARM contacted ($Name) but ($Name) the response was empty." 
         return
     }
    
     $zergpool_Request.PSObject.Properties.Name | ForEach-Object { $zergpool_Request.$_ | Add-Member "sym" $_ }
+    $zergpool_Request.PSObject.Properties.Name | ForEach-Object {
+        $Algo = $zergpool_Request.$_.Algo.ToLower()
+        $zergpool_Request.$_ | Add-Member "Original_Algo" $Algo
+        $zergpool_Request.$_.Algo = $global:Config.Pool_Algos.PSObject.Properties.Name | % {if($Algo -in $global:Config.Pool_Algos.$_.alt_names){$_}}
+    }
     $ZergAlgos = @()
-    $ZergAlgos += $Algorithm
-    $ZergAlgos += $ASIC_ALGO
+    $ZergAlgos += $(vars).Algorithm
+    $ZergAlgos += $(arg).ASIC_ALGO
 
     $Algos = $ZergAlgos | ForEach-Object { if ($Bad_pools.$_ -notcontains $Name) { $_ } }
     $zergpool_Request.PSObject.Properties.Value | % { $_.Estimate = [Decimal]$_.Estimate }
@@ -34,8 +39,8 @@ if ($Poolname -eq $Name) {
     $Active = $zergpool_Request.PSObject.Properties.Value | Where-Object sym -in $global:ActiveSymbol
     if ($Active) { $Active | ForEach-Object { $Zergpool_Sorted | Add-Member $_.sym $_ -Force } }
 
-    if ($Coin.Count -gt 1 -and $Coin -ne "") {
-        $CoinsOnly = $zergpool_Request.PSObject.Properties.Value | Where-Object sym -in $Coin
+    if ($(arg).Coin.Count -gt 1 -and $(arg).Coin -ne "") {
+        $CoinsOnly = $zergpool_Request.PSObject.Properties.Value | Where-Object sym -in $(arg).Coin
         if ($CoinsOnly) { $CoinsOnly | ForEach-Object { $Zergpool_Sorted | Add-Member $_.sym $_ -Force } }
     }
 
@@ -48,9 +53,10 @@ if ($Poolname -eq $Name) {
             Where-Object Algo -eq $Selected | 
             Where-Object Algo -in $global:FeeTable.zergpool.keys | 
             Where-Object Algo -in $global:divisortable.zergpool.Keys |
-            Where-Object { $global:Exclusions.$($_.Algo) } |
-            Where-Object { $Name -notin $global:Exclusions.$($_.sym).exclusions }  |
-            Where-Object Sym -notin $global:BanHammer |
+            Where-Object { $global:Config.Pool_Algos.$($_.Algo) } |
+            Where-Object { $Name -notin $global:Config.Pool_Algos.$($_.Algo).exclusions }  |
+            Where-Object Sym -notin $(vars).BanHammer |
+            Where-Object Sym -notlike "*$NoGLT*" |
             Where-Object noautotrade -eq "0" | 
             Where-Object estimate -gt 0 | 
             Where-Object hashrate -ne 0 | 
@@ -61,7 +67,7 @@ if ($Poolname -eq $Name) {
         }
     }
 
-    if ($Stat_All -eq "Yes") {
+    if ($(arg).Stat_All -eq "Yes") {
         $Algos | ForEach-Object {
 
             $Selected = $_
@@ -70,9 +76,10 @@ if ($Poolname -eq $Name) {
             Where-Object Algo -eq $Selected |
             Where-Object Algo -in $global:FeeTable.zergpool.keys |
             Where-Object Algo -in $global:divisortable.zergpool.Keys |
-            Where-Object { $global:Exclusions.$($_.Algo) } |
-            Where-Object { $Name -notin $global:Exclusions.$($_.sym).exclusions }  |
-            Where-Object Sym -notin $global:BanHammer |
+            Where-Object { $global:Config.Pool_Algos.$($_.Algo) } |
+            Where-Object { $Name -notin $global:Config.Pool_Algos.$($_.sym).exclusions }  |
+            Where-Object Sym -notin $(vars).BanHammer |
+            Where-Object Sym -notlike "*$NoGLT*" |
             Where-Object noautotrade -eq "0" |
             Where-Object estimate -gt 0 |
             Where-Object hashrate -ne 0 |
@@ -89,7 +96,10 @@ if ($Poolname -eq $Name) {
                 $zergpool_Fees = [Double]$global:FeeTable.zergpool.$Zergpool_Algorithm
                 $zergpool_Estimate = [Double]$Zergpool_UnSorted.$_.estimate * 0.001
                 $Divisor = (1000000 * [Double]$global:DivisorTable.zergpool.$Zergpool_Algorithm)    
-                try { $Stat = Set-Stat -Name "$($Name)_$($Zergpool_Symbol)_coin_profit" -Value ([double]$zergpool_Estimate / $Divisor * (1 - ($zergpool_fees / 100))) }catch { Write-Log "Failed To Calculate Stat For $Zergpool_Symbol" }
+                try {
+                    $StatAlgo = $Zergpool_Symbol -replace "`_","`-" 
+                    $Stat = Global:Set-Stat -Name "$($Name)_$($StatAlgo)_coin_profit" -Value ([double]$zergpool_Estimate / $Divisor * (1 - ($zergpool_fees / 100))) 
+                }catch { Global:Write-Log "Failed To Calculate Stat For $Zergpool_Symbol" }
             }
         }
 
@@ -97,9 +107,9 @@ if ($Poolname -eq $Name) {
 
             $Zergpool_Algorithm = $Zergpool_Sorted.$_.algo.ToLower()
             $Zergpool_Symbol = $Zergpool_Sorted.$_.sym.ToUpper()
-            $zergpool_Coin = $Zergpool_Sorted.$_.Name.Tolower()
+            $mc = "mc=$Zergpool_Symbol,"
             $zergpool_Port = $Zergpool_Sorted.$_.port
-            $zergpool_Host = "$($Zergpool_Sorted.$_.algo).mine.zergpool.com$X"
+            $zergpool_Host = "$($Zergpool_Sorted.$_.Original_Algo).mine.zergpool.com$X"
 
             $zergpool_Fees = [Double]$global:FeeTable.zergpool.$Zergpool_Algorithm
 
@@ -107,14 +117,14 @@ if ($Poolname -eq $Name) {
 
             $Divisor = (1000000 * [Double]$global:DivisorTable.zergpool.$Zergpool_Algorithm)
         
-            try { $Stat = Set-Stat -Name "$($Name)_$($Zergpool_Symbol)_coin_profit" -Value ([double]$zergpool_Estimate / $Divisor * (1 - ($zergpool_fees / 100))) }catch { Write-Log "Failed To Calculate Stat For $Zergpool_Symbol" }
+            try { $Stat = Global:Set-Stat -Name "$($Name)_$($Zergpool_Symbol)_coin_profit" -Value ([double]$zergpool_Estimate / $Divisor * (1 - ($zergpool_fees / 100))) }catch { Global:Write-Log "Failed To Calculate Stat For $Zergpool_Symbol" }
 
             $Pass1 = $global:Wallets.Wallet1.Keys
-            $User1 = $global:Wallets.Wallet1.$Passwordcurrency1.address
+            $User1 = $global:Wallets.Wallet1.$($(arg).Passwordcurrency1).address
             $Pass2 = $global:Wallets.Wallet2.Keys
-            $User2 = $global:Wallets.Wallet2.$Passwordcurrency2.address
+            $User2 = $global:Wallets.Wallet2.$($(arg).Passwordcurrency2).address
             $Pass3 = $global:Wallets.Wallet3.Keys
-            $User3 = $global:Wallets.Wallet3.$Passwordcurrency3.address
+            $User3 = $global:Wallets.Wallet3.$($(arg).Passwordcurrency3).address
 
             if ($global:Wallets.AltWallet1.keys) {
                 $global:Wallets.AltWallet1.Keys | ForEach-Object {
@@ -143,39 +153,33 @@ if ($Poolname -eq $Name) {
                 
             if ($global:All_AltWallets) {
                 $global:All_AltWallets | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
-                    if ($_ -eq $Zergpool_Symbol) {
-                        $Pass1 = $Zergpool_Symbol
+                    $Sym = $_ -split "," | Select -first 1
+                    $Zerg_Sym = $Zergpool_Symbol -split "-" | Select -First 1
+                    if ($Sym -eq $Zerg_Sym -or $Sym -eq $Zergpool_Symbol) {
+                        $mc = ""
+                        $Pass1 = $_
                         $User1 = $global:All_AltWallets.$_
-                        $Pass2 = $Zergpool_Symbol
+                        $Pass2 = $_
                         $User2 = $global:All_AltWallets.$_
-                        $Pass3 = $Zergpool_Symbol
+                        $Pass3 = $_
                         $User3 = $global:All_AltWallets.$_
                     }
                 }
             }
 
             [PSCustomObject]@{
-                Estimate  = $zergpool_Estimate
-                Divisor   = $Divisor
-                Fees      = $zergpool_Fees
-                Priority  = $Priorities.Pool_Priorities.$Name
                 Symbol    = "$Zergpool_Symbol-Coin"
-                Mining    = $Zergpool_Algorithm
                 Algorithm = $zergpool_Algorithm
-                Price     = $Stat.$Stat_Coin
+                Price     = $Stat.$($(arg).Stat_Coin)
                 Protocol  = "stratum+tcp"
                 Host      = $zergpool_Host
                 Port      = $zergpool_Port
                 User1     = $User1
                 User2     = $User2
                 User3     = $User3
-                CPUser    = $User1
-                CPUPass   = "c=$Pass1,mc=$Zergpool_Symbol,id=$Rigname1"
-                Pass1     = "c=$Pass1,mc=$Zergpool_Symbol,id=$Rigname1"
-                Pass2     = "c=$Pass2,mc=$Zergpool_Symbol,id=$Rigname2"
-                Pass3     = "c=$Pass3,mc=$Zergpool_Symbol,id=$Rigname3"
-                Location  = $Location
-                SSL       = $false
+                Pass1     = "c=$Pass1,$($mc)id=$($(arg).RigName1)"
+                Pass2     = "c=$Pass2,$($mc)id=$($(arg).RigName2)"
+                Pass3     = "c=$Pass3,$($mc)id=$($(arg).RigName3)"
             } 
         }
     }
