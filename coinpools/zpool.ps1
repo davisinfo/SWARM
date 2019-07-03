@@ -57,8 +57,8 @@ if ($Name -in $(arg).PoolName) {
 
             $Best = $zpool_Request.PSObject.Properties.Value | 
             Where-Object Algo -eq $Selected | 
-            Where-Object Algo -in $global:FeeTable.zpool.keys | 
-            Where-Object Algo -in $global:divisortable.zpool.Keys |
+            Where-Object Algo -in $(vars).FeeTable.zpool.keys | 
+            Where-Object Algo -in $(vars).divisortable.zpool.Keys |
             Where-Object { $global:Config.Pool_Algos.$($_.Algo) } |
             Where-Object { $Name -notin $global:Config.Pool_Algos.$($_.sym).exclusions } |
             Where-Object Sym -notin $(vars).BanHammer |
@@ -79,8 +79,8 @@ if ($Name -in $(arg).PoolName) {
 
             $NotBest = $zpool_Request.PSObject.Properties.Value |
             Where-Object Algo -eq $Selected |
-            Where-Object Algo -in $global:FeeTable.zpool.keys |
-            Where-Object Algo -in $global:divisortable.zpool.Keys |
+            Where-Object Algo -in $(vars).FeeTable.zpool.keys |
+            Where-Object Algo -in $(vars).divisortable.zpool.Keys |
             Where-Object { $global:Config.Pool_Algos.$($_.Algo) } |
             Where-Object { $Name -notin $global:Config.Pool_Algos.$($_.sym).exclusions } |
             Where-Object Sym -notin $(vars).BanHammer |
@@ -97,9 +97,9 @@ if ($Name -in $(arg).PoolName) {
             if ($Name -notin $global:Config.Pool_Algos.$zpool_Symbol.exclusions -and $zpool_Symbol -notin $(vars).BanHammer) {
                 $zpool_Algorithm = $zpool_UnSorted.$_.algo.ToLower()
                 $zpool_Symbol = $zpool_UnSorted.$_.sym.ToUpper()
-                $Fees = [Double]$global:FeeTable.zpool.$zpool_Algorithm
+                $Fees = [Double]$(vars).FeeTable.zpool.$zpool_Algorithm
                 $Estimate = [Double]$zpool_UnSorted.$_.estimate * 0.001
-                $Divisor = (1000000 * [Double]$global:DivisorTable.zpool.$zpool_Algorithm)
+                $Divisor = (1000000 * [Double]$(vars).divisortable.zpool.$zpool_Algorithm)
                 $Workers = [Double]$zpool_UnSorted.$_.Workers
                 $Cut = ConvertFrom-Fees $Fees $Workers $Estimate $Divisor
                 try { 
@@ -116,9 +116,9 @@ if ($Name -in $(arg).PoolName) {
             $zap = "zap=$zpool_Symbol,"
             $zpool_Port = $zpool_Sorted.$_.port
             $Zpool_Host = "$($zpool_Request.$_.Original_Algo).$($region).mine.zpool.ca$X"
-            $Fees = [Double]$global:FeeTable.zpool.$zpool_Algorithm
+            $Fees = [Double]$(vars).FeeTable.zpool.$zpool_Algorithm
             $Estimate = [Double]$zpool_Sorted.$_.estimate * 0.001
-            $Divisor = (1000000 * [Double]$global:DivisorTable.zpool.$zpool_Algorithm)
+            $Divisor = (1000000 * [Double]$(vars).divisortable.zpool.$zpool_Algorithm)
             $Workers = $zpool_Sorted.$_.Workers
 
             $Cut = ConvertFrom-Fees $Fees $Workers $Estimate $Divisor
@@ -157,18 +157,18 @@ if ($Name -in $(arg).PoolName) {
                 }
             }
                 
-            if ($global:All_AltWallets) {
-                $global:All_AltWallets | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
+            if ($(vars).All_AltWallets) {
+                $(vars).All_AltWallets | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
                     $Sym = $_ -split "," | Select -first 1
                     $zpool_Sym = $zpool_Symbol -split "-" | Select -First 1
                     if ($Sym -eq $zpool_Sym -or $Sym -eq $zpool_Symbol) {
                         $zap = ""
                         $Pass1 = $_
-                        $User1 = $global:All_AltWallets.$_
+                        $User1 = $(vars).All_AltWallets.$_
                         $Pass2 = $_
-                        $User2 = $global:All_AltWallets.$_
+                        $User2 = $(vars).All_AltWallets.$_
                         $Pass3 = $_
-                        $User3 = $global:All_AltWallets.$_
+                        $User3 = $(vars).All_AltWallets.$_
                     }
                 }
             }

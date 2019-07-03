@@ -56,7 +56,7 @@ function Global:start-update {
         }
         else {
             $Global:amd = Get-Content ".\config\update\amd-linux.json" | ConvertFrom-Json
-            $Global:nvidia = Get-Content ".\config\update\nvidia10-linux.json" | ConvertFrom-Json
+            $Global:nvidia = Get-Content ".\config\update\nvidia-linux.json" | ConvertFrom-Json
             $Global:cpu = Get-Content ".\config\update\cpu-linux.json" | ConvertFrom-Json
         }
 
@@ -257,6 +257,17 @@ function Global:start-update {
                                             $Data.$_.difficulty | Add-Member "honeycomb" "" -ErrorAction SilentlyContinue 
                                             $Data.$_.naming | Add-Member "honeycomb" "honeycomb" -ErrorAction SilentlyContinue
                                             $Data.$_.fee | Add-Member "honeycomb" 1 -ErrorAction SilentlyContinue
+                                        }
+                                    }
+                                }
+
+                                if ($ChangeFile -eq "sugarchain.json") {
+                                    $Data | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | foreach {
+                                        if ($_ -ne "name") {
+                                            $Data.$_.commands | Add-Member "lyra2z330" "" -ErrorAction SilentlyContinue
+                                            $Data.$_.difficulty | Add-Member "lyra2z330" "" -ErrorAction SilentlyContinue 
+                                            $Data.$_.naming | Add-Member "lyra2z330" "lyra2z330" -ErrorAction SilentlyContinue
+                                            $Data.$_.fee | Add-Member "lyra2z330" 0 -ErrorAction SilentlyContinue
                                         }
                                     }
                                 }
