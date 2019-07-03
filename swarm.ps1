@@ -16,64 +16,65 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##############################################################################
 
 ## Set Current Path
-$Global:config = [hashtable]::Synchronized(@{})
+$Global:config = [hashtable]::Synchronized(@{ })
 [cultureinfo]::CurrentCulture = 'en-US'
 
-$Global:Config.Add("vars",@{})
-$Global:Config.vars.Add( "dir",(Split-Path $script:MyInvocation.MyCommand.Path) )
-$Global:Config.vars.dir = $Global:Config.vars.dir -replace "/var/tmp","/root"
+$Global:Config.Add("vars", @{ })
+$Global:Config.vars.Add( "dir", (Split-Path $script:MyInvocation.MyCommand.Path) )
+$Global:Config.vars.dir = $Global:Config.vars.dir -replace "/var/tmp", "/root"
 Set-Location $Global:Config.vars.dir
 
 ##filepath dir
 . .\build\powershell\global\modules.ps1
 $env:Path += ";$($(vars).dir)\build\cmd"
 
-try { Get-ChildItem $($(vars).dir) -Recurse | Unblock-File } catch { }
-
-## Exclusion Windows Defender
-try { 
-    if ((Get-MpPreference).ExclusionPath -notcontains (Convert-Path .)) { 
-        Start-Process "powershell" -Verb runAs -ArgumentList "Add-MpPreference -ExclusionPath `'$($(vars).dir)`'" -WindowStyle Minimized 
-    } 
-}
-catch { }
-
-## Set Firewall Rule
-try { 
-    $Net = Get-NetFireWallRule 
-    if ($Net) {
-        try { 
-            if ( -not ( $Net | Where { $_.DisplayName -like "*swarm.ps1*" } ) ) { 
-                New-NetFirewallRule -DisplayName 'swarm.ps1' -Direction Inbound -Program "$($(vars).dir)\swarm.ps1" -Action Allow | Out-Null
-            } 
-        }
-        catch { }
-    }
-}
-catch { }
-$Net = $Null
-
+## Window Security Items
 if ($IsWindows) {
+    try { Get-ChildItem $($(vars).dir) -Recurse | Unblock-File } catch { }
+    ## Exclusion Windows Defender
+    try { 
+        if ((Get-MpPreference).ExclusionPath -notcontains (Convert-Path .)) { 
+            Start-Process "powershell" -Verb runAs -ArgumentList "Add-MpPreference -ExclusionPath `'$($(vars).dir)`'" -WindowStyle Minimized 
+        } 
+    }
+    catch { }
+
+    ## Set Firewall Rule
+    try { 
+        $Net = Get-NetFireWallRule 
+        if ($Net) {
+            try { 
+                if ( -not ( $Net | Where { $_.DisplayName -like "*swarm.ps1*" } ) ) { 
+                    New-NetFirewallRule -DisplayName 'swarm.ps1' -Direction Inbound -Program "$($(vars).dir)\swarm.ps1" -Action Allow | Out-Null
+                } 
+            }
+            catch { }
+        }
+    }
+    catch { }
+    Remove-Variable -name Net
+
+    ## Windows Icon
     Start-Process "powershell" -ArgumentList "Set-Location `'$($(vars).dir)`'; .\build\powershell\scripts\icon.ps1 `'$($(vars).dir)\build\apps\SWARM.ico`'" -NoNewWindow
 }
 
 ## Debug Mode- Allow you to run with last known arguments or arguments.json.
-$(vars).Add("debug",$false)
+$(vars).Add("debug", $false)
 if ($global:config.vars.debug -eq $True) {
     Start-Transcript ".\logs\debug.log"
     if (($IsWindows)) { Set-ExecutionPolicy Bypass -Scope Process }
 }
 
 ## Load Modules
-$(vars).Add("startup","$($(vars).dir)\build\powershell\startup")
-$(vars).Add("web","$($(vars).dir)\build\api\web")
-$(vars).Add("global","$($(vars).dir)\build\powershell\global")
-$(vars).Add("build","$($(vars).dir)\build\powershell\build")
-$(vars).Add("pool","$($(vars).dir)\build\powershell\pool")
-$(vars).Add("miner","$($(vars).dir)\build\powershell\miner")
-$(vars).Add("control","$($(vars).dir)\build\powershell\control")
-$(vars).Add("run","$($(vars).dir)\build\powershell\run")
-$(vars).Add("benchmark","$($(vars).dir)\build\powershell\benchmark")
+$(vars).Add("startup", "$($(vars).dir)\build\powershell\startup")
+$(vars).Add("web", "$($(vars).dir)\build\api\web")
+$(vars).Add("global", "$($(vars).dir)\build\powershell\global")
+$(vars).Add("build", "$($(vars).dir)\build\powershell\build")
+$(vars).Add("pool", "$($(vars).dir)\build\powershell\pool")
+$(vars).Add("miner", "$($(vars).dir)\build\powershell\miner")
+$(vars).Add("control", "$($(vars).dir)\build\powershell\control")
+$(vars).Add("run", "$($(vars).dir)\build\powershell\run")
+$(vars).Add("benchmark", "$($(vars).dir)\build\powershell\benchmark")
 
 $p = [Environment]::GetEnvironmentVariable("PSModulePath")
 if ($P -notlike "*$($(vars).dir)\build\powershell*") {
@@ -91,7 +92,7 @@ if ($P -notlike "*$($(vars).dir)\build\powershell*") {
 }
 Remove-Variable -name P
 
-$(vars).Add("Modules",@())
+$(vars).Add("Modules", @())
 
 ## Get Parameters
 Global:Add-Module "$($(vars).startup)\parameters.psm1"
@@ -101,13 +102,12 @@ $(arg).TCP_Port | Out-File ".\build\txt\port.txt"
 ##Insert Single Modules Here
 
 ## Startup Modules
-Import-Module "$($(vars).global)\include.psm1" -Scope Global
 Import-Module "$($(vars).global)\stats.psm1" -Scope Global
 Import-Module "$($(vars).global)\hashrates.psm1" -Scope Global
 Import-Module "$($(vars).global)\gpu.psm1" -Scope Global
 
 
-if($IsWindows -and $Global:config.hive_params.MINER_DELAY -and $Global:config.hive_params.MINER_DELAY -ne "") {
+if ($IsWindows -and $Global:config.hive_params.MINER_DELAY -and $Global:config.hive_params.MINER_DELAY -ne "") {
     Write-Host "Miner Delay Specified- Sleeping for $($Global:config.hive_params.MINER_DELAY)"
     $Sleep = [Double]$Global:config.hive_params.MINER_DELAY
     Start-Sleep -S $Sleep
@@ -121,8 +121,12 @@ Global:Start-CrashReporting
 ## Start The Log
 Global:Add-Module "$($(vars).startup)\startlog.psm1"
 $($(vars).dir) | Set-Content ".\build\bash\dir.sh";
-$(vars).Add("LogNum",1)
-Global:Start-Log -Number $(vars).LogNum;
+$Global:log_params = [hashtable]::Synchronized(@{ })
+$Global:log_params.Add("lognum", 1)
+$global:log_params.Add("logname", $null)
+$Global:log_params.Add( "dir", (Split-Path $script:MyInvocation.MyCommand.Path) )
+$Global:log_params.dir = $Global:Config.vars.dir -replace "/var/tmp", "/root"
+Global:Start-Log -Number $global:log_params.lognum;
 
 ## Initiate Update Check
 Global:Add-Module "$($(vars).startup)\remoteagent.psm1"
@@ -149,60 +153,33 @@ Global:Clear-Stats
 Global:Get-ArgNotice
 Global:Set-NewType
 if ($(arg).SWARM_Mode -eq "Yes") {
-    Global:Write-Log "Sycronizing Time To Nist" -ForegroundColor Yellow
+    log "Sycronizing Time To Nist" -ForegroundColor Yellow
     $Sync = Global:Get-Nist
     try {
         Set-Date $Sync -ErrorAction Stop 
     }
     catch { 
-        Global:Write-Log "Failed to syncronize time- Are you root/administrator?" -ForegroundColor red; 
+        log "Failed to syncronize time- Are you root/administrator?" -ForegroundColor red; 
         Start-Sleep -S 5 
     }
 }
 ##HiveOS Confirmation
-if( (Test-Path "/hive/miners") -or $(arg).Hive_Hash -ne "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" ) { $(arg).HiveOS = "Yes" }
-Global:Write-Log "HiveOS = $($(arg).HiveOS)"
+if ( (Test-Path "/hive/miners") -or $(arg).Hive_Hash -ne "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" ) { $(arg).HiveOS = "Yes" }
+log "HiveOS = $($(arg).HiveOS)"
 
 #Startings Settings (Non User Arguments):
-$(vars).Add("Instance",1)
-$(vars).Add("ActiveMinerPrograms",@())
-$(vars).Add("DWallet",$null)
-$(vars).Add("DCheck",$false)
-$(vars).Add("Warnings",@())
-$(vars).Add("Watts",$Null)
-if ($(arg).Timeout) { $(vars).ADD("TimeoutTime",[Double]$(arg).Timeout * 3600) }
-else { $(vars).Add("TimeoutTime",10000000000) }
-$(vars).Add("TimeoutTimer",(New-Object -TypeName System.Diagnostics.Stopwatch))
-$(vars).TimeoutTimer.Start()
-$(vars).Add("logtimer",(New-Object -TypeName System.Diagnostics.Stopwatch))
-$(vars).logtimer.Start()
-$(vars).Add("QuickTimer",(New-Object -TypeName System.Diagnostics.Stopwatch))
-$(vars).Add("MinerWatch",(New-Object -TypeName System.Diagnostics.Stopwatch))
-$(vars).Add("WattEx",$Null)
-$(vars).Add("Rates",$Null)
-$(vars).Add("BestActiveMiners",@())
-$(vars).Add("BTCExchangeRate",$Null)
-$(vars).Add("BanCount",0)
-$(vars).Add("BanPass",0)
-$(vars).Add("Priority",@{Admin = $false; Other = $false})
-$(vars).Add("AdminTime",0)
-if(test-Path ".\build\data\deviation.txt"){$(vars).Add("Deviation",[Double](Get-Content ".\build\data\deviation.txt"))} 
-else{$(vars).Add("Deviation",0)}
-$(vars).Add("BenchmarkMode",$true)
-$(vars).Add("bestminers_combo",$Null)
+Global:Add-New_Variables
 
 ##Determine Net Modules
-$(vars).Add("NetModules",@())
-$(vars).Add("WebSites",@())
-$WebArg = @("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","")
+$WebArg = @("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", "")
 if ($(arg).Hive_Hash -notin $WebArg -or (Test-Path "/hive/miners") ) { $(vars).NetModules += ".\build\api\hiveos"; $(vars).WebSites += "HiveOS" }
-else{$(arg).HiveOS = "No"}
+else { $(arg).HiveOS = "No" }
 Remove-Variable -Name WebArg
 ##if ($Config.Params.Swarm_Hash -ne "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx") { $(vars).NetModules += ".\build\api\swarm"; $(vars).WebSites += "SWARM" }
 
 ## Initialize
-$(vars).Add("GPU_Count",$Null)
-$(vars).Add("BusData",$Null)
+$(vars).Add("GPU_Count", $Null)
+$(vars).Add("BusData", $Null)
 switch ($(arg).Platform) {
     "linux" {
         Global:Add-Module "$($(vars).startup)\linuxconfig.psm1"
@@ -217,14 +194,14 @@ switch ($(arg).Platform) {
 }
 
 ## Determine AMD platform
-$(vars).add("AMDPlatform",0)
+$(vars).add("AMDPlatform", 0)
 if ($(arg).Type -like "*AMD*") {
     if ([string]$(arg).CLPlatform) { $(vars).AMDPlatform = [string]$(arg).CLPlatform }
     else {
-        Global:Write-Log "Getting AMD OPENCL Platform. Note: If SWARM doesn't continue, a GPU has crashed on rig." -ForeGroundColor Yellow
+        log "Getting AMD OPENCL Platform. Note: If SWARM doesn't continue, a GPU has crashed on rig." -ForeGroundColor Yellow
         Global:Add-Module "$($(vars).startup)\cl.psm1"
         [string]$(vars).AMDPlatform = Global:Get-AMDPlatform
-        Global:Write-Log "AMD OpenCL Platform is $($(vars).AMDPlatform)"
+        log "AMD OpenCL Platform is $($(vars).AMDPlatform)"
     }
 }
 
@@ -234,34 +211,40 @@ if ($(arg).Type -like "*NVIDIA*" -or $(arg).Type -like "*AMD*" -or $(arg).Type -
     if (Test-Path ".\build\txt\amdpower.txt") { Remove-Item ".\build\txt\amdpower.txt" -Force }
     if ($(vars).GPU_Count -eq 0) { $Device_Count = $(arg).CPUThreads }
     else { $Device_Count = $(vars).GPU_Count }
-    Global:Write-Log "Device Count = $Device_Count" -foregroundcolor green
+    log "Device Count = $Device_Count" -foregroundcolor green
     Remove-Variable -Name Device_Count
     Start-Sleep -S 2
 
    
     if ([string]$(arg).GPUDevices1) {
-        $(vars).Add("NVIDIADevices1",([String]$(arg).GPUDevices1 -replace " ", ","))
-        $(vars).Add("AMDDevices1",([String]$(arg).GPUDevices1 -replace " ", ","))
+        $(vars).Add("NVIDIADevices1", ([String]$(arg).GPUDevices1 -replace " ", ","))
+        $(vars).Add("AMDDevices1", ([String]$(arg).GPUDevices1 -replace " ", ","))
     }
     else { 
-        $(vars).Add("NVIDIADevices1","none")
-        $(vars).Add("AMDDevices1","none")
+        $(vars).Add("NVIDIADevices1", "none")
+        $(vars).Add("AMDDevices1", "none")
     }
-    if ([string]$(arg).GPUDevices2) { $(vars).Add("NVIDIADevices2",([String]$(arg).GPUDevices2 -replace " ", ",")) } else { $(vars).Add("NVIDIADevices2","none") }
-    if ([string]$(arg).GPUDevices3) { $(vars).Add("NVIDIADevices3",([String]$(arg).GPUDevices3 -replace " ", ",")) } else { $(vars).Add("NVIDIADevices3","none") }
+    if ([string]$(arg).GPUDevices2) { $(vars).Add("NVIDIADevices2", ([String]$(arg).GPUDevices2 -replace " ", ",")) } else { $(vars).Add("NVIDIADevices2", "none") }
+    if ([string]$(arg).GPUDevices3) { $(vars).Add("NVIDIADevices3", ([String]$(arg).GPUDevices3 -replace " ", ",")) } else { $(vars).Add("NVIDIADevices3", "none") }
 
-    $(vars).Add("GCount",(Get-Content ".\build\txt\devicelist.txt" | ConvertFrom-Json))
-    $(vars).Add("NVIDIATypes",@()); if ($(arg).Type -like "*NVIDIA*") { $(arg).Type | Where { $_ -like "*NVIDIA*" } | % { $(vars).NVIDIATypes += $_ } }
-    $(vars).Add("CPUTypes",@()); if ($(arg).Type -like "*CPU*") { $(arg).Type | Where { $_ -like "*CPU*" } | % { $(vars).CPUTypes += $_ } }
-    $(vars).Add("AMDTypes",@()); if ($(arg).Type -like "*AMD*") { $(arg).Type | Where { $_ -like "*AMD*" } | % { $(vars).AMDTypes += $_ } }
+    $(vars).Add("GCount", (Get-Content ".\build\txt\devicelist.txt" | ConvertFrom-Json))
+    $(vars).Add("NVIDIATypes", @()); if ($(arg).Type -like "*NVIDIA*") { $(arg).Type | Where { $_ -like "*NVIDIA*" } | % { $(vars).NVIDIATypes += $_ } }
+    $(vars).Add("CPUTypes", @()); if ($(arg).Type -like "*CPU*") { $(arg).Type | Where { $_ -like "*CPU*" } | % { $(vars).CPUTypes += $_ } }
+    $(vars).Add("AMDTypes", @()); if ($(arg).Type -like "*AMD*") { $(arg).Type | Where { $_ -like "*AMD*" } | % { $(vars).AMDTypes += $_ } }
 }
 
 
 ##Start New Agent
 Global:Add-Module "$($(vars).startup)\getconfigs.psm1"
-Global:Write-Log "Starting New Background Agent" -ForegroundColor Cyan
+log "Starting New Background Agent" -ForegroundColor Cyan
 if ($(arg).Platform -eq "windows") { Global:Start-Background }
 elseif ($(arg).Platform -eq "linux") { $Proc = Start-Process ".\build\bash\background.sh" -ArgumentList "background $($($(vars).dir))" -PassThru; $Proc | Wait-Process }
+
+## Parse Wallet Configs
+Global:Add-Module "$($(vars).build)\wallets.psm1"
+$(vars).Add("All_AltWallets", $Null)
+Global:Get-Wallets
+if ([String]$(arg).Admin_Fee -eq 0) { if (test-Path ".\admin") { Remove-Item ".\admin" -Recurse -Force | Out-Null } }
 
 ##Get Optional Miners
 Global:Get-Optional
@@ -284,12 +267,22 @@ While ($true) {
         ##############################################################################
         #######                     PHASE 1: Build                              ######
         ##############################################################################
-        $(vars).Add("Algorithm",@())
-        $(vars).Add("BanHammer",@())
-        $(vars).Add("ASICTypes",@())
-        $(vars).Add("ASICS",@{})
-        $(vars).Add("All_AltWallets",$Null)
-        $(vars).Add("SWARMAlgorithm",$(arg).Algorithm)
+
+        ## Basic Variable Control:
+        ## 'create' will add a new variable to the variable hashtable (vars)
+        ## 'remove' will either remove the variable specified, or all varibles if 'all' is specified.
+        ## 'create' will add the the (Vars)."Active_Variables" list as well as add the vars to $(vars)
+        ## 'remove' will remove the name from the "Active_Variables" array.
+        ## 'check' checks if variable currently exists- $true if does, $false if it doesn't
+        ##  This allows the abililty to remove/add variables to both, as well as clear them all with a single command.
+        ##  These are all global values- It can be used with user-created modules.
+
+        create Algorithm @()
+        create BanHammer @()
+        create ASICTypes @()
+        create ASICS @{ }
+        create All_AltWalltes $null
+        create SWARMAlgorithm $(arg).Algorithm
 
         ##Insert Build Single Modules Here
 
@@ -297,13 +290,13 @@ While ($true) {
 
         #Get Miner Config Files
         Global:Add-Module "$($(vars).build)\miners.psm1"
-        if ($(arg).Type -like "*CPU*") { $(vars).Add("cpu",(Global:Get-minerfiles -Types "CPU")) }
-        if ($(arg).Type -like "*NVIDIA*") { $(vars).Add("nvidia",(Global:Get-minerfiles -Types "NVIDIA" -Cudas $(arg).Cuda)) }
-        if ($(arg).Type -like "*AMD*") { $(vars).Add("amd",(Global:Get-minerfiles -Types "AMD")) }
+        if ($(arg).Type -like "*CPU*") { create cpu (Global:Get-minerfiles -Types "CPU") }
+        if ($(arg).Type -like "*NVIDIA*") { create nvidia (Global:Get-minerfiles -Types "NVIDIA" -Cudas $(arg).Cuda) }
+        if ($(arg).Type -like "*AMD*") { create amd (Global:Get-minerfiles -Types "AMD") }
 
         ## Check to see if wallet is present:
         if (-not $(arg).Wallet1) { 
-            Global:Write-Log "missing wallet1 argument, exiting in 5 seconds" -ForeGroundColor Red; 
+            log "missing wallet1 argument, exiting in 5 seconds" -ForeGroundColor Red; 
             Start-Sleep -S 5; 
             exit 
         }
@@ -313,8 +306,8 @@ While ($true) {
         Global:Get-MinerConfigs
         $global:Config.Pool_Algos = Get-Content ".\config\pools\pool-algos.json" | ConvertFrom-Json
         Global:Add-ASICS
-        $(vars).Add( "oc_default",(Get-Content ".\config\oc\oc-defaults.json" | ConvertFrom-Json) )
-        $(vars).Add("oc_algos",(Get-Content ".\config\oc\oc-algos.json" | ConvertFrom-Json))
+        create oc_default (Get-Content ".\config\oc\oc-defaults.json" | ConvertFrom-Json)
+        create oc_algos (Get-Content ".\config\oc\oc-algos.json" | ConvertFrom-Json)
 
         ##Manage Pool Bans
         Global:Add-Module "$($(vars).build)\poolbans.psm1"
@@ -325,6 +318,7 @@ While ($true) {
         Global:Add-Module "$($(vars).build)\wallets.psm1"
         Global:Set-Donation
         Global:Get-Wallets
+        if ([String]$(arg).Admin_Fee -eq 0) { if (test-Path ".\admin") { Remove-Item ".\admin" -Recurse -Force | Out-Null } }
         . .\build\powershell\scripts\bans.ps1 "add" $(arg).Bans "process" | Out-Null
         Global:Add-Algorithms
         Global:Set-Donation
@@ -333,9 +327,12 @@ While ($true) {
         # Pricing and Clearing Timeouts 
         Global:Add-Module "$($(vars).build)\pricing.psm1"
         Global:Get-Watts
+        Global:Get-TimeCheck
         Global:Get-Pricing
         Global:Clear-Timeouts
 
+        ## Phase Clean up
+        ## Remove variables that were added from external run of a SWARM command.
         Remove-Variable -Name BanDir -ErrorAction Ignore
         Remove-Variable -Name Screen -ErrorAction Ignore
         Remove-Variable -Name Value -ErrorAction Ignore
@@ -360,13 +357,13 @@ While ($true) {
         ##############################################################################
 
         ## Build Initial Pool Hash Tables
-        $(vars).Add("Coins",$false)
-        $(vars).Add("FeeTable",@{})
-        $(vars).Add("divisortable",@{})
-        $(vars).Add("SingleMode",$false)
-        $(vars).Add("AlgoPools",1)
-        $(vars).Add("CoinPools",1)
-        $(vars).Add("Pool_Hashrates",@{})
+        create Coins $false
+        create FeeTable @{ }
+        create DivisorTable @{ }
+        create SingleMode @{ }
+        create AlgoPools 1
+        create CoinPools 1
+        create Pool_Hashrates @{ }
 
         ##Insert Pools Single Modules Here
 
@@ -375,7 +372,13 @@ While ($true) {
         Global:Add-Module "$($(vars).pool)\initial.psm1"
         Global:Get-PoolTables
         Global:Remove-BanHashrates
-        $(vars).Add( "Miner_HashTable",(Global:Get-MinerHashTable) )
+        if($(vars).Options -eq 1){
+            . .\build\data\json.ps1
+            Global:Get-Message
+        }
+
+        create Miner_HashTable (Global:Get-MinerHashTable)
+
         ##Add Global Modules - They Get Removed in Above Function
         Global:Remove-Modules
         . .\build\powershell\global\modules.ps1
@@ -385,14 +388,11 @@ While ($true) {
         Global:Get-AlgoPools
         Global:Get-CoinPools
         Global:Remove-Modules
-        Clear-Variable -Name FeeTable -ErrorAction Ignore -Scope Global
-        Clear-Variable -Name divisortable -ErrorAction Ignore -Scope Global
-        Clear-Variable -Name Wallets -ErrorAction Ignore -Scope Global
-        Clear-Variable -Name Arg -ErrorAction Ignore -Scope Global
-        Clear-Variable -Name Net -ErrorAction Ignore -Scope Global
-        $(vars).Remove("All_AltWallets")
-        $(vars).Remove("FeeTable")
-        $(vars).Remove("divisortable")
+
+        ## Phase Clean up
+        ## Remove variables no longer needed.
+        remove FeeTable
+        remove DivisorTable
 
         ##############################################################################
         #######                         END PHASE 2                             ######
@@ -404,13 +404,12 @@ While ($true) {
         #######                        PHASE 3: Miners                          ######
         ##############################################################################
 
-        $(vars).Add( "Thresholds", @() )
-        $(vars).Add("Miners",(New-Object System.Collections.ArrayList))
+        create Thresholds @()
+        create Miners (New-Object System.Collections.ArrayList)
 
         ##Insert Miners Single Modules Here
 
         ##Insert Miners Looping Modules Here
-
 
         ##Load The Miners
         Global:Add-Module "$($(vars).miner)\gather.psm1"
@@ -429,15 +428,18 @@ While ($true) {
                         Global:Get-WebModules $Sel
                         $SendToHive = Global:Start-webcommand -command $HiveWarning -swarm_message $HiveMessage -Website "$($Sel)"
                     }
-                    catch { Global:Write-Log "WARNING: Failed To Notify $($Sel)" -ForeGroundColor Yellow } 
+                    catch { log "WARNING: Failed To Notify $($Sel)" -ForeGroundColor Yellow } 
                     Global:Remove-WebModules $sel
                 }
             }
-            Global:Write-Log "$HiveMessage" -ForegroundColor Red
+            log "$HiveMessage" -ForegroundColor Red
             Remove-Variable -Name HiveMessage -ErrorAction Ignore
             Remove-Variable -Name HiveWarning -ErrorAction Ignore
             Remove-Variable -Name Sel -ErrorAction Ignore
-            start-sleep $(arg).Interval;
+            #start-sleep $(arg).Interval;
+
+            ##remove all active parameters, Then restart loop
+            remove all
             continue  
         }
 
@@ -454,28 +456,29 @@ While ($true) {
         ##Choose The Best Miners
         Global:Add-Module "$($(vars).miner)\choose.psm1"
         Remove-BadMiners
-        $(vars).Add("Miners_Combo",(Global:Get-BestMiners))        
+        create Miners_Combo (Global:Get-BestMiners)
         $(vars).bestminers_combo = Global:Get-Conservative
-        Global:Write-Log "Most Ideal Choice Is $($(vars).bestminers_combo.Symbol) on $($(vars).bestminers_combo.MinerPool)" -foregroundcolor green
+        log "Most Ideal Choice Is $($(vars).bestminers_combo.Symbol) on $($(vars).bestminers_combo.MinerPool)" -foregroundcolor green
 
+        ## Phase Clean up
         Global:Remove-Modules
-        $(vars).Remove("Algorithm")
-        $(vars).Remove("BanHammer")
-        $(vars).Remove("ASICTypes")
-        $(vars).Remove("SWARMALgorithm")
-        $(vars).Remove("Coins")
-        $(vars).Remove("SingleMode")
-        $(vars).Remove("Miner_HashTable")
-        $(vars).Remove("Miners_Combo")
-        if($(vars).CoinPools){ $(vars).Remove("CoinPools") }
-        if($(vars).AlgoPools){ $(vars).Remove("AlgoPools") }
-        $(vars).Remove("amd")
-        $(vars).Remove("nvidia")
-        $(vars).Remove("cpu")
-        $(vars).Remove("Pool_HashRates")
         $(vars).Watts = $null
+        remove CoinPools 
+        remove AlgoPools 
+        remove amd 
+        remove nvidia 
+        remove cpu 
+        remove SWARMAlgorithm
+        remove BanHammer
+        remove ASICTypes
+        remove Algorithm
+        remove Coins
+        remove SingleMode
+        remove Miner_HashTable
+        remove Miners_Combo
+        remove Pool_HashRates
 
-        ##############################################################################
+        #########################################################1#####################
         #######                        End Phase 3                             ######
         ############################################################################## 
 
@@ -484,18 +487,16 @@ While ($true) {
         ##############################################################################
 
         ## Build the Current Active Miners
-        $global:Restart = $false
-        $global:NoMiners = $false
-        $global:PreviousMinerPorts = @{AMD1 = ""; NVIDIA1 = ""; NVIDIA2 = ""; NVIDIA3 = ""; CPU = "" }
-        $global:ClearedOC = $false; 
-        $global:ClearedHash = $false; 
-        $Global:HiveOCTune = $false
-        $global:SWARM_IT = $false
-        $global:MinerInterval = $null
-        $global:MinerStatInt = $Null
-        $global:ModeCheck = 0
-        $global:Share_Table = @{ }
-
+        create Restart $false
+        create NoMiners $false
+        create PreviousMinerPorts @{AMD1 = ""; NVIDIA1 = ""; NVIDIA2 = ""; NVIDIA3 = ""; CPU = "" }
+        create SWARM_IT $false
+        create MinerInterval $null
+        create MinerStatInt $null
+        create ModeCheck 0
+        create Share_Table @{ }
+        create oc_groups @()
+        
         ##Insert Control Single Modules Here
 
         ##Insert Control Looping Modules Here
@@ -509,30 +510,30 @@ While ($true) {
         Global:Get-BestActiveMiners
         Global:Get-ActivePricing
 
-        ##Start / Stop / Restart Miners
-        ##Handle OC
+        ## Start / Stop / Restart Miners
+        ## Handle OC
         Global:Add-Module "$($(vars).control)\run.psm1"
         Global:Add-Module "$($(vars).control)\launchcode.psm1"
         Global:Add-Module "$($(vars).control)\config.psm1"
         Global:Stop-ActiveMiners
         Global:Start-NewMiners -Reason "Launch"
 
-        ##Determing Interval
+        ## Determing Interval
         Global:Add-Module "$($(vars).control)\notify.psm1"
         Global:Get-LaunchNotification
         Global:Get-Interval
-        ##Get Shares
-        Global:Write-Log "Getting Coin Tracking From Pool" -foregroundColor Cyan
+        ## Get Shares
+        log "Getting Coin Tracking From Pool" -foregroundColor Cyan
         if ($glbal:Config.params.Track_Shares -eq "Yes") { Global:Get-CoinShares }
 
+        ## Phase Clean up
         Global:Remove-Modules
-        $(vars).remove("oc_algos")
-        $(vars).remove("oc_default")
-        $global:PreviousMinerPorts = $null
-        $global:Restart = $null
-        $global:NoMiners = $null
-        $global:ClearedOC = $null
-        $Global:HiveOCTune = $null
+        remove oc_algos
+        remove oc_default
+        remove oc_groups
+        remove PreviousMinerPorts
+        remove Restart
+        remove NoMiners
 
         ##############################################################################
         #######                        End Phase 4                              ######
@@ -562,7 +563,7 @@ While ($true) {
         Global:Add-Module "$($(vars).run)\commands.psm1"
         Global:Get-PriceMessage
         Global:Get-Commands
-        $(vars).remove("Miners")
+        remove Miners
         Global:Get-Logo
         Global:Update-Logging
         Get-Date | Out-File ".\build\txt\mineractive.txt"
@@ -572,9 +573,14 @@ While ($true) {
         Global:Add-Module "$($(vars).run)\loop.psm1"
         Global:Start-MinerLoop
 
+        ## Phase Clean up
         Global:Remove-Modules
-        $(vars).Remove("Thresholds")
-        $(vars).Remove("ASICS")
+        remove Thresholds
+        remove SWARM_IT
+        remove MinerInterval
+        remove ASICS
+        remove Share_Table
+        remove ModeCheck
 
         ##############################################################################
         #######                        End Phase 5                              ######
@@ -585,7 +591,6 @@ While ($true) {
         ##############################################################################
 
         Global:Add-Module "$($(vars).benchmark)\attempt.psm1"
-        $global:ActiveSymbol = @()
 
         ##Insert Benchmark Single Modules Here
 
@@ -601,12 +606,15 @@ While ($true) {
         #######                       End Phase 6                               ######
         ##############################################################################
 
+        ## Remaining Clean up
+        remove all
         Global:Remove-Modules
         Get-Job -State Completed | Remove-Job
         [GC]::Collect()
         [GC]::WaitForPendingFinalizers()
         [GC]::Collect()    
         Clear-History
+
     }until($Error.Count -gt 0)
     Global:Add-LogErrors
     Global:Remove-Modules

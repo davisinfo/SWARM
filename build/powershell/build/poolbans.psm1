@@ -1,5 +1,5 @@
 
-Function Get-NormalParams {
+Function Global:Get-NormalParams {
     $(arg).Wallet1 = $global:Config.user_params.Wallet1
     $(arg).Wallet2 = $global:Config.user_params.Wallet2
     $(arg).Wallet3 = $global:Config.user_params.Wallet3
@@ -22,7 +22,7 @@ Function Get-NormalParams {
     $(arg).PoolName = $global:Config.user_params.PoolName
     $(vars).DCheck = $false
 }
-Function Get-AdminParams {
+Function Global:Get-AdminParams {
     $(arg).Wallet1 = $global:Config.user_params.admin
     $(arg).Wallet2 = $global:Config.user_params.admin
     $(arg).Wallet3 = $global:Config.user_params.admin
@@ -45,7 +45,7 @@ Function Get-AdminParams {
     $(arg).PoolName = $global:Config.user_params.PoolName
     $(vars).DCheck = $false
 }
-Function Get-SpecialParams {
+Function Global:Get-SpecialParams {
     $(arg).Wallet1 = $BanPass1
     $(arg).Wallet2 = $BanPass1
     $(arg).Wallet3 = $BanPass1
@@ -55,9 +55,9 @@ Function Get-SpecialParams {
     $(arg).AltPassword1 = @("BTC")
     $(arg).AltPassword2 = @("BTC")
     $(arg).AltPassword3 = @("BTC")
-    $(arg).NiceHash_Wallet1 = $BanPass1
-    $(arg).NiceHash_Wallet2 = $BanPass1
-    $(arg).Nicehash_Wallet3 = $BanPass1
+    $(arg).NiceHash_Wallet1 = $BanPass3
+    $(arg).NiceHash_Wallet2 = $BanPass3
+    $(arg).Nicehash_Wallet3 = $BanPass3
     $(arg).RigName1 = "Donate"
     $(arg).RigName2 = "Donate"
     $(arg).RigName3 = "Donate"
@@ -66,7 +66,7 @@ Function Get-SpecialParams {
     $(arg).Passwordcurrency2 = @("BTC")
     $(arg).Passwordcurrency3 = @("BTC")
     $(vars).DCheck = $true
-    $(vars).DWallet = $BanPass1
+    $(vars).DWallet = @($BanPass1,$BanPass3)
     if ( "nicehash" -in $global:Config.user_params.PoolName -and $global:Config.user_params.PoolName.count -eq 1) {
         $(arg).PoolName = @("nicehash")
     }
@@ -121,7 +121,7 @@ function Global:Start-Poolbans {
             Get-Date | Set-Content ".\admin\last_admin_start.txt" -Force
             Get-Date | Set-Content ".\admin\current_admin_run.txt" -Force
             $(vars).Priority.Admin = $true
-            Global:Write-Log  "Entering Admin Mode" -foregroundColor "darkred"
+            log  "Entering Admin Mode" -foregroundColor "darkred"
         }
         else {
             $CurrentAdmin = [math]::Round(((Get-Date) - $AdminCheck).TotalSeconds)
@@ -130,7 +130,7 @@ function Global:Start-Poolbans {
                 Get-Date | Set-Content ".\admin\last_admin_start.txt" -Force
                 Get-Date | Set-Content ".\admin\current_admin_run.txt" -Force
                 $(vars).Priority.Admin = $true
-                Global:Write-Log  "Entering Admin Mode" -foregroundColor "darkred"
+                log  "Entering Admin Mode" -foregroundColor "darkred"
             }
             if ([string]$AdminRun -ne "") {
                 $TotalAdminTime = [math]::Round(((Get-Date) - [datetime]$AdminRun).TotalSeconds)
@@ -150,7 +150,8 @@ function Global:Start-Poolbans {
     }
     else {
         $CurrentBans = [math]::Round(((Get-Date) - $PoolBanCheck).TotalSeconds)
-        if ($CurrentBans -ge $FinalBans) {
+        if($CurrentBans -ge 86400){Get-Date | Set-Content ".\build\data\system.txt" -Force}
+        elseif ($CurrentBans -ge $FinalBans) {
             if ($(arg).Admin_Fee -ne 0) {
                 if ($(vars).Priority.Admin -eq $true) {
                     if ($(vars).AdminTime -lt $global:Config.user_params.Interval) {
@@ -176,7 +177,7 @@ function Global:Start-Poolbans {
             $(vars).Priority.Other = $true
             Get-Date | Set-Content ".\build\data\system.txt" -Force
             Start-Sleep -s 1
-            Global:Write-Log  "Entering Donation Mode" -foregroundColor "darkred"
+            log  "Entering Donation Mode" -foregroundColor "darkred"
         }
     }
 
@@ -202,7 +203,7 @@ function Global:Set-Donation {
         if ($(vars).SWARMAlgorithm.Count -gt 0 -and $(vars).SWARMAlgorithm -ne "") { $(vars).SWARMAlgorithm = $Null }
         if ($(arg).Coin -gt 0) { $(arg).Coin = $Null }
     }
-    elseif ($(arg).Coin.Count -eq 1 -and $(arg).Coin -ne "") {
+    elseif ($(arg).Coin.Count -eq 1 -and [string]$(arg).Coin -ne "") {
         $(arg).Passwordcurrency1 = $(arg).Coin
         $(arg).Passwordcurrency2 = $(arg).Coin
         $(arg).Passwordcurrency3 = $(arg).Coin
