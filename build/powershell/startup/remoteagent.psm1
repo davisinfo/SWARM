@@ -34,7 +34,12 @@ function Global:start-update {
         $PreviousVersions += "SWARM.2.4.0"
         $PreviousVersions += "SWARM.2.4.1"
         $PreviousVersions += "SWARM.2.4.2"
-        $PreviousVersions += "SWARM.2.4.3"
+        $PreviousVersions += "SWARM.2.4.3"        
+        $PreviousVersions += "SWARM.2.4.4"
+        $PreviousVersions += "SWARM.2.4.5"
+        $PreviousVersions += "SWARM.2.4.6"
+        $PreviousVersions += "SWARM.2.4.7"
+        $PreviousVersions += "SWARM.2.4.8"
 
         $StatsOnly = $null
 
@@ -96,9 +101,9 @@ function Global:start-update {
                     Get-ChildItem -Path "$($OldTimeout)\*" -Include *.txt | Copy-Item -Destination ".\timeout"
                 }
                 if ($StatsOnly -ne "Yes") {
-                    $Jsons = @("asic","miners","oc","pools","power")
+                    $Jsons = @("asic","miners","oc","pools","power","wallets")
                     $UpdateType = @("CPU", "AMD1", "NVIDIA1", "NVIDIA2", "NVIDIA3")
-                    if ($CurrentVersion -lt 244) { $Exclude += "wallets.json" }
+                    if ($CurrentVersion -le 243) { $Exclude += "wallets.json" }
 
                     $Jsons | foreach {
                         $OldJson_Path = Join-Path $OldConfig "$($_)";
@@ -115,17 +120,27 @@ function Global:start-update {
 
                                 try{$Data = $JsonData | ConvertFrom-Json -ErrorAction Stop} catch{}
 
-                                #if ($ChangeFile -eq "cryptodredge.json") {
-                                #   $Data | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | foreach {
-                                #      if ($_ -ne "name") {
-                                #         $Data.$_.commands | Add-Member "argon2d4096" "" -ErrorAction SilentlyContinue
-                                #        $Data.$_.difficulty | Add-Member "argon2d4096" "" -ErrorAction SilentlyContinue 
-                                #       $Data.$_.naming | Add-Member "argon2d4096" "argon2d4096" -ErrorAction SilentlyContinue
-                                #       $Data.$_.fee | Add-Member "argon2d4096" 1 -ErrorAction SilentlyContinue
-                                #   }
-                                # }
-                                #}
+                                if ($ChangeFile -eq "lolminer.json") {
+                                    $Data | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | foreach {
+                                        if ($_ -ne "name") {
+                                            $Data.$_.commands | Add-Member "equihash_125/4" "" -ErrorAction SilentlyContinue
+                                            $Data.$_.difficulty | Add-Member "equihash_125/4" "" -ErrorAction SilentlyContinue 
+                                            $Data.$_.naming | Add-Member "equihash_125/4" "equihash_125/4" -ErrorAction SilentlyContinue
+                                            $Data.$_.fee | Add-Member "equihash_125/4" 1 -ErrorAction SilentlyContinue
+                                        }
+                                    }
+                                }
 
+                                if ($ChangeFile -eq "nv-lolminer.json") {
+                                    $Data | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | foreach {
+                                        if ($_ -ne "name") {
+                                            $Data.$_.commands | Add-Member "equihash_125/4" "" -ErrorAction SilentlyContinue
+                                            $Data.$_.difficulty | Add-Member "equihash_125/4" "" -ErrorAction SilentlyContinue 
+                                            $Data.$_.naming | Add-Member "equihash_125/4" "equihash_125/4" -ErrorAction SilentlyContinue
+                                            $Data.$_.fee | Add-Member "equihash_125/4" 1 -ErrorAction SilentlyContinue
+                                        }
+                                    }
+                                }
 
                                 if ($ChangeFile -eq "wildrig.json") {
                                     $Data | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | foreach {
@@ -156,6 +171,17 @@ function Global:start-update {
                                             $Data.$_.difficulty | Add-Member "equihash_150/5" "" -ErrorAction SilentlyContinue 
                                             $Data.$_.naming | Add-Member "equihash_150/5" "equihash_150/5" -ErrorAction SilentlyContinue
                                             $Data.$_.fee | Add-Member "equihash_150/5" 2 -ErrorAction SilentlyContinue
+
+                                            $Data.$_.commands | Add-Member "equihash_192/7" "" -ErrorAction SilentlyContinue
+                                            $Data.$_.difficulty | Add-Member "equihash_192/7" "" -ErrorAction SilentlyContinue 
+                                            $Data.$_.naming | Add-Member "equihash_192/7" "equihash_192/7" -ErrorAction SilentlyContinue
+                                            $Data.$_.fee | Add-Member "equihash_192/7" 2 -ErrorAction SilentlyContinue
+
+                                            $Data.$_.commands | Add-Member "equihash_125/4" "" -ErrorAction SilentlyContinue
+                                            $Data.$_.difficulty | Add-Member "equihash_125/4" "" -ErrorAction SilentlyContinue 
+                                            $Data.$_.naming | Add-Member "equihash_125/4" "equihash_125/4" -ErrorAction SilentlyContinue
+                                            $Data.$_.fee | Add-Member "equihash_125/4" 2 -ErrorAction SilentlyContinue
+
                                         }
                                     }
                                 }
@@ -237,6 +263,11 @@ function Global:start-update {
                                             $Data.$_.difficulty | Add-Member "veil" "" -ErrorAction SilentlyContinue 
                                             $Data.$_.naming | Add-Member "veil" "veil" -ErrorAction SilentlyContinue
                                             $Data.$_.fee | Add-Member "veil" 2.5 -ErrorAction SilentlyContinue
+
+                                            $Data.$_.commands | Add-Member "mtp" "" -ErrorAction SilentlyContinue
+                                            $Data.$_.difficulty | Add-Member "mtp" "" -ErrorAction SilentlyContinue 
+                                            $Data.$_.naming | Add-Member "mtp" "mtp" -ErrorAction SilentlyContinue
+                                            $Data.$_.fee | Add-Member "mtp" 2.5 -ErrorAction SilentlyContinue
                                         }
                                     }
                                 }
@@ -363,7 +394,7 @@ function Global:start-update {
                         log "Pulled $NameJson"
                         $Data = $JsonData | ConvertFrom-Json;
                         $Data | Add-Member "name" "$NewName" -ErrorAction SilentlyContinue
-                        $Data | ConvertTo-Json -Depth 3 | Set-Content $NameJson;
+                        $Data | ConvertTo-Json -Depth 5 | Set-Content $NameJson;
                         log "Wrote To $NameJson"
                     }
 

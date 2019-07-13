@@ -550,9 +550,9 @@ While ($True) {
 
     ##Select Only For Each Device Group
     $DeviceTable = @()
-    if ([string]$(arg).GPUDevices1) { $DeviceTable += $(arg).GPUDevices1 }
-    if ([string]$(arg).GPUDevices2) { $DeviceTable += $(arg).GPUDevices2 }
-    if ([string]$(arg).GPUDevices3) { $DeviceTable += $(arg).GPUDevices3 }
+    if ([string]$(arg).GPUDevices1) { $DeviceTable += $(arg).GPUDevices1 -split ","}
+    if ([string]$(arg).GPUDevices2) { $DeviceTable += $(arg).GPUDevices2 -split ","}
+    if ([string]$(arg).GPUDevices3) { $DeviceTable += $(arg).GPUDevices3 -split ","}
 
     if ($DeviceTable) {
         $DeviceTable = $DeviceTable | Sort-Object
@@ -562,22 +562,22 @@ While ($True) {
         $TempPower = @()
         for ($global:i = 0; $global:i -lt $DeviceTable.Count; $global:i++) {
             $G = $DeviceTable[$i]
-            $TempGPU += $global:GPUHashTable[$G]
-            $TempFan += $global:GPUFanTable[$G]
-            $TempTemp += $global:GPUTempTable[$G]
-            $TempPower += $global:GPUPowerTable[$G]
+            $TempGPU += try{$global:GPUHashTable[$G]}catch{"0"}
+            $TempFan += try{$global:GPUFanTable[$G]}catch{"0"}
+            $TempTemp += try{$global:GPUTempTable[$G]}catch{"0"}
+            $TempPower += try{$global:GPUPowerTable[$G]}catch{"0"}
         }
         $global:GPUHashTable = $TempGPU
         $global:GPUFanTable = $TempFan
         $global:GPUTempTable = $TempTemp
         $global:GPUPowerTable = $TempPower
-        Remove-Variable TempGPU
-        Remove-Variable TempFan
-        Remove-Variable TempTemp
-        Remove-Variable TempPower
+        Remove-Variable TempGPU -ErrorAction Ignore
+        Remove-Variable TempFan -ErrorAction Ignore
+        Remove-Variable TempTemp -ErrorAction Ignore
+        Remove-Variable TempPower -ErrorAction Ignore
     }
 
-    Remove-Variable DeviceTable
+    Remove-Variable DeviceTable -ErrorAction Ignore
 
     if ($global:DoCPU) {
         for ($global:i = 0; $global:i -lt $(vars).GCount.CPU.PSObject.Properties.Value.Count; $global:i++) {
@@ -602,18 +602,18 @@ While ($True) {
         summary = $global:MinerTable;
     }
     $global:Config.stats = @{
-        gpus       = $global:GPUHashTable;
-        cpus       = $global:CPUHashTable;
-        asics      = $global:ASICHashTable;
+        gpus       = @($global:GPUHashTable);
+        cpus       = @($global:CPUHashTable);
+        asics      = @($global:ASICHashTable);
         cpu_total  = $global:CPUKHS;
         asic_total = $global:ASICKHS;
         gpu_total  = $global:GPUKHS;
         algo       = $Global:StatAlgo;
         uptime     = $global:UPTIME;
         hsu        = "khs";
-        fans       = $global:GPUFanTable;
-        temps      = $global:GPUTempTable;
-        power      = $global:GPUPowerTable;
+        fans       = @($global:GPUFanTable);
+        temps      = @($global:GPUTempTable);
+        power      = @($global:GPUPowerTable);
         accepted   = $global:AllACC;
         rejected   = $global:AllREJ;
         stratum    = $Global:StatStratum

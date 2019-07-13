@@ -8,12 +8,7 @@
 #MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #GNU General Public License for more details.
 #You should have received a copy of the GNU General Public License
-#along with this program.  If not, see <http://www.gnu.org/licenses/>
-
-a="!$1"
-b="!$2"
-c="!$3"
-d="!$4"
+#along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 mydir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
-pwsh -command "$(< $mydir/dir.sh)/build/powershell/scripts/version.ps1 -command $a -name $b -version $c -uri \"$d\""
+pwsh -command "$(< $mydir/dir.sh)/build/powershell/scripts/config.ps1 $1 \'$2\'"

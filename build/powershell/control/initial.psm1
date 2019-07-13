@@ -90,14 +90,30 @@ function Global:Expand-WebRequest {
     $FileType = $Zip
     $FileType = $FileType -split "\."
     if ("7z" -in $FileType) { $Extraction = "zip" }
-    if ("zip" -in $FileType) { $Extraction = "zip" }
-    if ("tar" -in $FileType) { $Extraction = "tar" }
-    if ("tgz" -in $FileType) { $Extraction = "tar" }
+    elseif ("zip" -in $FileType) { $Extraction = "zip" }
+    elseif ("tar" -in $FileType) { $Extraction = "tar" }
+    elseif ("tgz" -in $FileType) { $Extraction = "tar" }
+    else {
+        if($IsWindows){
+            $Extraction = "zip"; 
+            $Zip = $(Split-Path $Path -Leaf) -replace ".exe",".zip"
+            $X64_zip = Join-Path ".\x64" $Zip;
+            $X64_extract = $( (Split-Path $X64_zip -Leaf) -split "\.") | Select -First 1;
+        }
+        elseif($IsLinux){
+            $Extraction = "tar" 
+            $Zip = "$(Split-Path $Path -Leaf).tar.gz"
+            $X64_zip = Join-Path ".\x64" $Zip;
+            $X64_extract = $( (Split-Path $X64_zip -Leaf) -split "\.") | Select -First 1;
+        }
+        log "WARNING: File download type is unknown attepting to guess file type as $Zip" -ForeGroundColor Yellow
+     }
 
     if ($Extraction -eq "tar") {
         if ("gz" -in $FileType) { $Tar = "gz" }
-        if ("xz" -in $FileType) { $Tar = "xz" }
-        if ("tgz" -in $FileType) { $Tar = "gz" }
+        elseif ("xz" -in $FileType) { $Tar = "xz" }
+        elseif ("tgz" -in $FileType) { $Tar = "gz" }
+        else{$Tar = "gz"}
     }
 
     ##Delete any old download attempts - Start Fresh
@@ -116,7 +132,7 @@ function Global:Expand-WebRequest {
             log "Download URI is $URI"
             log "Miner Exec is $Name"
             log "Miner Dir is $MoveThere"
-            Invoke-WebRequest $Uri -OutFile ".\x64\$Zip" -UseBasicParsing
+            try{Invoke-WebRequest "$Uri" -OutFile "$X64_zip" -UseBasicParsing -SkipCertificateCheck -TimeoutSec 10}catch {log "WARNING: Failed to contact $URI for miner binary" -ForeGroundColor Yellow}
 
             if (Test-Path "$X64_zip") { log "Download Succeeded!" -ForegroundColor Green }
             else { log "Download Failed!" -ForegroundColor DarkRed; break }
@@ -146,7 +162,7 @@ function Global:Expand-WebRequest {
             log "Download URI is $URI"
             log "Miner Exec is $Name"
             log "Miner Dir is $MoveThere"
-            Invoke-WebRequest $Uri -OutFile "$X64_zip" -UseBasicParsing
+            try { Invoke-WebRequest "$Uri" -OutFile "$X64_zip" -UseBasicParsing -SkipCertificateCheck -TimeoutSec 10 }catch {log "WARNING: Failed to contact $URI for miner binary" -ForeGroundColor Yellow}
             if (Test-Path "$X64_zip") { log "Download Succeeded!" -ForegroundColor Green }
             else { log "Download Failed!" -ForegroundColor DarkRed; break }
 
@@ -203,8 +219,8 @@ function Global:Get-MinerBinary($Miner,$Reason) {
             $MinersArray = @()
             if (Test-Path ".\timeout\download_block\download_block.txt") { $OldTimeouts = Get-Content ".\timeout\download_block\download_block.txt" | ConvertFrom-Json }
             if ($OldTimeouts) { $OldTimeouts | % { $MinersArray += $_ } }
-            $MinersArray += $Miner
-            $MinersArray | ConvertTo-Json -Depth 3 | Add-Content ".\timeout\download_block\download_block.txt"
+            if($Miner.Name -notin $MinersArray.Name) { $MinersArray += $Miner }
+            $MinersArray | ConvertTo-Json -Depth 3 | Set-Content ".\timeout\download_block\download_block.txt"
             $HiveMessage = "$($Miner.Name) Has Failed To Download"
             $HiveWarning = @{result = @{command = "timeout" } }
             if ($(vars).WebSites) {
@@ -306,6 +322,7 @@ function Global:Stop-AllMiners {
 }
 
 function Global:Start-MinerDownloads {
+    $MinersStopped = $False
     $(vars).Miners | ForEach-Object {
         $Sel = $_
         $Success = 0;
@@ -313,19 +330,28 @@ function Global:Start-MinerDownloads {
             $CheckPath = Test-Path $Sel.Path
             $VersionPath = Join-Path (Split-Path $Sel.Path) "swarm-version.txt"
             if ( $CheckPath -eq $false ) {
-                Global:Stop-AllMiners
+                if($MinersStopped -eq $false){
+                    Global:Stop-AllMiners
+                    $MinersStopped = $true
+                }
                 $Success = Global:Get-MinerBinary $Sel "New"
             }
             elseif(test-path $VersionPath){
                 [String]$Old_Version = Get-Content $VersionPath
                 if($Old_Version -ne [string]$Sel.Version) {
-                    Global:Stop-AllMiners
-                    Write-Log "There is a new version availble for $($Sel.Name), Downloading" -ForegroundColor Yellow
+                    if($MinersStopped -eq $false){
+                        Global:Stop-AllMiners
+                        $MinersStopped = $true
+                    }
+                        Write-Log "There is a new version availble for $($Sel.Name), Downloading" -ForegroundColor Yellow
                     $Success = Global:Get-MinerBinary $Sel "Update"
                 }
             }
             else{
-                Global:Stop-AllMiners
+                if($MinersStopped -eq $false){
+                    Global:Stop-AllMiners
+                    $MinersStopped = $true
+                }
                 Write-Log "Binary found, but swarm-version.txt is missing for $($Sel.Name), Downloading" -ForegroundColor Yellow
                 $Success = Global:Get-MinerBinary $Sel "Update"
             }
@@ -333,6 +359,7 @@ function Global:Start-MinerDownloads {
         else { $Success = 1 }
         if ($Success -eq 2) {
             log "WARNING: Miner Failed To Download Three Times- Restarting SWARM" -ForeGroundColor Yellow
+            remove all
             continue
         }
     }

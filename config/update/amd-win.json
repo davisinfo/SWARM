@@ -51,9 +51,9 @@
     "AMD2": ".\\bin\\gminer-amd-2\\miner.exe",
     "AMD3": ".\\bin\\gminer-amd-3\\miner.exe",
     "minername": "miner.exe",
-    "version": "1.46",
+    "version": "1.50",
     "optional": "No",
-    "uri": "https://github.com/develsoftware/GMinerRelease/releases/download/1.47/gminer_1_47_windows64.zip"
+    "uri": "https://github.com/develsoftware/GMinerRelease/releases/download/1.50/gminer_1_50_windows64.zip"
   },
   "phoenix-amd": {
     "name": "phoenix-amd",
@@ -95,9 +95,9 @@
     "AMD2": ".\\bin\\lolMiner-AMD-2\\lolMiner.exe",
     "AMD3": ".\\bin\\lolMiner-AMD-3\\lolMiner.exe",
     "minername": "lolMiner.exe",
-    "version": "0.8.2",
+    "version": "0.8.4",
     "optional": "No",
-    "uri": "https://github.com/Lolliedieb/lolMiner-releases/releases/download/0.8.2/lolMiner_v082_Win64.zip"
+    "uri": "https://github.com/Lolliedieb/lolMiner-releases/releases/download/0.8.4/lolMiner_v084_Win64.zip"
   },
   "teamredminer": {
     "name": "teamredminer",
@@ -106,9 +106,9 @@
     "AMD2": ".\\bin\\teamredminer-2\\teamredminer.exe",
     "AMD3": ".\\bin\\teamredminer-3\\teamredminer.exe",
     "minername": "teamredminer.exe",
-    "version": "0.5.2",
+    "version": "0.5.5",
     "optional": "No",
-    "uri": "https://github.com/todxx/teamredminer/releases/download/0.5.2/teamredminer-v0.5.2-win.zip"
+    "uri": "https://github.com/todxx/teamredminer/releases/download/0.5.5/teamredminer-v0.5.5-win.zip"
   },
   "xmr-stak": {
     "name": "xmr-stak",
@@ -128,9 +128,9 @@
     "AMD2": ".\\bin\\wildrig-2\\wildrig.exe",
     "AMD3": ".\\bin\\wildrig-3\\wildrig.exe",
     "minername": "wildrig.exe",
-    "version": "0.17.9",
+    "version": "0.18.0",
     "optional": "No",
-    "uri": "https://github.com/andru-kun/wildrig-multi/releases/download/0.17.9/wildrig-multi-windows-0.17.9-beta.7z"
+    "uri": "https://github.com/andru-kun/wildrig-multi/releases/download/0.18.0/wildrig-multi-windows-0.18.0-beta.7z"
   },
   "fancyix": {
     "name": "fancyix",

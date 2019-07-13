@@ -35,9 +35,9 @@ $(vars).AMDTypes | ForEach-Object {
     $PreStart += "export LD_LIBRARY_PATH=$ExportDir"
     $MinerConfig.$ConfigType.prestart | ForEach-Object { $Prestart += "$($_)" }
 
-    if ($(vars).Coins -eq $true) { $Pools = $(vars).CoinPools } else { $Pools = $(vars).AlgoPools }
+    if ($(vars).Coins) { $Pools = $(vars).CoinPools } else { $Pools = $(vars).AlgoPools }
 
-    if ($(vars).Bancount -lt 1) { $(vars).Bancount = 6 }
+    if ($(vars).Bancount -lt 1) { $(vars).Bancount = 5 }
 
     ##Build Miner Settings
     $MinerConfig.$ConfigType.commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {

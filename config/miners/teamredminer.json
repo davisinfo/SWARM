@@ -18,7 +18,9 @@
             "x16r" : "",
             "x16s" : "",
             "x16rt" : "",
-            "veil": ""
+            "veil": "",
+            "mtp": "",
+            "cuckatoo31": ""
         },
         "difficulty": {
             "phi2": "",
@@ -29,7 +31,9 @@
             "x16r" : "",
             "x16s" : "",
             "x16rt" : "",
-            "veil": ""
+            "veil": "",
+            "mtp": "",
+            "cuckatoo31": ""
         },
         "naming": {
             "phi2": "phi2",
@@ -40,7 +44,9 @@
             "x16r" : "x16r",
             "x16s" : "x16s",
             "x16rt" : "x16rt",
-            "veil": "x16rt"
+            "veil": "x16rt",
+            "mtp": "mtp",
+            "cuckatoo31": "cuckatoo31_grin"
         },
         "fee": {
             "phi2": 3,
@@ -51,7 +57,9 @@
             "x16r" : 2.5,
             "x16s" : 2.5,
             "x16rt" : 2.5,
-            "veil": 2.5
+            "veil": 2.5,
+            "mtp": 2.5,
+            "cuckatoo31": 2.5
         }
     }
 }
