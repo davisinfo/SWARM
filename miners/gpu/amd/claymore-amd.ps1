@@ -39,7 +39,6 @@ $(vars).AMDTypes | ForEach-Object {
     $ExportDir = Join-Path $($(vars).dir) "build\export"
 
     ##Prestart actions before miner launch
-    $BE = "/usr/lib/x86_64-linux-gnu/libcurl-compat.so.3.0.0"
     $Prestart = @()
     $PreStart += "export LD_LIBRARY_PATH=$ExportDir"
     $MinerConfig.$ConfigType.prestart | ForEach-Object { $Prestart += "$($_)" }
@@ -63,6 +62,7 @@ $(vars).AMDTypes | ForEach-Object {
                     $SelName = $_.Name
                     switch ($SelName) {
                         "nicehash" { $AddArgs = "-esm 3 -estale 0 " }
+                        "nicehash_v1" { $AddArgs = "-esm 3 -estale 0 " }
                         default { $AddArgs = "" }
                     }
                     if ($MinerConfig.$ConfigType.difficulty.$($_.Algorithm)) { $Diff = ",d=$($MinerConfig.$ConfigType.difficulty.$($_.Algorithm))" }else { $Diff = "" }

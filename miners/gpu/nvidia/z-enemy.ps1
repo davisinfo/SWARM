@@ -4,11 +4,11 @@ $(vars).NVIDIATypes | ForEach-Object {
     $Cname = "z-enemy"
 
     ##Miner Path Information
-    if ($(vars).nvidia.$Cname.$ConfigType -and $(arg).Platform -eq "linux") { $Path = "$($(vars).nvidia.$Cname.$ConfigType)" }
+    if ($(vars).nvidia.$Cname.$ConfigType) { $Path = "$($(vars).nvidia.$Cname.$ConfigType)" }
     else { $Path = "None" }
-    if ($(vars).nvidia.$Cname.uri -and $(arg).Platform -eq "linux") { $Uri = "$($(vars).nvidia.$Cname.uri)" }
+    if ($(vars).nvidia.$Cname.uri) { $Uri = "$($(vars).nvidia.$Cname.uri)" }
     else { $Uri = "None" }
-    if ($(vars).nvidia.$Cname.MinerName -and $(arg).Platform -eq "linux") { $MinerName = "$($(vars).nvidia.$Cname.MinerName)" }
+    if ($(vars).nvidia.$Cname.MinerName) { $MinerName = "$($(vars).nvidia.$Cname.MinerName)" }
     else { $MinerName = "None" }
 
     $User = "User$Num"; $Pass = "Pass$Num"; $Name = "$Cname-$Num"; $Port = "5300$Num";
@@ -33,8 +33,8 @@ $(vars).NVIDIATypes | ForEach-Object {
     $ExportDir = Join-Path $($(vars).dir) "build\export"
 
     ##Prestart actions before miner launch
-    $BE = "/usr/lib/x86_64-linux-gnu/libcurl-compat.so.3.0.0"
     $Prestart = @()
+    $BE = "/usr/lib/x86_64-linux-gnu/libcurl-compat.so.3.0.0"
     if (Test-Path $BE) { $Prestart += "export LD_PRELOAD=libcurl-compat.so.3.0.0" }
     $PreStart += "export LD_LIBRARY_PATH=$ExportDir"
     $MinerConfig.$ConfigType.prestart | ForEach-Object { $Prestart += "$($_)" }

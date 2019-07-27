@@ -55,7 +55,7 @@ if ($IsWindows) {
     Remove-Variable -name Net -ErrorAction Ignore
 
     ## Windows Icon
-    Start-Process "powershell" -ArgumentList "Set-Location `'$($(vars).dir)`'; .\build\powershell\scripts\icon.ps1 `'$($(vars).dir)\build\apps\SWARM.ico`'" -NoNewWindow
+    Start-Process "powershell" -ArgumentList "Set-Location `'$($(vars).dir)`'; .\build\powershell\scripts\icon.ps1 `'$($(vars).dir)\build\apps\icon\SWARM.ico`'" -NoNewWindow
 }
 
 ## Debug Mode- Allow you to run with last known arguments or arguments.json.
@@ -405,6 +405,7 @@ While ($true) {
 
         create Thresholds @()
         create Miners (New-Object System.Collections.ArrayList)
+        create PreviousMinerPorts @{AMD1 = ""; NVIDIA1 = ""; NVIDIA2 = ""; NVIDIA3 = ""; CPU = "" }
 
         ##Insert Miners Single Modules Here
 
@@ -498,7 +499,6 @@ While ($true) {
         ## Build the Current Active Miners
         create Restart $false
         create NoMiners $false
-        create PreviousMinerPorts @{AMD1 = ""; NVIDIA1 = ""; NVIDIA2 = ""; NVIDIA3 = ""; CPU = "" }
         create SWARM_IT $false
         create MinerInterval $null
         create MinerStatInt $null

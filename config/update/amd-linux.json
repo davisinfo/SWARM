@@ -18,9 +18,9 @@
     "AMD2": ".\\bin\\gminer-amd-2\\miner",
     "AMD3": ".\\bin\\gminer-amd-3\\miner",
     "minername": "miner",
-    "version": "1.50",
+    "version": "1.53",
     "optional": "No",
-    "uri": "https://github.com/develsoftware/GMinerRelease/releases/download/1.50/gminer_1_50_linux64.tar.xz"
+    "uri": "https://github.com/develsoftware/GMinerRelease/releases/download/1.53/gminer_1_53_linux64.tar.xz"
   },
   "kbminer-amd": {
     "name": "kbminer-amd",
@@ -95,9 +95,9 @@
     "AMD2": ".\\bin\\lolMiner-AMD-2\\lolMiner",
     "AMD3": ".\\bin\\lolMiner-AMD-3\\lolMiner",
     "minername": "lolMiner",
-    "version": "0.8.4",
+    "version": "0.8.5",
     "optional": "No",
-    "uri": "https://github.com/Lolliedieb/lolMiner-releases/releases/download/0.8.4/lolMiner_v084_Lin64.tar.gz"
+    "uri": "https://github.com/Lolliedieb/lolMiner-releases/releases/download/0.8.5/lolMiner_v085_Lin64.tar.gz"
   },
   "avermore": {
     "name": "avermore",
@@ -150,9 +150,9 @@
     "AMD2": ".\\bin\\teamredminer-2\\teamredminer",
     "AMD3": ".\\bin\\teamredminer-3\\teamredminer",
     "minername": "teamredminer",
-    "version": "0.5.5",
+    "version": "0.5.6",
     "optional": "No",
-    "uri": "https://github.com/todxx/teamredminer/releases/download/0.5.5/teamredminer-v0.5.5-linux.tgz"
+    "uri": "https://github.com/todxx/teamredminer/releases/download/0.5.6/teamredminer-v0.5.6-linux.tgz"
   },
   "xmr-stak": {
     "name": "xmr-stak",
@@ -161,9 +161,9 @@
     "AMD2": ".\\bin\\xmrstak-2\\xmr-stak",
     "AMD3": ".\\bin\\xmrstak-3\\xmr-stak",
     "minername": "xmr-stak",
-    "version": "2.10.5",
+    "version": "2.10.6",
     "optional": "No",
-    "uri": "https://github.com/fireice-uk/xmr-stak/releases/download/2.10.5/xmr-stak-linux-2.10.5-cpu_opencl-amd.tar.xz"
+    "uri": "https://github.com/fireice-uk/xmr-stak/releases/download/2.10.6/xmr-stak-linux-2.10.6-cpu_opencl-amd.tar.xz"
   },
   "wildrig": {
     "name": "wildrig",
@@ -194,9 +194,9 @@
     "AMD2": ".\\bin\\xmrig-amd-2\\xmrig-amd",
     "AMD3": ".\\bin\\xmrig-amd-3\\xmrig-amd",
     "minername": "xmrig-amd",
-    "version": "2.14.4",
+    "version": "2.14.5",
     "optional": "No",
-    "uri": "https://github.com/MaynardMiner/MM.Compiled-Miners/releases/download/v5.0/xmrig-amd-linux.tar.gz"
+    "uri": "https://github.com/xmrig/xmrig-amd/releases/download/v2.14.5/xmrig-amd-2.14.5-xenial-x64.tar.gz"
   },
   "progminer-amd": {
     "name": "progminer-amd",
@@ -208,5 +208,27 @@
     "version": "0.17.0",
     "optional": "No",
     "uri": "https://github.com/MaynardMiner/MM.Compiled-Miners/releases/download/v5.0/progminer-linux-10.tar.gz"
+  },
+  "ethminer-amd": {
+    "name": "ethminer-amd",
+    "type": "amd",
+    "AMD1": ".\\bin\\ethminer-amd-1\\ethminer",
+    "AMD2": ".\\bin\\ethminer-amd-2\\ethminer",
+    "AMD3": ".\\bin\\ethminer-amd-3\\ethminer",
+    "minername": "ethminer",
+    "version": "0.19.0-alpha.0",
+    "optional": "Yes",
+    "uri": "https://github.com/MaynardMiner/MM.Compiled-Miners/releases/download/v4.0/ethminer-linux.tar.gz"
+  },        
+  "nanominer": {
+    "name": "nanominer",
+    "type": "amd",
+    "AMD1": ".\\bin\\nanominer-1\\nanominer",
+    "AMD2": ".\\bin\\nanominer-2\\nanominer",
+    "AMD3": ".\\bin\\nanominer-3\\nanominer",
+    "minername": "nanominer",
+    "version": "1.5.2",
+    "optional": "No",
+    "uri": "https://github.com/nanopool/nanominer/releases/download/v1.5.2/nanominer-linux-1.5.2.tar.gz"
   }
 }

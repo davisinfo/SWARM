@@ -51,7 +51,7 @@ function Global:Remove-ASICPools {
     }
 }
 
-function Global:Start-LaunchCode($MinerCurrent,$AIP) {
+function Global:Start-LaunchCode($MinerCurrent, $AIP) {
 
     if ($MinerCurrent.Type -notlike "*ASIC*") {
         ##Remove Old PID FIle
@@ -79,7 +79,7 @@ function Global:Start-LaunchCode($MinerCurrent,$AIP) {
                         "lolminer" { $MinerArguments = "--devices $($MinerCurrent.Devices) $($MinerCurrent.Arguments)" }
                         "xmrstak" { $MinerArguments = "--cuda-devices $($MinerCurrent.Devices) $($MinerCurrent.Arguments)" }
                         "progminer" { $MinerArguments = "--cuda-devices $($MinerCurrent.Devices) $($MinerCurrent.Arguments)" }
-                        "grin-miner" { set-minerconfig $NewMiner $Logs }
+                        "grin-miner" { global:set-minerconfig $NewMiner $Logs }
                         "zjazz" {
                             $GetDevices = $($MinerCurrent.Devices) -split ","
                             $GetDevices | ForEach-Object { $LaunchDevices += "-d $($_) " }         
@@ -103,7 +103,7 @@ function Global:Start-LaunchCode($MinerCurrent,$AIP) {
                             $NiceDevices = Global:Get-DeviceString -TypeCount $NHDevices.NVIDIA.Count
                             set-nicehash $($MinerCurrent.NPool) 3200 $($MinerCurrent.NUser) $($MinerCurrent.Algo) $($MinerCurrent.CommandFile) "$NiceDevices"
                         }
-                        "grin-miner" { set-minerconfig $NewMiner $Logs }
+                        "grin-miner" { global:set-minerconfig $NewMiner $Logs }
                         "gminer" { $MinerArguments = "-d $($MinerCurrent.ArgDevices) $($MinerCurrent.Arguments)" }
                         "lolminer" { $MinerArguments = "--devices NVIDIA $($MinerCurrent.Arguments)" }
                         default { $MinerArguments = "$($MinerCurrent.Arguments)" }
@@ -140,6 +140,7 @@ function Global:Start-LaunchCode($MinerCurrent,$AIP) {
                             $NewLines | Set-Content ".\lyclMiner.conf"
                             Set-Location $($(vars).dir)
                         }
+                        "nanominer" { global:set-minerconfig $MinerCurrent $Logs }
                         default { $MinerArguments = "$($MinerCurrent.Arguments)" }           
                     }
                 }
@@ -165,6 +166,7 @@ function Global:Start-LaunchCode($MinerCurrent,$AIP) {
                         "grin-miner" { Global:set-minerconfig $MinerCurrent $Logs }
                         "gminer" { $MinerArguments = "-d $($MinerCurrent.ArgDevices) $($MinerCurrent.Arguments)" }
                         "lolminer" { $MinerArguments = "--devices AMD $($MinerCurrent.Arguments)" }
+                        "nanominer" { global:set-minerconfig $MinerCurrent $Logs }
                         default { $MinerArguments = "$($MinerCurrent.Arguments)" }
                     }
                 }
@@ -220,12 +222,13 @@ function Global:Start-LaunchCode($MinerCurrent,$AIP) {
                         $Program = Join-Path "$WorkingDirectory" "$($MinerCurrent.MinerName)"
                         New-NetFirewallRule -DisplayName "SWARM $($MinerCurrent.Minername)" -Direction Inbound -Program $Program -Action Allow | Out-Null
                     }
-                } catch {}
+                }
+                catch { }
 
                 ##Build Start Script
                 $script = @()
                 $script += "`$OutputEncoding = [System.Text.Encoding]::ASCII"
-                $script += "Start-Process `"powershell`" -ArgumentList `"Set-Location ``'$($(vars).dir)``'; .\build\powershell\scripts\icon.ps1 ``'$($(vars).dir)\build\apps\miner.ico``'`" -NoNewWindow"
+                $script += "Start-Process `"powershell`" -ArgumentList `"Set-Location ``'$($(vars).dir)``'; .\build\powershell\scripts\icon.ps1 ``'$($(vars).dir)\build\apps\icons\miner.ico``'`" -NoNewWindow"
                 $script += "`$host.ui.RawUI.WindowTitle = `'$($MinerCurrent.Name) - $($MinerCurrent.Algo)`';"
                 $MinerCurrent.Prestart | ForEach-Object {
                     if ($_ -notlike "export LD_LIBRARY_PATH=$($(vars).dir)\build\export") {
@@ -374,10 +377,15 @@ function Global:Start-LaunchCode($MinerCurrent,$AIP) {
             if ($FileChecked -eq $false) { Write-Warning "Failed To Write Miner Details To File" }
 
             ##Bash Script to free Port
-            if($MinerCurrent.Port -ne 0) {
-            Write-Log "Clearing Miner Port `($($MinerCurrent.Port)`)..." -ForegroundColor Cyan
-            $proc = Start-Process ".\build\bash\killcx.sh" -ArgumentList $MinerCurrent.Port -PassThru
-            $proc | Wait-Process
+            if ($MinerCurrent.Port -ne 0) {
+                Write-Log "Clearing Miner Port `($($MinerCurrent.Port)`).." -ForegroundColor Cyan
+                $proc = Start-Process ".\build\bash\killcx.sh" -ArgumentList $MinerCurrent.Port -PassThru
+                do {
+                    $proc | Wait-Process -Timeout 5 -ErrorAction Ignore
+                    if ($proc.HasExited -eq $false) {
+                        log "Still Waiting For Port To Clear..." -ForegroundColor Cyan
+                    }
+                }while ($Proc.HasExited -eq $false)
             }
             ##Notification To User That Miner Is Attempting To start
             log "Starting $($MinerCurrent.Name) Mining $($MinerCurrent.Symbol) on $($MinerCurrent.Type)" -ForegroundColor Cyan
@@ -429,6 +437,11 @@ function Global:Start-LaunchCode($MinerCurrent,$AIP) {
             $Proc = Start-Process "chmod" -ArgumentList "+x build/bash/startup.sh" -PassThru
             $Proc | Wait-Process
             $Proc = Start-Process "chmod" -ArgumentList "+x $MinerDir/startup.sh" -PassThru
+            $Proc | Wait-Process
+
+            ##chmod miner (sometimes they don't set permissions correctly)
+            $MinerFP = $(Resolve-Path $MinerCurrent.Path).Path
+            $Proc = Start-Process "chmod" -ArgumentList "+x $MinerFP" -PassThru
             $Proc | Wait-Process
 
             ##Launch The Config

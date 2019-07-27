@@ -41,6 +41,13 @@ function Global:Get-Data {
         Set-Location $($(vars).dir)     
     }
 
+    if (-not (Test-Path ".\build\export\libcurl.so.3")) {
+        $Proc = Start-Process ln -ArgumentList "-s $($(vars).dir)/build/export/libcurl.so.3.0.0 $($(vars).dir)/build/export/libcurl.so.3" -PassThru
+        $Proc | Wait-Process
+        Set-Location "/"
+        Set-Location $($(vars).dir)     
+    }
+
     if (-not (Test-Path ".\build\export\libnvrtc-builtins.so.10.1")) {
         $Proc = Start-Process ln -ArgumentList "-s $($(vars).dir)/build/export/libnvrtc-builtins.so.10.1.105 $($(vars).dir)/build/export/libnvrtc-builtins.so.10.1" -PassThru
         $Proc | Wait-Process
@@ -275,7 +282,7 @@ function Global:Get-GPUCount {
         }
         if ($GetBus -like "*Advanced Micro Devices*" -and $GetBus -notlike "*RS880*" -and $GetBus -notlike "*Stoney*") {
             $ROCM = invoke-expression "dmesg" | Select-String "amdgpu"
-            $AMDMem = invoke-expression "./build/apps/amdmeminfo"
+            $AMDMem = invoke-expression "./build/apps/amdmeminfo/amdmeminfo"
             $PCIArray = @()
             $PCICount = 0
             $PCI = $AMDMem | Select-String "Found Card: ", "PCI: ", "BIOS Version", "Memory Model"
