@@ -1,70 +1,74 @@
 
 $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName 
-$blazepool_Request = [PSCustomObject]@{ } 
-[Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
-if($XNSub -eq "Yes"){$X = "#xnsub"}
+$Pool_Request = [PSCustomObject]@{ } 
+
+if ($(arg).xnsub -eq "Yes") { $X = "#xnsub" }
  
-if ($Poolname -eq $Name) {
-    try { $blazepool_Request = Invoke-RestMethod "http://api.blazepool.com/status" -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop } 
-    catch { Write-Log "SWARM contacted ($Name) but there was no response."; return }
+if ($Name -in $(arg).PoolName) {
+    try { $Pool_Request = Invoke-RestMethod "http://api.blazepool.com/status" -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop } 
+    catch { log "SWARM contacted ($Name) but there was no response."; return }
  
-    if (($blazepool_Request | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Measure-Object Name).Count -le 1) { 
-        Write-Log "SWARM contacted ($Name) but ($Name) the response was empty." 
+    if (($Pool_Request | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Measure-Object Name).Count -le 1) { 
+        log "SWARM contacted ($Name) but ($Name) the response was empty." 
         return 
-    }   
-  
-    $blazepool_Request | 
-    Get-Member -MemberType NoteProperty -ErrorAction Ignore | 
-    Select-Object -ExpandProperty Name | 
-    Where-Object { $blazepool_Request.$_.hashrate -gt 0 } | 
-    Where-Object { $global:Exclusions.$($blazepool_Request.$_.name) } |
-    ForEach-Object {
+    }
 
-        $blazepool_Algorithm = $blazepool_Request.$_.name.ToLower()
+    $PoolAlgos = @()
+    $PoolAlgos += $(vars).Algorithm
+    $PoolAlgos += $(arg).ASIC_ALGO
+    $Algos = $PoolAlgos | ForEach-Object { if ($Bad_pools.$_ -notcontains $Name) { $_ } }
 
-        if ($Algorithm -contains $blazepool_Algorithm -or $ASIC_ALGO -contains $blazepool_Algorithm) {
-            if ($Name -notin $global:Exclusions.$blazepool_Algorithm.exclusions -and $blazepool_Algorithm -notin $Global:banhammer) {
-                $blazepool_Host = "$_.mine.blazepool.com$X"
-                $blazepool_Port = $blazepool_Request.$_.port
-                $Divisor = (1000000 * $blazepool_Request.$_.mbtc_mh_factor)
-                $Fees = $blazepool_Request.$_.fees
-                $Workers = $blazepool_Request.$_.Workers
-                $StatPath = ".\stats\($Name)_$($blazepool_Algorithm)_profit.txt"
-                $Hashrate = $blazepool_Request.$_.hashrate
+    ## Only get algos we need & convert name to universal schema
+    $Pool_Sorted = $Pool_Request.PSobject.Properties.Value | Where-Object {[Double]$_.estimate_current -gt 0} | ForEach-Object { 
+        $N = $_.Name;
+        $_ | Add-Member "Original_Algo" $N
+        $_.Name = $global:Config.Pool_Algos.PSObject.Properties.Name | Where { $N -in $global:Config.Pool_Algos.$_.alt_names };
+        if ($_.Name) { if ($_.Name -in $Algos -and $Name -notin $global:Config.Pool_Algos.$($_.Name).exclusions -and $_.Name -notin $(vars).BanHammer) { $_ } }
+    }
 
-                if (-not (Test-Path $StatPath)) {
-                    $Stat = Set-Stat -Name "$($Name)_$($blazepool_Algorithm)_profit" -HashRate $HashRate -Value ( [Double]$blazepool_Request.$_.estimate_last24h / $Divisor * (1 - ($blazepool_Request.$_.fees / 100)))
-                } 
-                else {
-                    $Stat = Set-Stat -Name "$($Name)_$($blazepool_Algorithm)_profit" -HashRate $HashRate -Value ( [Double]$blazepool_Request.$_.estimate_current / $Divisor * (1 - ($blazepool_Request.$_.fees / 100)))
-                }
+    ## Add 24 hour deviation.
+    $Pool_Sorted | ForEach-Object {
+        $Raw = shuffle $_.estimate_last24h $_.actual_last24h
+        $_ | Add-Member "deviation" $Raw
+    }
 
-                if (-not $global:Pool_Hashrates.$blazepool_Algorithm) { $global:Pool_Hashrates.Add("$blazepool_Algorithm", @{ })
-                }
-                if (-not $global:Pool_Hashrates.$blazepool_Algorithm.$Name) { $global:Pool_Hashrates.$blazepool_Algorithm.Add("$Name", @{HashRate = "$($Stat.HashRate)"; Percent = "" })
-                }
+    $Pool_Sorted | ForEach-Object {
+
+        $StatAlgo = $_.Name -replace "`_", "`-"
+        $StatPath = "$($Name)_$($StatAlgo)_profit"
+        if (-not (test-Path ".\stats\$StatPath") ) { $Estimate = [Double]$_.estimate_last24h }
+        else { $Estimate = [Double]$_.estimate_current }
     
-                [PSCustomObject]@{
-                    Priority  = $Priorities.Pool_Priorities.$Name
-                    Symbol    = "$blazepool_Algorithm-Algo"
-                    Mining    = $blazepool_Algorithm
-                    Algorithm = $blazepool_Algorithm
-                    Price     = $Stat.$Stat_Algo
-                    Protocol  = "stratum+tcp"
-                    Host      = $blazepool_Host
-                    Port      = $blazepool_Port
-                    User1     = $global:Wallets.Wallet1.$PasswordCurrency1.address
-                    User2     = $global:Wallets.Wallet2.$PasswordCurrency2.address
-                    User3     = $global:Wallets.Wallet3.$PasswordCurrency3.address
-                    CPUser    = $global:Wallets.Wallet1.$PasswordCurrency1.address                    
-                    CPUPass   = "c=$($global:Wallets.Wallet1.keys),id=$Rigname1"
-                    Pass1     = "c=$($global:Wallets.Wallet1.keys),id=$Rigname1"
-                    Pass2     = "c=$($global:Wallets.Wallet2.keys),id=$Rigname2"
-                    Pass3     = "c=$($global:Wallets.Wallet3.keys),id=$Rigname3"
-                    Location  = $Location
-                    SSL       = $false
-                }
-            }
+        $Pool_Port = $_.port
+        $Pool_Host = "$($_.Original_Algo).mine.blazepool.com$X"
+        $Divisor = 1000000 * $_.mbtc_mh_factor
+        $Hashrate = $_.hashrate
+        $previous = [Math]::Max(([Double]$_.actual_last24h * 0.001) / $Divisor * (1 - ($_.fees / 100)), $SmallestValue)
+
+        $Stat = Global:Set-Stat -Name $StatPath -HashRate $HashRate -Value ( $Estimate / $Divisor * (1 - ($_.fees / 100))) -Shuffle $_.deviation 
+        if (-not $(vars).Pool_Hashrates.$($_.Name)) { $(vars).Pool_Hashrates.Add("$($_.Name)", @{ }) }
+        if (-not $(vars).Pool_Hashrates.$($_.Name).$Name) { $(vars).Pool_Hashrates.$($_.Name).Add("$Name", @{HashRate = "$($Stat.HashRate)"; Percent = "" })}
+    
+        $Level = $Stat.$($(arg).Stat_Algo)
+        if ($(arg).Historical_Bias -gt 0) {
+            $SmallestValue = 1E-20 
+            $Level = [Math]::Max($Level + ($Level * $Stat.Deviation), $SmallestValue)
+        }
+
+        [PSCustomObject]@{
+            Symbol    = "$($_.Name)-Algo"
+            Algorithm = "$($_.Name)"
+            Price     = $Level
+            Protocol  = "stratum+tcp"
+            Host      = $Pool_Host
+            Port      = $Pool_Port
+            User1     = $global:Wallets.Wallet1.$($(arg).Passwordcurrency1).address
+            User2     = $global:Wallets.Wallet2.$($(arg).Passwordcurrency2).address
+            User3     = $global:Wallets.Wallet3.$($(arg).Passwordcurrency3).address
+            Pass1     = "c=$($global:Wallets.Wallet1.keys),id=$($(arg).RigName1)"
+            Pass2     = "c=$($global:Wallets.Wallet2.keys),id=$($(arg).RigName2)"
+            Pass3     = "c=$($global:Wallets.Wallet3.keys),id=$($(arg).RigName3)"
+            Previous  = $previous
         }
     }
 }

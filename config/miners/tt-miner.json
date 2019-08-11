@@ -1,0 +1,102 @@
+{
+    "name": "tt-miner",
+    "NVIDIA1": {
+        "name": "NVIDIA1",
+        "delay": "1",
+        "prestart": [],
+        "commands": {
+            "progpow": "",
+            "ubqhash": "",
+            "mtp": "",
+            "ethash": "",
+            "lyra2rev3": ""
+        },
+        "difficulty": {
+            "progpow": "",
+            "ubqhash": "",
+            "mtp": "",
+            "ethash": "",
+            "lyra2rev3": ""
+        },
+        "naming": {
+            "progpow": "PROGPOW-101",
+            "ubqhash": "UBQHASH-101",
+            "mtp": "MTP-101",
+            "ethash": "ETHASH-101",
+            "lyra2rev3": "LYRA2V3-101"
+        },
+        "fee": {
+            "progpow": 1,
+            "ubqhash": 1,
+            "mtp": 1,
+            "ethash": 1,
+            "lyra2rev3": 1
+        }
+    },
+    "NVIDIA2": {
+        "name": "NVIDIA2",
+        "delay": "1",
+        "prestart": [],
+        "commands": {
+            "progpow": "",
+            "ubqhash": "",
+            "mtp": "",
+            "ethash": "",
+            "lyra2rev3": ""
+        },
+        "difficulty": {
+            "progpow": "",
+            "ubqhash": "",
+            "mtp": "",
+            "ethash": "",
+            "lyra2rev3": ""
+        },
+        "naming": {
+            "progpow": "PROGPOW-101",
+            "ubqhash": "UBQHASH-101",
+            "mtp": "MTP-101",
+            "ethash": "ETHASH-101",
+            "lyra2rev3": "LYRA2V3-101"
+        },
+        "fee": {
+            "progpow": 1,
+            "ubqhash": 1,
+            "mtp": 1,
+            "ethash": 1,
+            "lyra2rev3": 1
+        }
+    },
+    "NVIDIA3": {
+        "name": "NVIDIA3",
+        "delay": "1",
+        "prestart": [],
+        "commands": {
+            "progpow": "",
+            "ubqhash": "",
+            "mtp": "",
+            "ethash": "",
+            "lyra2rev3": ""
+        },
+        "difficulty": {
+            "progpow": "",
+            "ubqhash": "",
+            "mtp": "",
+            "ethash": "",
+            "lyra2rev3": ""
+        },
+        "naming": {
+            "progpow": "PROGPOW-101",
+            "ubqhash": "UBQHASH-101",
+            "mtp": "MTP-101",
+            "ethash": "ETHASH-101",
+            "lyra2rev3": "LYRA2V3-101"
+        },
+        "fee": {
+            "progpow": 1,
+            "ubqhash": 1,
+            "mtp": 1,
+            "ethash": 1,
+            "lyra2rev3": 1
+        }
+    }
+}

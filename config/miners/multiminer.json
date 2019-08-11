@@ -1,0 +1,78 @@
+{
+    "NVIDIA1": {
+        "name": "NVIDIA1",
+        "delay": "1",
+        "prestart": [],
+        "commands": {
+            "argon2d250": "",
+            "argon2d500": "",
+            "argon2d4096": ""
+        },
+        "difficulty": {
+            "argon2d250": "",
+            "argon2d500": "",
+            "argon2d4096": ""
+        },
+        "naming": {
+            "argon2d250": "argon2d250",
+            "argon2d500": "argon2d500",
+            "argon2d4096": "argon2d4096"
+        },
+        "fee": {
+            "argon2d250": 0,
+            "argon2d500": 0,
+            "argon2d4096": 0
+        }
+    },
+    "NVIDIA2": {
+        "name": "NVIDIA2",
+        "delay": "1",
+        "prestart": [],
+        "commands": {
+            "argon2d250": "",
+            "argon2d500": "",
+            "argon2d4096": ""
+        },
+        "difficulty": {
+            "argon2d250": "",
+            "argon2d500": "",
+            "argon2d4096": ""
+        },
+        "naming": {
+            "argon2d250": "argon2d250",
+            "argon2d500": "argon2d500",
+            "argon2d4096": "argon2d4096"
+        },
+        "fee": {
+            "argon2d250": 0,
+            "argon2d500": 0,
+            "argon2d4096": 0
+        }
+    },
+    "NVIDIA3": {
+        "name": "NVIDIA3",
+        "delay": "1",
+        "prestart": [],
+        "commands": {
+            "argon2d250": "",
+            "argon2d500": "",
+            "argon2d4096": ""
+        },
+        "difficulty": {
+            "argon2d250": "",
+            "argon2d500": "",
+            "argon2d4096": ""
+        },
+        "naming": {
+            "argon2d250": "argon2d250",
+            "argon2d500": "argon2d500",
+            "argon2d4096": "argon2d4096"
+        },
+        "fee": {
+            "argon2d250": 0,
+            "argon2d500": 0,
+            "argon2d4096": 0
+        }
+    },
+    "name": "multiminer"
+}

@@ -11,10 +11,8 @@
 
 $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName 
 $Whalesburg_Request = [PSCustomObject]@{} 
-[Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
-if($XNSub -eq "Yes"){$X = "#xnsub"} 
  
-if ($Poolname -eq $Name) {
+if ($(arg).PoolName -eq $Name) {
     try {$Whalesburg_Request = Invoke-RestMethod "https://payouts.whalesburg.com/profitabilities/share_price" -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop} 
     catch {Write-Warning "SWARM contacted ($Name) but there was no response."; return}
   
@@ -28,34 +26,32 @@ if ($Poolname -eq $Name) {
 
     $Whalesburg_Algorithm = "ethash"
   
-    if ($Algorithm -contains $Whalesburg_Algorithm -and $Bad_pools.$Whalesburg_Algorithm -notcontains $Name) {
+    if ($(vars).Algorithm -contains $Whalesburg_Algorithm -and $Bad_pools.$Whalesburg_Algorithm -notcontains $Name) {
         $Whalesburg_Port = "7777"
         $Whalesburg_Host = "eu1.whalesburg.com"
         ## add fee to compare to nicehash (Still trying to understand PPS+)
         $Prorate = 2
         ## btc/mhs/day
         $Estimate = ((([Double]$Whalesburg_Request.mh_per_second_price * 86400))) * $ETHExchangeRate
+        $Previous = $Estimate
 
-        $Stat = Set-Stat -Name "$($Name)_$($Whalesburg_Algorithm)_profit" -Value ([Double]$Estimate * (1 - ($Prorate / 100)))
+        $Stat = Global:Set-Stat -Name "$($Name)_$($Whalesburg_Algorithm)_profit" -Value ([Double]$Estimate * (1 - ($Prorate / 100)))
 
         [PSCustomObject]@{
             Priority      = $Priorities.Pool_Priorities.$Name
-            Symbol        = $Whalesburg_Algorithm
-            Mining        = $Whalesburg_Algorithm
             Algorithm     = $Whalesburg_Algorithm
-            Price         = $Stat.$Stat_Algo
-            StablePrice   = $Stat.Week
-            MarginOfError = $Stat.Fluctuation
+            Symbol        = "$Whalesburg_Algorithm-Algo"
+            Price         = $Stat.$($(arg).Stat_Algo)
             Protocol      = "stratum+ssl"
             Host          = $Whalesburg_Host
             Port          = $Whalesburg_Port
-            User1         = $ETH
-            User2         = $ETH
-            User3         = $ETH
-            CPUser        = $ETH
-            Worker        = "$Worker"
-            Location      = $Location
-            SSL           = $false
+            User1         = $(arg).ETH
+            User2         = $(arg).ETH
+            User3         = $(arg).ETH
+            CPUser        = $(arg).ETH
+            Worker        = "$($(arg).Worker)"
+            Location      = $(arg).Location
+            Previous      = $Previous
         }
     }
 }
