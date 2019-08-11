@@ -2,12 +2,8 @@
   "name": "gminer-amd",
   "AMD1": {
     "name": "AMD1",
-    "delay": "1",
+    "delay": "6",
     "prestart": [
-      "export GPU_MAX_HEAP_SIZE=100",
-      "export GPU_USE_SYNC_OBJECTS=1",
-      "export GPU_SINGLE_ALLOC_PERCENT=100",
-      "export GPU_MAX_ALLOC_PERCENT=100"
     ],
     "commands": {
       "beam": "--algo 150_5 --pers auto",
@@ -52,9 +48,9 @@
     "oc": {
       "beam": {
         "dpm": "",
-        "v": "",
-        "core": "",
-        "mem": "",
+        "v": "850 850 850 850 850 850",
+        "core": "1150 1150 1150 1150 1150 1150",
+        "mem": "2125;900 2125;900 2125;900 2125;900 2100;900 2125;900",
         "mdpm": "",
         "fans": ""
       },
@@ -108,9 +104,9 @@
       },
       "grincuckaroo29": {
         "dpm": "",
-        "v": "",
-        "core": "",
-        "mem": "",
+        "v": "850 850 850 850 850 850",
+        "core": "1150 1150 1150 1150 1150 1150",
+        "mem": "2125;800 2125;800 2125;800 2125;800 2100;825 2125;800",
         "mdpm": "",
         "fans": ""
       }

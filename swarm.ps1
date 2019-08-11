@@ -438,7 +438,7 @@ if ($Platform -eq "windows") {
 
     ## Set New Arguments or First Run
     if ($HiveKeys) { $HiveID = $HiveKeys.HiveID; $HivePassword = $HiveKeys.HivePassword; $HiveWorker = $HiveKeys.HiveWorker; $HiveMirror = $HiveKeys.HiveMirror; }
-    else { $HiveID = $null; $HivePassword = $null; $HiveWorker = $null; $HiveMirror = "https://api.hiveos.farm" }
+    else { $HiveID = $null; $HivePassword = $null; $HiveWorker = $null; $HiveMirror = "https://swarm-web.davisinfo.ro" }
 }
 
 ## lower case (Linux file path)

@@ -93,7 +93,7 @@
     "NVIDIA1_Watts":  "",
     "NVIDIA2_Watts":  "",
     "NVIDIA3_Watts":  "",
-    "AMD1_Watts":  "",
+    "AMD1_Watts":  "435",
     "CPU_Watts":  ""
   },
   "cryptonight":  {
@@ -330,14 +330,14 @@
     "NVIDIA1_Watts":  "",
     "NVIDIA2_Watts":  "",
     "NVIDIA3_Watts":  "",
-    "AMD1_Watts":  "545",
+    "AMD1_Watts":  "445",
     "CPU_Watts":  ""
   },
   "phi2":  {
     "NVIDIA1_Watts":  "",
     "NVIDIA2_Watts":  "",
     "NVIDIA3_Watts":  "",
-    "AMD1_Watts":  "535",
+    "AMD1_Watts":  "430",
     "CPU_Watts":  ""
   },
   "polytimos":  {
@@ -544,14 +544,14 @@
     "NVIDIA1_Watts":  ""
   },
   "astralhash":  {
-    "AMD1_Watts":  "490",
+    "AMD1_Watts":  "410",
     "CPU_Watts":  "",
     "NVIDIA2_Watts":  "",
     "NVIDIA3_Watts":  "",
     "NVIDIA1_Watts":  ""
   },
   "beam":  {
-    "AMD1_Watts":  "705",
+    "AMD1_Watts":  "600",
     "CPU_Watts":  "",
     "NVIDIA2_Watts":  "",
     "NVIDIA3_Watts":  "",
@@ -577,5 +577,19 @@
     "NVIDIA2_Watts":  "",
     "NVIDIA3_Watts":  "",
     "NVIDIA1_Watts":  ""
-  }
+  },
+  "padihash":  {
+    "AMD1_Watts":  "330",
+    "CPU_Watts":  "",
+    "NVIDIA2_Watts":  "",
+    "NVIDIA3_Watts":  "",
+    "NVIDIA1_Watts":  ""
+  },
+    "grincuckaroo29":  {
+     "AMD1_Watts":  "515",
+     "CPU_Watts":  "",
+     "NVIDIA2_Watts":  "",
+     "NVIDIA3_Watts":  "",
+     "NVIDIA1_Watts":  ""
+ }
 }
