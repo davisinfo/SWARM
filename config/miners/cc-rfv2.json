@@ -1,0 +1,48 @@
+{
+    "name": "cc-rfv2",
+    "NVIDIA1": {
+        "name": "NVIDIA1",
+        "delay": "1",
+        "prestart": [],
+        "commands": {
+            "rainforestv2": "-i 28"
+        },
+        "difficulty": {
+            "rainforestv2": ""
+        },
+        "naming": {
+            "rainforestv2": "rfv2"
+        },
+        "fee": 0
+    },
+    "NVIDIA2": {
+        "name": "NVIDIA2",
+        "delay": "1",
+        "prestart": [],
+        "commands": {
+            "rainforestv2": "-i 28"
+        },
+        "difficulty": {
+            "rainforestv2": ""
+        },
+        "naming": {
+            "rainforestv2": "rfv2"
+        },
+        "fee": 0
+    },
+    "NVIDIA3": {
+        "name": "NVIDIA3",
+        "delay": "1",
+        "prestart": [],
+        "commands": {
+            "rainforestv2": ""
+        },
+        "difficulty": {
+            "rainforestv2": "-i 28"
+        },
+        "naming": {
+            "rainforestv2": "rfv2"
+        },
+        "fee": 0
+    }
+}

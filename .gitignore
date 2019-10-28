@@ -1,9 +1,11 @@
 backup/
 bin/
+gui/
 build/data/error.txt
 build/data/info.txt
 build/data/system.txt
 build/data/timetable.txt
+build/data/deviation.txt
 build/export/libhwloc.so.5
 build/export/libmicrohttpd.so.10
 build/pid/
@@ -22,6 +24,9 @@ SWARM.conf
 arguments.json
 config/parameters/arguments.json
 config/parameters/newarguments.json
+config/parameters/Hive_params_keys.json
+config/parameters/SWARM_params_keys.json
+config/parameters/autofan.json
 config/power/power.json
 config/wallets/wallets.json
 SWARM.conf
@@ -36,4 +41,6 @@ build/export/libstdc++.so.6
 build/export/libnvrtc-builtins.so.10.1
 build/export/libnvrtc-builtins.so
 build/cmd/dir.txt
- config/power/power.json
+admin
+config/parameters/hive_params_keys.json
+config.json

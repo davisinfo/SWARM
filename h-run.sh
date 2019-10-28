@@ -2,6 +2,11 @@
 
 cd `dirname $0`
 
+if [ -f /usr/lib/x86_64-linux-gnu/libcurl-compat.so.3.0.0 ]; then
+    echo "Exporting Libcurl"
+    export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu
+fi
+
 [ -t 1 ] && . colors
 
 . /hive-config/wallet.conf
@@ -27,12 +32,35 @@ logs-off
 
 if ! [ -x "$(command -v pwsh)" ]; then
 disk-expand
-wget https://github.com/PowerShell/PowerShell/releases/download/v6.1.0/powershell-6.1.0-linux-x64.tar.gz -O /tmp/powershell.tar.gz
-sudo mkdir -p /opt/microsoft/powershell/6.1.0
-sudo tar zxf /tmp/powershell.tar.gz -C /opt/microsoft/powershell/6.1.0
-sudo chmod +x /opt/microsoft/powershell/6.1.0/pwsh
-sudo ln -s /opt/microsoft/powershell/6.1.0/pwsh /usr/bin/pwsh
-sudo rm -rf /tmp/powershell.tar.gz
+wget https://github.com/PowerShell/PowerShell/releases/download/v6.2.3/powershell-6.2.3-linux-x64.tar.gz -O /tmp/powershell.tar.gz --no-check-certificate
+mkdir -p /opt/microsoft/powershell/6.2.3
+tar zxf /tmp/powershell.tar.gz -C /opt/microsoft/powershell/6.2.3
+chmod +x /opt/microsoft/powershell/6.2.3/pwsh
+ln -s /opt/microsoft/powershell/6.2.3/pwsh /usr/bin/pwsh
+rm -rf /tmp/powershell.tar.gz
 fi
 
-pwsh -command "&.\swarm.ps1 $(< /hive/miners/custom/$CUSTOM_NAME/$CUSTOM_NAME.conf)" $@
+PVERSION=`pwsh -version`
+
+if [ "$PVERSION" != "PowerShell 6.2.3" ]; then
+echo "updating powershell to latest version"
+rm -rf /opt/microsoft/powershell/6.2.1
+rm -rf /usr/bin/pwsh
+wget https://github.com/PowerShell/PowerShell/releases/download/v6.2.3/powershell-6.2.3-linux-x64.tar.gz -O /tmp/powershell.tar.gz --no-check-certificate
+mkdir -p /opt/microsoft/powershell/6.2.3
+tar zxf /tmp/powershell.tar.gz -C /opt/microsoft/powershell/6.2.3
+chmod +x /opt/microsoft/powershell/6.2.3/pwsh
+ln -s /opt/microsoft/powershell/6.2.3/pwsh /usr/bin/pwsh
+rm -rf /tmp/powershell.tar.gz
+fi
+
+json=`echo cat $SWARMCONF`
+$json | jq -e . >/dev/null 2>&1
+get=$?
+
+if [ "$get" -eq 0 ]; then
+  $json > $PWD/config.json;
+  pwsh -command "& .\startup.ps1";
+  else
+  pwsh -command "&.\startup.ps1 $(< /hive/miners/custom/$CUSTOM_NAME/$CUSTOM_NAME.conf)" $@;
+fi
