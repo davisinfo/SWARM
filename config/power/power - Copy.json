@@ -1,30 +1,30 @@
 {
   "KWh":  {
     "note":  "You can now set Kw/h by hour. KW/h is based on your fiat currency. So the below 0.1 would be .10 USD",
-    "0":  "0.138",
-    "1":  "0.138",
-    "2":  "0.138",
-    "3":  "0.138",
-    "4":  "0.138",
-    "5":  "0.138",
-    "6":  "0.138",
-    "7":  "0.138",
-    "8":  "0.138",
-    "9":  "0.138",
-    "10":  "0.138",
-    "11":  "0.138",
-    "12":  "0.138",
-    "13":  "0.138",
-    "14":  "0.138",
-    "15":  "0.138",
-    "16":  "0.138",
-    "17":  "0.138",
-    "18":  "0.138",
-    "19":  "0.138",
-    "20":  "0.138",
-    "21":  "0.138",
-    "22":  "0.138",
-    "23":  "0.138"
+    "0":  "0.155",
+    "1":  "0.155",
+    "2":  "0.155",
+    "3":  "0.155",
+    "4":  "0.155",
+    "5":  "0.155",
+    "6":  "0.155",
+    "7":  "0.155",
+    "8":  "0.155",
+    "9":  "0.155",
+    "10":  "0.155",
+    "11":  "0.155",
+    "12":  "0.155",
+    "13":  "0.155",
+    "14":  "0.155",
+    "15":  "0.155",
+    "16":  "0.155",
+    "17":  "0.155",
+    "18":  "0.155",
+    "19":  "0.155",
+    "20":  "0.155",
+    "21":  "0.155",
+    "22":  "0.155",
+    "23":  "0.155"
   },
   "default":  {
     "NVIDIA1_Watts":  "",
@@ -124,11 +124,11 @@
     "AMD1_Watts":  "660",
     "CPU_Watts":  ""
   },
-  "cryptonightr":  {
+  "cryptonight-r":  {
     "NVIDIA1_Watts":  "",
     "NVIDIA2_Watts":  "",
     "NVIDIA3_Watts":  "",
-    "AMD1_Watts":  "670",
+    "AMD1_Watts":  "680",
     "CPU_Watts":  ""
   },
   "daggerhashimoto":  {
@@ -152,18 +152,18 @@
     "AMD1_Watts":  "",
     "CPU_Watts":  ""
   },
-  "equihash144":  {
+  "equihash_144/5":  {
     "NVIDIA1_Watts":  "",
     "NVIDIA2_Watts":  "",
     "NVIDIA3_Watts":  "",
-    "AMD1_Watts":  "",
+    "AMD1_Watts":  "560",
     "CPU_Watts":  ""
   },
-  "equihash192":  {
+  "equihash_192/7":  {
     "NVIDIA1_Watts":  "",
     "NVIDIA2_Watts":  "",
     "NVIDIA3_Watts":  "",
-    "AMD1_Watts":  ""
+    "AMD1_Watts":  "580"
   },
   "equihash200":  {
     "NVIDIA1_Watts":  "",
@@ -330,14 +330,14 @@
     "NVIDIA1_Watts":  "",
     "NVIDIA2_Watts":  "",
     "NVIDIA3_Watts":  "",
-    "AMD1_Watts":  "545",
+    "AMD1_Watts":  "445",
     "CPU_Watts":  ""
   },
   "phi2":  {
     "NVIDIA1_Watts":  "",
     "NVIDIA2_Watts":  "",
     "NVIDIA3_Watts":  "",
-    "AMD1_Watts":  "440",
+    "AMD1_Watts":  "415",
     "CPU_Watts":  ""
   },
   "polytimos":  {
@@ -428,7 +428,7 @@
     "NVIDIA1_Watts":  "",
     "NVIDIA2_Watts":  "",
     "NVIDIA3_Watts":  "",
-    "AMD1_Watts":  "715",
+    "AMD1_Watts":  "675",
     "CPU_Watts":  ""
   },
   "x16s":  {
@@ -530,28 +530,28 @@
     "NVIDIA1_Watts":  ""
   },
   "veil":  {
-    "AMD1_Watts":  "515",
+    "AMD1_Watts":  "550",
     "CPU_Watts":  "",
     "NVIDIA2_Watts":  "",
     "NVIDIA3_Watts":  "",
     "NVIDIA1_Watts":  ""
   },
   "x16rt":  {
-    "AMD1_Watts":  "515",
+    "AMD1_Watts":  "550",
     "CPU_Watts":  "",
     "NVIDIA2_Watts":  "",
     "NVIDIA3_Watts":  "",
     "NVIDIA1_Watts":  ""
   },
   "astralhash":  {
-    "AMD1_Watts":  "410",
+    "AMD1_Watts":  "490",
     "CPU_Watts":  "",
     "NVIDIA2_Watts":  "",
     "NVIDIA3_Watts":  "",
     "NVIDIA1_Watts":  ""
   },
   "beam":  {
-    "AMD1_Watts":  "705",
+    "AMD1_Watts":  "600",
     "CPU_Watts":  "",
     "NVIDIA2_Watts":  "",
     "NVIDIA3_Watts":  "",
@@ -565,7 +565,7 @@
     "NVIDIA1_Watts":  ""
   },
   "mtp":  {
-    "AMD1_Watts":  "1000",
+    "AMD1_Watts":  "790",
     "CPU_Watts":  "",
     "NVIDIA2_Watts":  "",
     "NVIDIA3_Watts":  "",
@@ -579,10 +579,45 @@
     "NVIDIA1_Watts":  ""
   },
   "rainforest":  {
-     "AMD1_Watts":  "350",
-     "CPU_Watts":  "",
-     "NVIDIA2_Watts":  "",
-     "NVIDIA3_Watts":  "",
-     "NVIDIA1_Watts":  ""
+    "AMD1_Watts":  "335",
+    "CPU_Watts":  "",
+    "NVIDIA2_Watts":  "",
+    "NVIDIA3_Watts":  "",
+    "NVIDIA1_Watts":  ""
+  },
+  "grincuckatoo31":  {
+    "AMD1_Watts":  "570",
+    "CPU_Watts":  "",
+    "NVIDIA2_Watts":  "",
+    "NVIDIA3_Watts":  "",
+    "NVIDIA1_Watts":  ""
+  },
+  "grincuckaroo29":  {
+    "AMD1_Watts":  "570",
+    "CPU_Watts":  "",
+    "NVIDIA2_Watts":  "",
+    "NVIDIA3_Watts":  "",
+    "NVIDIA1_Watts":  ""
+  },
+  "bmw512":  {
+    "AMD1_Watts":  "535",
+    "CPU_Watts":  "",
+    "NVIDIA2_Watts":  "",
+    "NVIDIA3_Watts":  "",
+    "NVIDIA1_Watts":  ""
+  },
+  "beamv2":  {
+    "AMD1_Watts":  "485",
+    "CPU_Watts":  "",
+    "NVIDIA2_Watts":  "",
+    "NVIDIA3_Watts":  "",
+    "NVIDIA1_Watts":  ""
+  },
+  "equihash_125/4": {
+    "CPU_Watts": "",
+    "NVIDIA2_Watts": "",
+    "AMD1_Watts": "570",
+    "NVIDIA3_Watts": "",
+    "NVIDIA1_Watts": ""
   }
 }

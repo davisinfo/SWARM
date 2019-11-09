@@ -11,7 +11,7 @@
             "export GPU_MAX_ALLOC_PERCENT=100"
         ],
         "commands": {
-            "ethash": ""
+            "ethash": "-dcri 18,14,14,14,24,18 -strap 1 -rxboost 1"
         },
         "difficulty": {
             "ethash": ""
