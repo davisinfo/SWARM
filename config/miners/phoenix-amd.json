@@ -11,7 +11,7 @@
             "export GPU_MAX_ALLOC_PERCENT=100"
         ],
         "commands": {
-            "ethash": "-gt 55,49,48,49,52,49 -clKernel 3 -clgreen 1",
+            "ethash": "-gt 136,138,138,138,135,136 -clgreen 1",
             "progpow": ""
         },
         "difficulty": {
