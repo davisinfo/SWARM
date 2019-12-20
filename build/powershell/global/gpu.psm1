@@ -59,16 +59,26 @@ function Global:Set-NvidiaStats {
         }
 
         "windows" {
-            $nvidiaout = ".\build\txt\nv-stats.txt"
+            $nvidiaout = ".\debug\nv-stats.txt"
             $continue = $false
             try {
-                if (Test-Path $nvidiaout) { clear-content $nvidiaout -ErrorAction Stop }
-                $Proc = start-process ".\build\cmd\nvidia-smi.bat" -Argumentlist "--query-gpu=power.draw,fan.speed,temperature.gpu --format=csv" -NoNewWindow -PassThru -RedirectStandardOutput $nvidiaout -ErrorAction Stop
-                $Proc | Wait-Process -Timeout 5 -ErrorAction Stop 
-                $continue = $true
-            } catch { Write-Host "WARNING: Failed to get nvidia stats" -ForegroundColor DarkRed }
-            if ((Test-Path $nvidiaout) -and $continue -eq $true ) { 
-                $ninfo = Get-Content $nvidiaout | ConvertFrom-Csv 
+                $smi = "$($env:ProgramFiles)\NVIDIA Corporation\NVSMI\nvidia-smi.exe"
+                $info = [System.Diagnostics.ProcessStartInfo]::new()
+                $info.FileName = $smi
+                $info.Arguments = "--query-gpu=power.draw,fan.speed,temperature.gpu --format=csv"
+                $info.UseShellExecute = $false
+                $info.RedirectStandardOutput = $true
+                $info.Verb = "runas"
+                $Proc = [System.Diagnostics.Process]::New()
+                $proc.StartInfo = $Info
+                $proc.Start() | Out-Null
+                $proc.WaitForExit(15000)
+                if ($proc.HasExited) { $nvidiaout = $Proc.StandardOutput.ReadToEnd() }
+                else { $proc.kill() | Out-Null; $proc.Dispose() }
+            }
+            catch { Write-Host "WARNING: Failed to get nvidia stats" -ForegroundColor DarkRed }
+            if ($nvidiaout) { 
+                $ninfo = $nvidiaout | ConvertFrom-CSV
                 $NVIDIAFans = $ninfo.'fan.speed [%]' | ForEach-Object { $_ -replace ("\%", "") }
                 $NVIDIATemps = $ninfo.'temperature.gpu'
                 $NVIDIAPower = $ninfo.'power.draw [W]' | ForEach-Object { $_ -replace ("\[Not Supported\]", "75") } | ForEach-Object { $_ -replace (" W", "") }        
@@ -78,6 +88,10 @@ function Global:Set-NvidiaStats {
                 $NVIDIAStats.Add("Watts", $NVIDIAPower)
                 $nvinfo = $NVIDIAStats  
             }
+            else {
+                Write-Host "WARNING: Failed to get amd gpu stats" -ForegroundColor DarkRed
+                break
+            }
         }
     }
     $nvinfo
@@ -85,40 +99,52 @@ function Global:Set-NvidiaStats {
 
 ## AMD HWMON
 function Global:Set-AMDStats {
+    $AMDStats = @{ }
+    $AMDFans = @()
+    $AMDTemps = @()
+    $AMDWatts = @()
 
     switch ($(arg).Platform) {
         "windows" {
-            $amdout = ".\build\txt\amd-stats.txt"
+            $amdout = ".\debug\amd-stats.txt"
             $continue = $false
             try {
-                if (Test-Path $amdout) { clear-content $amdout -ErrorAction Stop }
-                $Proc = start-process ".\build\apps\odvii\odvii.exe" -Argumentlist "s" -NoNewWindow -PassThru -RedirectStandardOutput $amdout -ErrorAction Stop
-                $Proc | Wait-Process -Timeout 5 -ErrorAction Stop 
-                $continue = $true
-            }
-            catch { Write-Host "WARNING: Failed to get amd stats" -ForegroundColor DarkRed }
-            if ((Test-Path $amdout) -and $continue -eq $true) {
-                $AMDStats = @{ }
-                $amdinfo = Get-Content $amdout | ConvertFrom-StringData
-                $ainfo = @{ }
-                $aerrors = @{ }
-                $aerrors.Add("Errors", @())
-                $ainfo.Add("Fans", @())
-                $ainfo.Add("Temps", @())
-                $ainfo.Add("Watts", @())
-                $amdinfo.keys | ForEach-Object { if ($_ -like "*Fan*") { $ainfo.Fans += $amdinfo.$_ } }
-                $amdinfo.keys | ForEach-Object { if ($_ -like "*Temp*") { $ainfo.Temps += $amdinfo.$_ } }
-                $amdinfo.keys | ForEach-Object { if ($_ -like "*Watts*") { $ainfo.Watts += $amdinfo.$_ } }
-                $amdinfo.keys | ForEach-Object { if ($_ -like "*Errors*") { $aerrors.Errors += $amdinfo.$_ } }
-                $AMDFans = $ainfo.Fans
-                $AMDTemps = $ainfo.Temps
-                $AMDWatts = $ainfo.Watts
-                if ($aerrors.Errors) {
-                    Write-Host "Warning Errors Detected From Drivers:" -ForegroundColor Red
-                    $aerrors.Errors | ForEach-Object { Write-Host "$($_)" -ForegroundColor Red }
-                    Write-Host "Drivers/Settings May Be Set Incorrectly/Not Compatible
-      " -ForegroundColor Red
+                if ([Environment]::Is64BitOperatingSystem) {
+                    $odvii = ".\build\apps\odvii\odvii_x64.exe"
+                } 
+                else {
+                    $odvii = ".\build\apps\odvii\odvii_x86.exe"
                 }
+                $info = [System.Diagnostics.ProcessStartInfo]::new()
+                $info.FileName = $odvii
+                $info.UseShellExecute = $false
+                $info.RedirectStandardOutput = $true
+                $info.Verb = "runas"
+                $Proc = [System.Diagnostics.Process]::New()
+                $proc.StartInfo = $Info
+                $proc.Start() | Out-Null
+                $proc.WaitForExit(15000) | Out-Null
+                if ($proc.HasExited) { $odvii_out = $Proc.StandardOutput.ReadToEnd() }
+                else { Stop-Process -Id $Proc.Id -ErrorAction Ignore }
+            }
+            catch { 
+                Write-Host "WARNING: Failed to query driver for gpu stats" -ForegroundColor DarkRed; 
+            }
+            if ($odvii_out) {
+                $amdinfo = $odvii_out | ConvertFrom-Json
+                if ($amdinfo.count -gt 0) { 
+                    $amdinfo | ForEach-Object {
+                        if ($_.'Fan Speed %') { $AMDFans += $_.'Fan Speed %' }else { $AMDFans += "511" }
+                        if ($_.'Temperature') { $AMDTemps += $_.'Temperature' }else { $AMDTemps += "511" }
+                        if ($_.'Wattage') { $AMDWatts += $_.'Wattage' }else { $AMDWatts += "5111" }
+                    }
+                }
+                else {
+                    Write-Host "Queried Driver For Stats, But It Returned NULL" -ForegroundColor DarkRed
+                }    
+            }
+            else {
+                Write-Host "WARNING: Failed to query driver for gpu stats" -ForegroundColor DarkRed
             }
         }
 
@@ -130,7 +156,6 @@ function Global:Set-AMDStats {
                         for ($global:i = 0; $global:i -lt 20; $global:i++) {
                             if (Test-Path $HiveStats) { try { $GetHiveStats = Get-Content $HiveStats | ConvertFrom-Json -ErrorAction Stop }catch { $GetHiveStats = $null } }
                             if ($GetHiveStats -ne $null) {
-                                $AMDStats = @{ }
                                 $AMDFans = $( $GetHiveStats.fan | ForEach-Object { if ($_ -ne 0) { $_ } } )
                                 $AMDTemps = $( $GetHiveStats.temp | ForEach-Object { if ($_ -ne 0) { $_ } } )
                                 $AMDWatts = $( $GetHiveStats.power | ForEach-Object { if ($_ -ne 0) { $_ } } )
@@ -140,7 +165,6 @@ function Global:Set-AMDStats {
                     }while ($GetHiveStats.temp.count -lt 1 -and $GetHiveStats.fan.count -lt 1 -and $GetHiveStats.power.count -lt 1)
                 }
                 "No" {
-                    $AMDStats = @{ }
                     timeout -s9 10 rocm-smi -f | Tee-Object -Variable AMDFans | Out-Null
                     $AMDFans = $AMDFans | Select-String "%" | ForEach-Object { $_ -split "\(" | Select-Object -Skip 1 -first 1 } | ForEach-Object { $_ -split "\)" | Select-Object -first 1 }
                     timeout -s9 10 rocm-smi -t | Tee-Object -Variable AMDTemps | Out-Null

@@ -60,6 +60,7 @@ if ($Name -in $(arg).PoolName) {
             Where-Object { $global:Config.Pool_Algos.$($_.Algo) } |
             Where-Object { $Name -notin $global:Config.Pool_Algos.$($_.Algo).exclusions } |
             Where-Object Sym -notin $(vars).BanHammer |
+            Where-Object { $_.Sym -notin $global:Config.Pool_Algos.$($_.Algo).exclusions } |
             Where-Object Sym -notlike "*$NoGLT*" |
             Where-Object noautotrade -eq "0" | 
             Where-Object estimate -gt 0 |
@@ -148,6 +149,8 @@ if ($Name -in $(arg).PoolName) {
                         }
                         if ($(vars).All_AltWallets.$Sym.params -ne "enter additional params here, such as 'm=solo' or m=party.partypassword") {
                             $mc += "m=$($(vars).All_AltWallets.$Sym.params),"
+                            $mc = $mc.replace("SOLO","solo")
+                            $mc = $mc.replace("PARTY","party")
                         }    
                     }   
                 }

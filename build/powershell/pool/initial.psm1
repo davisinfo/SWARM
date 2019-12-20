@@ -15,14 +15,12 @@ function Global:Get-PoolTables {
     $(vars).FeeTable.Add("zpool", @{ })
     $(vars).FeeTable.Add("zergpool", @{ })
     $(vars).FeeTable.Add("fairpool", @{ })
+    $(vars).FeeTable.Add("blockmasters", @{ })
 
     $(vars).divisortable.Add("zpool", @{ })
     $(vars).divisortable.Add("zergpool", @{ })
     $(vars).divisortable.Add("fairpool", @{ })
-    
-    if ($(arg).Coin.Count -eq 1 -and $(arg).Coin -ne "" -and $(vars).SWARMAlgorithm.Count -eq 1 -and $(arg).SWARM_Mode -ne "") {
-        $(vars).SingleMode = $true
-    }
+    $(vars).divisortable.Add("blockmasters", @{ })
 }
 
 function Global:Remove-BanHashrates {
@@ -35,10 +33,10 @@ function Global:Remove-BanHashrates {
             $Sel = $Sel -replace "`_","`-"        
             $A.BaseName | ForEach-Object {
                 $Parse = $_ -split "`_"
-                if ($Parse[0] -eq $Sel) {
-                    Remove-Item ".\stats\$($_).txt" -Force
+                if ($Parse[0] -eq $Sel -and (test-path ".\stats\$($_).txt")) {
+                   Remove-Item ".\stats\$($_).txt" -Force
                 }
-                elseif ($Parse[1] -eq $Sel) {
+                elseif ($Parse[1] -eq $Sel -and (test-path ".\stats\$($_).txt")) {
                     Remove-Item ".\stats\$($_).txt" -Force
                 }
             }

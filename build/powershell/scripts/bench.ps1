@@ -20,6 +20,8 @@ param(
     [String]$Arg1 = $Null
 )
 
+$Arg1 = $Arg1.Replace("cnight","cryptonight")
+
 [cultureinfo]::CurrentCulture = 'en-US'
 $dir = (Split-Path (Split-Path (Split-Path (Split-Path $script:MyInvocation.MyCommand.Path))))
 $dir = $dir -replace "/var/tmp","/root"
@@ -194,4 +196,4 @@ bench all
 }
 $Get += "Effects will taked place after next miner benchmark/interval period."
 $Get
-$Get | Out-File ".\build\txt\get.txt"
+$Get | Out-File ".\debug\get.txt"

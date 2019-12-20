@@ -85,7 +85,7 @@ function Global:Set-Stat {
 
     ## Define Stat paths
     $name = $name -replace "`/", "`-"
-    if ($name -eq "load-average") { $Max_Periods = 90; $Path = "build\txt\$Name.txt" }
+    if ($name -eq "load-average") { $Max_Periods = 90; $Path = "debug\$Name.txt" }
     else { $Path = "stats\$Name.txt" }
     $Check = Test-Path $Path
 
@@ -99,6 +99,7 @@ function Global:Set-Stat {
         Minute_5  = [Double]$Value
         Minute_15 = [Double]$Value
         Hour      = [Double]$Value
+        Locked    = $false
     }
 
     ## Change default table if stat already exists
@@ -108,6 +109,10 @@ function Global:Set-Stat {
         $Stat.Minute_5 = [Double]$GetStat.Minute_5
         $Stat.Minute_15 = [Double]$GetStat.Minute_15
         $Stat.Hour = [Double]$GetStat.Hour
+        
+        if ($GetStat.Locked) {
+            $Stat.Locked = [bool]$GetStat.Locked
+        }
 
         $Hour_4 = [Double]$GetStat.Hour_4
         $Day = [Double]$GetStat.Day
@@ -116,7 +121,7 @@ function Global:Set-Stat {
         $S_Hash_Count = $GetStat.Hashrate_Periods
         $Deviation = $GetStat.Deviation
         $Deviation_Periods = $GetStat.Deviation_Periods
-        $Rejections = $GetStat.Rejection
+        $Rejections = $GetStat.Rejections
         $Rejection_Periods = $GetStat.Rejection_Periods
     }
 
@@ -156,60 +161,65 @@ function Global:Set-Stat {
                 $Stat | Add-Member "Deviation_Periods" 0
             }
         }
-
-        ## Add extra values if rejection bias
-        if ($Rejects) {
-            if ($Check) {
-                $Stat | Add-member "Rejection" $Rejections
-                $Stat | Add-Member "Rejection_Periods" $Rejection_Periods
-            }
-            else {
-                $Stat | Add-Member "Rejection" $Rejects
-                $Stat | Add-Member "Rejection_Periods" 0
-            }
-        }
     }
-    
+
+    ## Add extra values if rejection bias
+    if ($Rejects -gt -1 -and $AsHashrate) {
+        if ($Check) {
+            $Stat | Add-member "Rejections" $Rejections
+            $Stat | Add-Member "Rejection_Periods" $Rejection_Periods
+        }
+        else {
+            $Stat | Add-Member "Rejections" $Rejects
+            $Stat | Add-Member "Rejection_Periods" 0
+        }
+    }    
+
     ## Set initial values
     $Stat | Add-Member "Values" @()
     if ($Check) { $Stat.Values = @($GetStat.Values) }
-
+    
     ## Add new values, rotate first value if above max periods
     $Stat.Values += [decimal]$Value
-    if ($Stat.Values.Count -gt $Max_Periods) { $Stat.Values = $Stat.Values | Select -Skip 1 }
+    if ($Stat.Values.Count -gt $Max_Periods) { $Stat.Values = $Stat.Values | Select -Skip 1 }    
+    
+    if ($Stat.Locked -eq $false) {
 
-    ## Same for hashrate, only it is a rolling moving average (no values)
-    if ($HashRate) {
-        if ($Stat.Hashrate_Periods -lt $Hash_Max) { $Stat.Hashrate_Periods++ }
-        else { $Stat.Hashrate_Periods = $Hash_Max }
+        ## Same for hashrate, only it is a rolling moving average (no values)
+        if ($HashRate) {
+            if ($Stat.Hashrate_Periods -lt $Hash_Max) { $Stat.Hashrate_Periods++ }
+            else { $Stat.Hashrate_Periods = $Hash_Max }
+        }
+
+        ## Same for historical bias, but is a rolling moving average (no values)
+        if ($Shuffle) {
+            if ( $Stat.Deviation_Periods -lt $Max_Periods) { $Stat.Deviation_Periods++ }
+            else { $Stat.Deviation_Periods = $Max_Periods }
+        }
+
+        ## Same for rejection bias, but is a rolling moving average (no values)
+        if ($Rejects -gt -1 -and $AsHashrate) {
+            if ( $Stat.Rejection_Periods -lt $Hash_Max) { $Stat.Rejection_Periods++ }
+            else { $Stat.Rejection_Periods = $Hash_Max }
+        }    
+
+        ## Calculate moving average for each time period
+        $Calcs.keys | foreach {
+            $T = $Stat.Values
+            $Theta = (Global:Get-Theta -Calcs $Calcs.$_ -Values $T)
+            $Alpha = [Double](Global:Get-Alpha($Theta.Count))
+            $Zeta = [Double]$Theta.Sum / $Theta.Count
+            $Stat.$_ = [Math]::Max( ( $Zeta * $Alpha + $($Stat.$_) * (1 - $Alpha) ) , $SmallestValue )
+            $Stat.$_ = [Math]::Round( $Stat.$_, 15 )
+        }
+
+        ## Calculate simple rolling moving average for each pool hashrate / deviation / Rejects
+        if ($Shuffle) { $Stat.Deviation = [Math]::Round( ( ($Stat.Deviation * $Stat.Deviation_Periods) + $Shuffle) / ($Stat.Deviation_Periods + 1), 4 ) }
+        if ($HashRate) { $Stat.Hashrate = [Math]::Round( ( ($Stat.Hashrate * $Stat.Hashrate_Periods) + $HashRate ) / ($Stat.Hashrate_Periods + 1), 0 ) }
+        if ($Rejects -gt -1 -and $AsHashrate) { $Stat.Rejections = [Math]::Round( ( ($Stat.Rejections * $Stat.Rejection_Periods) + $Rejects ) / ($Stat.Rejection_Periods + 1), 4 ) }
+    } else {
+        log "Warning: Cannot change stat - `'Locked`' in stat file is set to true" -Foreground yellow
     }
-
-    ## Same for historical bias, but is a rolling moving average (no values)
-    if ($Shuffle) {
-        if ( $Stat.Deviation_Periods -lt $Max_Periods) { $Stat.Deviation_Periods++ }
-        else { $Stat.Deviation_Periods = $Max_Periods }
-    }
-
-    ## Same for rejection bias, but is a rolling moving average (no values)
-    if ($Rejects) {
-        if ( $Stat.Rejection_Periods -lt $Hash_Max) { $Stat.Rejection_Periods++ }
-        else { $Stat.Rejection_Periods = $Hash_Max }
-    }    
-
-    ## Calculate moving average for each time period
-    $Calcs.keys | foreach {
-        $T = $Stat.Values
-        $Theta = (Global:Get-Theta -Calcs $Calcs.$_ -Values $T)
-        $Alpha = [Double](Global:Get-Alpha($Theta.Count))
-        $Zeta = [Double]$Theta.Sum / $Theta.Count
-        $Stat.$_ = [Math]::Max( ( $Zeta * $Alpha + $($Stat.$_) * (1 - $Alpha) ) , $SmallestValue )
-        $Stat.$_ = [Math]::Round( $Stat.$_, 15 )
-    }
-
-    ## Calculate simple rolling moving average for each pool hashrate / deviation / Rejects
-    if ($Shuffle) { $Stat.Deviation = [Math]::Round( ( ($Stat.Deviation * $Stat.Deviation_Periods) + $Shuffle) / ($Stat.Deviation_Periods + 1), 4 ) }
-    if ($HashRate) { $Stat.Hashrate = [Math]::Round( ( ($Stat.Hashrate * $Stat.Hashrate_Periods) + $HashRate ) / ($Stat.Hashrate_Periods + 1), 0 ) }
-    if ($Rejects) { $Stat.Rejection = [Math]::Round( ( ($Stat.Rejection * $Stat.Rejection_Periods) + $Rejects ) / ($Stat.Rejection_Periods + 1), 4 ) }
 
     ## In case it doesn't exist.
     if (-not (Test-Path "stats")) { New-Item "stats" -ItemType "directory" }
@@ -225,6 +235,7 @@ function Global:Set-Stat {
     if ($Stat.Day) { $Stat.Day = [Decimal]$Stat.Day }
     if ($Stat.Custom) { $Stat.Custom = [Decimal]$Stat.Custom }
     if ($Stat.Hashrate) { $Stat.Hashrate = [Decimal]$Stat.Hashrate }
+    if ($Stat.Rejections -and $AsHashrate) { $Stat.Rejections = [Decimal]$Stat.Rejections }
 
     $Stat | ConvertTo-Json | Set-Content $Path
 
@@ -240,7 +251,7 @@ function Global:Get-Stat {
 
     $name = $name -replace "`/", "`-"
     if (-not (Test-Path "stats")) { New-Item "stats" -ItemType "directory" }
-    if ($name -eq "load-average") { Get-ChildItem "build\txt" | Where-Object Extension -NE ".ps1" | Where-Object BaseName -EQ $Name | Get-Content | ConvertFrom-Json }
+    if ($name -eq "load-average") { Get-ChildItem "debug" | Where-Object Extension -NE ".ps1" | Where-Object BaseName -EQ $Name | Get-Content | ConvertFrom-Json }
     else { Get-ChildItem "stats" | Where-Object Extension -NE ".ps1" | Where-Object BaseName -EQ $Name | Get-Content | ConvertFrom-Json }
 }
 

@@ -60,6 +60,7 @@ if ($Name -in $(arg).PoolName) {
             Where-Object { $global:Config.Pool_Algos.$($_.Algo) } |
             Where-Object { $Name -notin $global:Config.Pool_Algos.$($_.Algo).exclusions } |
             Where-Object Sym -notin $(vars).BanHammer |
+            Where-Object { $_.Sym -notin $global:Config.Pool_Algos.$($_.Algo).exclusions } |
             Where-Object Sym -notlike "*$NoGLT*" |
             Where-Object noautotrade -eq "0" | 
             Where-Object estimate -gt 0 |
@@ -83,6 +84,7 @@ if ($Name -in $(arg).PoolName) {
         "US" { $region = "na" }
         "EUROPE" { $region = "eu" }
         "ASIA" { $region = "sea" }
+        "JAPAN" { $region = "jp" }
     }    
 
     ## Break the algos to groups to sort it down.

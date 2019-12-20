@@ -27,6 +27,13 @@ param(
     [Parameter(Mandatory = $false)]
     [switch]$asjson
 )
+
+$argument2 = $argument2.replace("cnight","cryptonight")
+$argument3 = $argument3.replace("cnight","cryptonight")
+$argument4 = $argument4.replace("cnight","cryptonight")
+$argument5 = $argument5.replace("cnight","cryptonight")
+$argument6 = $argument6.replace("cnight","cryptonight")
+
 [cultureinfo]::CurrentCulture = 'en-US'
 $AllProtocols = [System.Net.SecurityProtocolType]'Tls,Tls11,Tls12' 
 [System.Net.ServicePointManager]::SecurityProtocol = $AllProtocols
@@ -55,7 +62,7 @@ if ($P -notlike "*$dir\build\powershell*") {
 }
 
 $Get = @()
-if (test-path ".\build\txt\get.txt") { Clear-Content ".\build\txt\get.txt" }
+if (test-path ".\debug\get.txt") { Clear-Content ".\debug\get.txt" }
 
 Import-Module -Name "$($(vars).global)\stats.psm1" -Scope Global
 
@@ -72,58 +79,11 @@ get [item] [argument2] [argument3] [argument4] [argument5]
 
 EXAMPLE USES:
 
-get miners NVIDIA1 trex x16r difficulty
-get miners CPU jayddee all
 get screen miner
 get stats
 get oc NVIDIA1 aergo power 
 
 ITEMS:
-
-###################################################################
-###################################################################
-
-miners
- can be used to view background miner information.
-
-    USES:
-        get miners [platform] [name] [param] [sub-param1] [sub-param2]
-
-    OPTIONS:
-        
-        platform
-        [NVIDIA1] [NVIDIA2] [NVIDIA3] [AMD1] [CPU] [all]
-
-        name
-        name of miner, as per the names of .json in config/miners
-        if you are unsure of miner name, running-
-
-            get miners [platform]
-    
-        to see all miners for that platform
-
-    params
-        [prestart] [commands] [difficulty] [naming]   [oc]
-
-        sub-param1   [algo]     [algo]      [algo]   [algo]
-
-        sub-param2                                   [power]
-                                                     [core]
-                                                     [mem]
-                                                     [dpm]
-                                                      [v]
-                                                     [mdpm]
-
-        example uses of params:
-
-            get miners NVIDIA1 enemy naming 
-            (Will list all naming items)
-
-            get miners NVIDIA1 enemy oc hex core 
-            (Will list oc core setting for hex algorithm)
-
-###################################################################
-###################################################################
 
 screen
     can be used to remotely view SWARM's transcripts. Great way to
@@ -321,12 +281,12 @@ to see all available SWARM commands, go to:
 https://github.com/MaynardMiner/SWARM/wiki/HiveOS-management
 "
         $help
-        $help | out-file ".\build\txt\get.txt"
+        $help | out-file ".\debug\get.txt"
     }
 
     "asic" {
         Import-Module -Name "$($(vars).global)\hashrates.psm1"
-        if (Test-Path ".\build\txt\bestminers.txt") { $BestMiners = Get-Content ".\build\txt\bestminers.txt" | ConvertFrom-Json }
+        if (Test-Path ".\debug\bestminers.txt") { $BestMiners = Get-Content ".\debug\bestminers.txt" | ConvertFrom-Json }
         else { $Get += "No miners running" }
         $ASIC = $BestMiners | Where Type -eq $argument2
         if ($ASIC) {
@@ -385,20 +345,22 @@ https://github.com/MaynardMiner/SWARM/wiki/HiveOS-management
                     Algo      = $_ -split "_" | Select -Skip 1 -First 1; 
                     HashRates = $Stats."$($_)".Hour | Global:ConvertTo-Hash; 
                     Raw       = $Stats."$($_)".Hour
+                    Rejections = $Stats."$($_)".Rejections
                 }
             }
             function Global:Get-BenchTable {
                 $BenchTable | Sort-Object -Property Algo -Descending | Format-Table (
                     @{Label = "Miner"; Expression = { $($_.Miner) } },
                     @{Label = "Algorithm"; Expression = { $($_.Algo) } },
-                    @{Label = "Speed"; Expression = { $($_.HashRates) } }    
+                    @{Label = "Speed"; Expression = { $($_.HashRates) } },    
+                    @{Label = "Rejection Avg."; Expression = { if($_.Rejections){ "$($_.Rejections.ToString("N2"))`%" }else{"0`%"} } }
                 )
             }
             if ($asjson) {
                 $Get += $BenchTable | ConvertTo-Json
             }
             else { $Get += Get-BenchTable }
-            Get-BenchTable | Out-File ".\build\txt\get.txt"
+            Get-BenchTable | Out-File ".\debug\get.txt"
         }
         else { $Get += "No Stats Found" }
     }
@@ -416,18 +378,18 @@ https://github.com/MaynardMiner/SWARM/wiki/HiveOS-management
         if ($Argument2 -eq "lite") {
             if ($Argument3) {
                 $Total = [int]$Argument3 + 1
-                if (Test-Path ".\build\txt\minerstatslite.txt") {
-                    $Get += Get-Content ".\build\txt\minerstatslite.txt"
+                if (Test-Path ".\debug\minerstatslite.txt") {
+                    $Get += Get-Content ".\debug\minerstatslite.txt"
                 }
                 else { $Get += "No Stats History Found" }    
             }
             else {
-                if (Test-Path ".\build\txt\minerstatslite.txt") { $Get += Get-Content ".\build\txt\minerstatslite.txt" }
+                if (Test-Path ".\debug\minerstatslite.txt") { $Get += Get-Content ".\debug\minerstatslite.txt" }
                 else { $Get += "No Stats History Found" }
             }
         }
         else {
-            if (test-path ".\build\txt\profittable.txt") { $Stat_Table = Get-Content ".\build\txt\profittable.txt" | ConvertFrom-Json }
+            if (test-path ".\debug\profittable.txt") { $Stat_Table = Get-Content ".\debug\profittable.txt" | ConvertFrom-Json }
             else { $Get += "No Stats History Found" }
             if ($Stat_Table) {
                 $me = [char]27;
@@ -441,7 +403,7 @@ https://github.com/MaynardMiner/SWARM/wiki/HiveOS-management
                 $orange = "93"
                 $magenta = "35";
                 $pink = "95";
-                if (test-Path ".\build\txt\rates.txt") { $Rates = Get-Content ".\build\txt\rates.txt" | ConvertFrom-Json }
+                if (test-Path ".\debug\rates.txt") { $Rates = Get-Content ".\debug\rates.txt" | ConvertFrom-Json }
                 $WattTable = $false
                 $ShareTable = $false
                 $VolumeTable = $false
@@ -453,7 +415,7 @@ https://github.com/MaynardMiner/SWARM/wiki/HiveOS-management
                 $Type | Sort-Object | ForEach-Object {
                     $Miner_Table = $Stat_Table | Where Type -eq $_
                     if ($Argument2) { $Miner_Table = $Miner_Table | Sort-Object -Property Profit -Descending | Select -First ([int]$Argument2) }
-                    $global:index = 0
+                    $global:index = 1
                     if ($WattTable -and $ShareTable -and $VolumeTable) {
                         $Get += $Miner_Table | Sort-Object -Property Profit -Descending | Format-Table -GroupBy Type (
                             @{Label = "Miner`|Coin"; Expression = { "$me[${white}m$($global:index) $($_.Name)${me}[0m`|$me[${green}m$($_.ScreenName.replace("cryptonight","cnight"))${me}[0m"; $global:index += 1 }; Align = 'left' },
@@ -665,13 +627,13 @@ https://github.com/MaynardMiner/SWARM/wiki/HiveOS-management
                 }
             }
         }
-        $MSFile = ".\build\txt\minerstats.txt"
-        if (test-Path ".\build\txt\minerstats.txt") { $Get += Get-Content ".\build\txt\minerstats.txt" }
+        $MSFile = ".\debug\minerstats.txt"
+        if (test-Path ".\debug\minerstats.txt") { $Get += Get-Content ".\debug\minerstats.txt" }
         Remove-Module "hashrates"
     }
-    "charts" { if (Test-Path ".\build\txt\charts.txt") { $Get += Get-Content ".\build\txt\charts.txt" } }
+    "charts" { if (Test-Path ".\debug\charts.txt") { $Get += Get-Content ".\debug\charts.txt" } }
     "active" {
-        if (Test-Path ".\build\txt\mineractive.txt") { $Get += Get-Content ".\build\txt\mineractive.txt" }
+        if (Test-Path ".\debug\mineractive.txt") { $Get += Get-Content ".\debug\mineractive.txt" }
         else { $Get += "No Miner History Found" }
     }
     "parameters" {
@@ -691,7 +653,7 @@ https://github.com/MaynardMiner/SWARM/wiki/HiveOS-management
         $Get += $Get | Select -Last 300
     }
     "oc" {
-        if (Test-Path ".\build\txt\oc-settings.txt") { $Get += Get-Content ".\build\txt\oc-settings.txt" }
+        if (Test-Path ".\debug\oc-settings.txt") { $Get += Get-Content ".\debug\oc-settings.txt" }
         else { $Get += "No oc settings found" }
     }
     "miners" {
@@ -704,15 +666,11 @@ https://github.com/MaynardMiner/SWARM/wiki/HiveOS-management
             $ConvertJsons.PSObject.Properties.Name | Where { $ConvertJsons.$_.$Argument2 } | foreach { $Get += "$($_)" }
             $Selected = $ConvertJsons.PSObject.Properties.Name | Where { $_ -eq $Argument3 } | % { $ConvertJsons.$_ }
             if ($Selected) {
-                $Cuda = Get-Content ".\build\txt\cuda.txt"
-                $Platform = Get-Content ".\build\txt\os.txt"
+                $Platform = Get-Content ".\debug\os.txt"
                 if ($argument2 -like "*NVIDIA*") {
                     $Number = $argument2 -Replace "NVIDIA", ""
                     if ($Platform -eq "linux") {
-                        switch ($Cuda) {
-                            "9.2" { $UpdateJson = Get-Content ".\config\update\nvidia9.2-linux.json" | ConvertFrom-Json }
-                            "10" { $UpdateJson = Get-Content ".\config\update\nvidia-linux.json" | ConvertFrom-Json }
-                        }
+                            $UpdateJson = Get-Content ".\config\update\nvidia-linux.json" | ConvertFrom-Json
                     }
                     else { $UpdateJson = Get-Content ".\config\update\nvidia-win.json" | ConvertFrom-JSon }
                 }
@@ -720,14 +678,14 @@ https://github.com/MaynardMiner/SWARM/wiki/HiveOS-management
                     $Number = $argument2 -Replace "AMD", ""
                     switch ($Platform) {
                         "linux" { $UpdateJson = Get-Content ".\config\update\amd-linux.json" | ConvertFrom-Json }
-                        "windows" { $UpdateJson = Get-Content ".\config\update\amd-windows.json" | ConvertFrom-Json }
+                        "windows" { $UpdateJson = Get-Content ".\config\update\amd-win.json" | ConvertFrom-Json }
                     }
                 }
                 if ($argument2 -like "*CPU*") {
                     $Number = 1
                     switch ($Platform) {  
                         "linux" { $UpdateJson = Get-Content ".\config\update\cpu-linux.json" | ConvertFrom-Json }
-                        "windows" { $UpdateJson = Get-Content ".\config\update\cpu-windows.json" | ConvertFrom-Json }
+                        "windows" { $UpdateJson = Get-Content ".\config\update\cpu-win.json" | ConvertFrom-Json }
                     }
                 }
                 $getpath = "path$($Number)"
@@ -769,7 +727,7 @@ https://github.com/MaynardMiner/SWARM/wiki/HiveOS-management
         if ($IsWindows) {
             $currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
             if ($currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator) -ne $false) {
-                $version = Get-Content ".\build\txt\version.txt"
+                $version = Get-Content ".\debug\version.txt"
                 $versionnumber = $version -replace "SWARM.", ""
                 $version1 = $versionnumber[4]
                 $version1 = $version1 | % { iex $_ }
@@ -836,8 +794,8 @@ https://github.com/MaynardMiner/SWARM/wiki/HiveOS-management
 
                     $NewDIR = Join-Path $BaseDir "SWARM.$($VersionNumber).windows"
 
-                    $MinerFile = "$Dir\build\pid\miner_pid.txt"
-                    if (Test-Path $MinerFile) { $MinerId = Get-Process -Id (Get-Content $MinerFile) -ErrorAction SilentlyContinue }
+                    $MinerFile = Get-Content "$Dir\build\pid\miner_pid.txt"
+                    if ($MinerFile) { $MinerId = Get-Process | Where Id -eq $MinerFile }
                     if($MinerID) { Stop-Process $MinerId -Force}
                     Write-Host "Stopping Old Miner and waiting 5 seconds`n"
                     Start-Sleep -S 5

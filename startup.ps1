@@ -32,12 +32,22 @@ if ($args) {
     else {
         $Start = $true
         $args | % {
+            if ($_ -is [string]) {
+                $_ = $_.replace("cnight", "cryptonight")
+            }
             $Command = $false
             $ListCheck = $_ -replace "-", ""
             if ($_[0] -eq "-") { $Command = $true; $Com = $_ -replace "-", "" }
             if ($Command -eq $true) {
                 if ($ListCheck -in $List) {
-                    $parsed.Add($Com, "new")
+                    if ($ListCheck -notin $parsed.keys) {
+                        $parsed.Add($Com, "new")
+                    }
+                    else {
+                        Write-Host "Found $Listcheck twice in arguments" -ForegroundColor Red
+                        Write-Host "Contiuning startup, but this may cause major issues." -ForegroundColor red
+                        Start-Sleep -S 3
+                    }
                 }
                 else {
                     Write-Host "Parameter `"$($ListCheck)`" Not Found. Exiting" -ForegroundColor Red
