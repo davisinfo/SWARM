@@ -1,2769 +1,1688 @@
-ChangeLog
+Changelog
 
-1.2.9:
+  2.3.9
 
-(ALL VERSIONS)
--Added New Zergpool Equihash Algos
+  NEW FEATURES!
 
+  SMOS Support:
 
-(HIVEOS)
--Added 'active' command
- Type 'active' to view active miners in any terminal
--Add 'stats' command
- Type 'stats to view MM.Hash miner stats in any terminal
--Created Help Files Folder
--Log Integration with HiveOS
- Logs are now scheduled to HiveOS logging.
--Added Pools To Main Mining Screen
--Added Previous HashRates To Main Mining Screen
--Cleaned up Main Mining Screen
--Repaired Random Failures Of EWBF Hive Stats
+  https://github.com/MaynardMiner/SWARM/wiki/SMOS-Install
 
--Added -Benchmark Parameter. Expiremental:
+  -Fixed Log Cylcing Issues.
+  -Windows: Fixed Bus Sorting of GPUs.
+  -Fixed ``version update`` command
+  -Fixed ``get parameters`` command for Windows (was showing arguments.json always).
 
-  -Benchmark [seconds]
+  -Notification Miner Port is being cleared on screen (linux).
+  * SWARM will wait until miner port is cleared (indefinitely, if such is the case,
+   notifying user there is issue with rig).
+  * I am doing this, because there is a growing issue with latest miners having
+    ports hang in linux- This is developer issues of miners themselves. 
+    This way can go to developers and let them know their miners won't 
+    close ports properly on exit.
 
-   If miner hashrate equals $null, -interval time will
-change to -Benchmark time. This only works for NVIDIA1.
-Other device groups will still mine as usual, but will
-have same interval as -Benchmark.
+  -T-Rex updated
+  -TeamRedMiner updated, x16 algos added.
+  -xmrig amd updated
+  -xmrig nvidia updated (windows, need to compile for linux still).
+  -xmrstak updated.
 
-   I did not test fully. Report if it is working correctly
-I will update wiki.
+  -Added more to ``vars`` parameter for modules.
+  -Wiki was updated.
 
 
+  2.4.0
 
-1.3.0:
+  Note- This is beta version from beta_testing branch
 
-(Windows & HiveOS)
+   GUIDED HELP
+   * There are four different ways to start guided help:
+     * run command ``swarm_help`` after SWARM has started in HiveOS/Windows
+     * [Linux] Run sudo ./help.sh (will install SWARM first, then run help)
+     * [Windows] Run Help.bat
+     * [ALL] opening either SWARM.bat or ./swarm, and adding ``-help``
+   * Will allow users to set up a basic configuration
+   * After basic config is created, will allow users to modify advanced settings.
+   * Everything is guided, and additional information beyond help.txt is supplied.
+   * Guided help will save your configuration to newarguments.json, as well as
+     provide a copy/paste of arguments for flighsheets/configs.
 
--Zergpool https:/. Better API calls.
--Added Equihash Algorithms - zergpool and mph
+    NEW ARGUMENTS!
 
-(HiveOS)
--Ensured -Benchmark parameter working
--Fixed -Timeouts parameter
--Log rollover every 12 hours. Miner divides logs into 1 hour periods.
--PID read/write for better process control
--Discovered actual Powershell Core bug in (where).count -eq 0. It worked when it wanted to. 
-Reported to powershell, and then built workaround.
--Added Cuda-9-2 folder, will start filling with miner files for HiveOS cuda 9.2.
-You must setup hiveOS to be able to use Cuda9.2 (Not reccommended)
--Added 10 second wait to give Miners time to spool up. Was noticing occasional lockup becuase
-of too high resource use.
--Reduced hashrate display time to every 7 seconds instead of 5 for smoother display.
--Fixed Claymore API. However, noticed Claymore itself was displaying only 1 fan and 1 temp
-during my testing occasionally. In future I will attempt to force defaults from Hive when this happens.
--Timeout Folder to notify when miners timeout. However, Timeouts no longer set all hashrates to zero. This
-way miner can continue to try to mine that algo/coin. I simply reduces overall daily hashrate. The Timeout
-folder will give you an idea of specific stats you may want to delete and then re-benchmark for fine tuning.
--Resolved Status flag issues. When typing "active", you should receive correct data.
--Resolved previous hashrate issues on screen
--Attempted to display better countdown times. NOTE: Internal countdown time varies by processor to processor.
-However- Run time displayed for Miners is 100% correct.
+  ``-TypeBanCount``
 
-1.3.2:
+  Like PoolBanCount,MinerBanCount, and AlgoBanCount, TypeBanCount will take
+  action if a device type (AMD1,CPU,NVIDIA1,etc.) has x consecutive banned
+  miners in a row- Where x is -TypeBanCount. When x has been reached, SWARM
+  will reset all timeouts, then restart computer.
 
-Truncate log stats for T-Rex, so user will know when miner isn't hashing in case MM.Hash fails
-Attempted to fix multiple LogData screens
-Migrated total t-rex log hash into try/catch argument to prevent on-screen errors (which is normal if hashrate isn't there).
-Updated Miners
-Migrated into a version setup, with remote upgrading capability- Details on full operation coming soon. (expiremental)
--Force paramter to clear T-Rex log.
-updated Z-Enemy
-updated T-Rex
-Removed -Algorithms, as it was depreciated. Algorithms can now be changed by editing "Algorithms.txt" file
-miner will self-install powershell
-Added Date to stats command
-Updated Help Files
-Ensured All Miners Display Pool
+  ``-TCP_IP``
+   Default is 127.0.0.1. Sets IP for tcp api.
 
-1.3.3:
+   -NEW FEATURES!
 
-zergpool api updated.
-for future implementation- zergpool_coin added
-for future implementation- zerpgool_algo added
-zergpool removed
-blockmasters added (was not tested- Trying to push fast to fix zergpool)
-starpool added (tested)
-New command- "logdata" lets you see the stats recording miners that work from logs. Debug aid.
-New command- "pidinfo" was always running in background- brought it to a screen so you can see MM.Hash process tracking. Debug aid.
-LogData screen opens with every miner, is put to sleep if not needed (to preveny zombie app errors)
-PIDInfo screens opens with every miner- Has always been running, it is just now visual
-PIDInfo is now tracking MM.Hash process- For future implementation.
-Added "clear" background process, work the same as miners- Double close command in case of hangs.
-Small implementation to reduce resources.
-Status flags written to disk, to provide double checking of MM.Hash states and its miners.
+  -Removed CoreInfo for AES detection
+  -Better GPU detection (windows)
+   * Lists Correct VRAM
+   * AMD lists vbios version
+   * AMD lists memory vendor
 
-1.3.4:
--HiveOS Added hive integrated "mine" command. Enter to bring up NVIDIA1 screen (mining window).
--Added -No_Algo argument. -No_Algo excludes aglorithm of your choice. Must match Algorithms.txt.
-Case Sensitive! (All lower case characters)
--EWBF coins added back in. Updated equihash to match zergpool.
--Reduced resources on PID system/tracking, removed read/write status- It was redundant.
--Newer streamlined benchmarking system. (Both versions)
--Better chance of miner catching and recording timeouts.
--Recorded hashrate displayed at benchmarking. Recorded hashrate is pulled from file (accurate).
--Enemy 1.15a
--CryptoDredge 0.8.3
--Started staging of much faster -Auto_Coin version. Not implemented yet.
--Started staging for T-Rex API Rest method hashrate recording (when implemented).
+  -Fixed issue if more than one active logfile was present
 
+  -Code staging for a guided step-by-step tutorial to set up SWARM.
 
-1.3.7 HiveOS Silver Lambo Edition:
--IMPROVED COIN MINING SYSTEM! Highly recommend to try -Auto-Coin "Yes"
--MM.Hash will not sort or download entire database, miner first sorts by most profitable algorithms, if the best pool is pool that has the capability of selecting a coin other than BTC: IT then chooses the coins of the algorithms of that pool.
--Stats will show coin list of a particular algorithm if coin mining occurs during that period.
-- -Auto Coin switching is now around a 20-30 second process: which is 200% better.
--Fixed Powershell Core update bugs with a better workarounds.
--MM.Hash in background checks stats for possible timeouts, for accurate timeouts.
--MM.Hash now closes itself and all background windows within a few seconds of it stopping.
--Added -threshold argument default (internally) is set to .1 - If profit day shows to be .1 btc: MM.Hash ignores algo.
--Added back & improved active times for miners.
--Staged miners.txt. Does not work. However, you can see the direction it is going.
--This is beta version of new system.
--CPU Miners will now compile to your system. I included an experimental one that can work for ARM cpus. Note- Initial benchmark period is usually long for cpuminers. I would turn up -interval when benchmarking them. After initial benchmarks, you can set -interval to a much lower setting.
--hex added to algorithms.txt and files.
--fixed blockmasters pool file.
--fixed starpool pool file.
--pools initial stats are now estimate current. 24 hours was causing irregular initial stats. Improved 'stats' command and display.
--Enemy 1.16 added
--Code Staging for AMD
+  -SWARM should display a message is a miner was skipped over due to ``-threshold``
 
-1.3.8
-Important: -GPU_Count1 argument was removed. Miner now detects GPU's. You will get errors if used.
--Upated Windows Version To New Coin Switching System (Windows Miner Down- Could Not Test. Converting it to AMD rig. Please Report Bugs)
--Added -Favor_Coins argument. Default is "Yes"
--Combined Windows and Linux Miners into one folder sharing same files.
--Added Config Folder- Placed algorithms files there.
--Added \Config\update.txt
--Due to miner files being combined, you will have to benchmark. However, future updates will no longer your miner files. They will be copied over.
--Ensured T-Rex accepted/rejected are shown correctly on HiveOS.
--Lots of Code-Staging/Prep for AMD mining. Did not add AMD miners (having to change a lot to make it happen).
--Updated Algorithms and their placements to most optimal settings. Should see better hashrates on miners.
--Removed Alexis-Miner. It's depreciated
--Remove ocminer. It's depreciated
--Fixed threshold issues (will test further to confirm).
--Worked on better miner launch sequence
--Fixed myr-gr
--Added algorithms in case pools add them
+  -Per user request- Removed FancyIX's suggest settings for mtp (-p 0,strict,verbose,d=700)
 
-1.3.9
--Fixed GPU array from double loading GPU index
--Removed extra pool files from github CoinPools folder
--Ensure -Favor_Coins was working.
--Miner will overwrite 1.3.8 versions, but transfer your miner configurations.
--Re-wrote benchmark parameter to test bench before writing stat, will write
-message if testbench fails
--Failed Benchmarking should now require 3 failed benches in a row order to write
-stat to 0
--Fix T-Rex Hive monitoring: Hashrates will now display correctly for each gpu.
--Added Sonoa
--Started Migration of cmdlets from main source code. Added some notations. Not
-finished yet.
--Removed erroneous files from github.
--Changed Initialization procedure to a more fluid transision.
+  -Test-Path HiveOS oc log first to prevent error generation
 
-1.4.0a
--Windows Version Now Matches HiveOS version in core design
--Ensure 100% benchmarking is setting to 0 after 3 failed attempts
--Fixed some HiveOS stat issues from 1.3.9
--Updated Z-Enemy to latest version
--Noticed Times Were inconsistent on "active" screen: Attempted fix
--Removed Erroneus Messages involving closing screens (now that I know it works consistently)
--pidinfo now starts at miner startup, MM.Hash will always close within 5 seconds of it being stopped.
--Started code staging for windows HiveOS API 2.0 (not completed) integration
--Started code staging for HiveOS new version 1.4.0b
--Started code staging for Ubuntu new version 1.4.0c
+  -``get active screen`` displays differently
+   * removed "Days", as it wasn't needed.
+   * added "#", which is the instance number
+   * ordered by instance- Greatest (most recently ran miners) to least.
 
-1.4.0b
-HiveOS: Changes:
--Added AMD miners, and changed code to work for AMD in HiveOS (HiveOS only)
--AMD miners are not plug-and-play. You will likely have to edit settings in the miner files, AMD Unix is complicated, but you should be familiar with this.
--Will add more/fine AMD miners- This is simply beta test of core script. Please use and review any issues you see.
--SGminer is not working on blockmasters- It is a pool issue, not miner.
--Fixed stats and have background miner logs sent to "Logs" folder
--Reduced switch load time by a few seconds.
--New Remote command: get-screen [type]...Show last 100 lines of group1 miner on HiveOS site.
--Ensured Timeouts will timeout miners.
--Added Function Restart-Database. Miner will now switch off algorithm/coin if detects no hash after 1 min.
--Times on 'active' command should be more accurate.
--'active' now shows database countdown.
--code staging for Ubuntu version.
--added more algorithm text files that are case specific for naming convetions between pool and miner.
--Enemy 1.1.7
--T-Rex 0.6.2 (added balloon)
--Lots of migrations and code cleanup to make miner better/faster
--Fixed "Logs" error from beta
--Fixed T-rex from beta
--Removed algorithms.txt. It was redundant. Main algorithm list is get-pool.txt...Just remove/add there. get-pool.txt is the
-algorithms miner searches for from pools.
--added -SGDevices1 -SGDevices2 -SGDevices3 arguments
+  -Improved CPU metrics (Windows)
 
-1.4.1b beta:
+  -TCP api now shows "WorkerName"
 
-HiveOS Changes:
+  -fixed html api (I didn't notice I broke it. It is restored).
 
-DISCLAIMERS: 
--I added auto-updates back in, but made it case specific for this release. It may be a good idea to save old miner file settings before updating just in case of failure.
--I made a lot of changed to AMD side, including adding a new system for recording hashrate. Watch and report.
--I made changes to HiveOS stats watch and report
--Avermore does not seem to work in blockmasters for me.
--TDXminer does not seem to work in nicehash for me.
--Claymore works normally, but screen loading is slow for logging (get-screen command)
--To get GPU count for AMD- I am using a different method that I do for NVIDIA. Please let me know if it is displaying correct GPU count. I only have 1 GPU to test.
+  -There was a rare issue in windows when the background script controlloing active miner
+   would crash. This would result in the SWARM launching a new miner while
+   the active miner continued to run. When SWARM restarts/closes miners, it will now
+   close all child process associated with that starting script. This includes if users added 
+   pre-starting scripts. Linux - The screen window is closes, meaning all processes in that 
+   screen are closed with it...Hence it is not needed.
 
--Added 0.3.4 Dredge
--Ensured get-screen was working correctly
--removed coin name from "stats". This allows it to clearly show up on HiveOS site.
--Fixed h-stats and commands so I don't accidentally mess up path to commands again.
--Moved khs value to logdata for trex, so Hive will still recieve stats, even when database starts.
--Code staging to remove double local api calls from miners (MM.Hash will send data to h-stats, not both gather information from miner)
--Found some typos of new version- fixed.
--Miner should transfer miner files: Note previous typo on Enemy-CCDevices 2 file You might copy file from github to change) to prevent errors.
--More code staging for Unix version
--Previous Version notes: Poly takes more than 5 minutes to hash an accepted share on lower-model GPUS. You may want to -No_Algo it.
--Confirmed it is possible to combine AMD & NVIDIA, but not possible to get them both to stat on HiveOS (only 1 Device group will work).
--Added tdxminer & new system record hashrate with no api.
+  -Windows: It is common that if a miner card has crashed, the miner window will not close.
+   if user specifies ``-Startup Yes`` (Default is Yes), SWARM will restart computer after
+   2 minutes of the window staying open. It will notify HiveOS this is the case.
 
-
-1.4.2b beta:
-
-HiveOS version
-
-DISCLAIMERS:
--New t-rex miner gets lower end cards hot for me! watch temps.
--AMD miners currently only work for AMD1 (no grouping yet). NVIDA1 work in groups, but only Group1 sends stats to Hive.
--You CAN run a second instance of MM.Hash on computer if you are using hybrid miner AMD/NVIDIA. Message me for more details if interested. Will create
-wiki: It will have to be done through unconventional means.
--lyclMiner is a miner that has no api, and cannot be launched via arguments. Its process for launching/stat tracking is expirmental. I'm over here
-working miracles to get these AMD miners that are profitable...Like wth is with AMD miner/programmers?
--all miner files were changed to reflect new stats system (launching/starting) for weird AMD miners.
--Made huge attempts to make stats going to hive more smoother.
--Reduced read/writes to file (Compressing information to singular files)
--Tweaked Monitoring system
--Do not reccommend changing/tweaking miner files or removing stats while miner is running. Could cause issues, due to new process of AMD launching.
--I have only 1 AMD GPU. I believe the hashrate Logging for AMD is correct for each miner, but I have no verifiable proof to know if it working for more
-than 1 GPU. I'm going to purchase another AMD card, as these miners are making AMD semi-profitable again.
-
--New argument -CPUThreads sets -t parameter of CPU miners.
--Cryptozenny is now logging tracked rather than api to prevent benchmarking wait-times.
--Miners now are instance based, should help with Process tracking, and make zombies irrelevant to it.
--Update now has "minername" parameter, which is the name of the executable of the miner. This means you should be able to load your own links in by just changing "minername", if you need to.
--Did lots of benchmarking to reflect new miners- moved around algorithms.
--Axed MSFT difference between MSFT and Tpruvot was marginal for HMQ1725, and Tpruvot is more stable.
--Updated Cryptodredge to latest version (see updatelinux.txt)
--Updated T-Rex to latest version (see updatelinux.txt)
--Minor changes to text on screen for user aid
--Because of all the background logging- Increased Sleep time before stats on screen to 20 seconds, and interval of stats on screen to 15 seconds.
--Changed h-stats.sh to help with the amount of background logging.
--Changes to core script for tracking, code staging for API (API.ps1). Preliminary tests show it is working.
-
-1.4.4b:
-
--Fixed a typo that prevented possible clearing of content.
--Utilized screen logging with a slight dely to reduce further resources.
--Edited launch timing sequence: May appear slower, but am just giving more time for process to start: No increased delays.
--Updated Crytpodredge
--Updated Enemy
--Code Staging For *nix version
--Added versions in updatelinux.txt (future use: remote command to check miner versions/change links/name.)
-
-1.4.5b:
-
--Patch for pool data overload.
-
-1.4.6b [and c]
-
-DISCLAIMERS:
-
-This version requires updating drivers to 396
-Did not get to fixing anything on AMD side. Still working on it.
-
-There is going to be no c version. b version should now work in Ubuntu:
-
--download/clone MM.Test (beta version).
--run install.sh as root : sudo ./install.sh. This will install all bash commands.
--open/edit StartMM with your specified arguments.
--Launch MM.Hash (Not as superuser!) ./StartMM
--Operates just like Hive-OS version, just open a new terminal and type desired command.
--requires 396 drivers for nvidia. Have not tested AMD yet.
--requires 'screen' to operate.
-
-
--fixed typo in claymore files [-3333]
--added new 'version' command. Will update wiki on use.
--added new 'clear_profits' commmand. Will update wiki on use.
--change nvidia launch to make Hive version work in Ubuntu.
--added install filed for ubuntu install. (used instead of h-run.sh)
--added StartMM, which is the executable to launch ubuntu version.
--added 'benchmark' command.
--updated all miners to cuda 9.2
--changed how updating in MM.Hash works.
--fixed equihash-btg for mph.
--'get-screen' will now get MM.Hash transcript (miner)
--Logs updated to show active log.
--New export folder contains cuda 9.2 library.
--Added CUDA 9.2 libs so ccminers can be recompiled now and used
--Added krnlx-xevan back in for another xevan miner if users want to test. Heard reports it
-was faster than enemy.
--Added some more visual aids.
--Removed Algorithm from stats screen. "currently mining is set to print algorithm" at bottom.
-
-1.4.7b:
-
-Disclaimers
-
-Since github repo is changing: Links are dead on screen until I complete
-full transision of repo.
-
--MM.HASH is now "SWARM"
--MM.Hash wiki is not updated, but is still relevant.
-
-Changes:
--Repaired Small Typos
--Add -Force to Timeouts
--Made another attempt to fix timeout benchmark bug (still works fine for me, though)
--Updated miners to recent releases.
-
-New Arguments:
-
--Cuda
-Default is 9.1, so you do not need to add if using 9.1
-If you wish to use Cuda 9.2 miners: Add -Cuda 9.2 argument to launch
-
--HiveOS
-Default is "Yes"
-If you are using HiveOS, argument is not needed.
-If you are running a different OS, it must be added: -HiveOS NO
-
-If you wish to use on a Unix OS other than hive:
-run:
-sudo ./install.sh
-Note: You may have to edit ./install.sh depending on flavor
-edit 'swarm' in main directory with your arguments
-launch miner by 
-./swarm
-
--New OC-Tuning read "Sample-OC-Nvidia.conf" in config folder to see how to set up.
--Increase donation .05% to reflect additions/new options.
--Updated LISCENSE
--Code-Staging For New ASIC version.
--Code-Staging For 1.4.7a
--Added Cuda 9.1 Libraries (in case hive libraries fail again)
-
-
-1.4.8b
-
-Disclaimers: 
-
-I changed unix miner files in attempt to fix the reported
-bug of miners not downloading. I disabled remote updates due to this.
-
-Blockmasters Poolname changed, and has been removed as coinpool.
-
--New Auto_Coin design:
- -miner now loads top coin from every coin pool for every selected algo.
- -Favor_Coins No will factor Algos + Coins from coin pools.
- -Favor_Coins Yes will always select coins from coin pools.
- -I reccommend using -Auto_Coin Yes, if you are unsure of it- Select
-  Favor_Coins No. Miner will only switch to coins if it is higer than
-  all api/status algorithms.
-
--New Arguments
-  -StatLevel removed
-  -Stat_Algo added [Minute_5] [Minute_10] [Day] [Week]
-  -Stat_Coin added [Minute_5] [Minute_10] [Day] [Week]
-  -Cuda default is 9.1 (no need to set if you want it this way)
-
--Added -Force command to all read-writes to ensure no access denied errors.
--Re-Wrote "WebRequest" cmdlet to new powershell language in attempt to fix bug reports.
- I cannot replicate bug reports, so having issues determining cause. (if it is SWARM related or OS).
-
-New Beta Feature:
-Coin-Server
- -launch in terminal (non-remotely) while in SWARM directory "pwsh coin-server.ps1"
- -coin server will update coin data every minute- If works well, will add hashrate data as well,
-  and replace coin equations in miner altogether: It will just pull from coin-server. Will likely
-  integrate api as well.
- -feature is beta. If you use, please monitor, and report errors or high load increases.
-
--more code staging for asic.
--started code staging for new windows version. (match HiveOS version)
-
--Beta version for new coin system. Bugs may be present. Please report so they can be fixed asap.
- Currently regarded as stable from 48 hours of testing.
-
-1.4.9b
-Disclaimers:
-
-Miner Files were added/modified. Remote Update Versions Were Disabled Again.
-Transferring you oc-tuning file will cause no issues.
-
--Added lolminer for AMD. Added for NVIDIA version, but stored in "project" folder in miners. Just
- move to "unix" folder to use.
--Added xmr-stack for AMD.
--Fixed HiveOS stats for AMD temp/fan (requires reboot after install)
--Removed export gpu_force_64bit_ptr 1 from amd launch
--Fixed miner stat issues for AMD
--Powershell is now not 'installed' to prevent further image errors.
--Miner will automatically perform disk-expand
--Last version P-Card count detection was changed on accident- Changed it back
--Updated Enemy 1.21
--Added NLPool.nl
--Fixed so miners are guranteed to all load in prior to benchmarking process
--Attempted fix of -Threshold argument
--Fixed CPU miner so they will compile with latest image
--export LD_Path= for cpuminers
--Added Argon2d-dyn to cpu
-
-New Arguments:
--NlWallet1  For coin specific auto-exchange in NlPool if other than BTC
--NlPassword For coin specific auto-exchange in NLPool if other than BTC
-
-SGMINERS:
--Other than Avermore are not plug and play. I moved the other sgminer into "project" folder
- Move back to use
--Other SGMiners may require the modification of Build > Unix > Hive > startupamd.sh to use
--Other SGMiners do NOT work for all AMD cards. See their github/bitcointalk thread.
--Other SGMiners may require a knowledge/expertise of sgminers to use.
--Depending on your system, you may need to compile these sgminers yourself
--Please DEAR GOD someone find an sgminer dev that knows how linux work!
--My Github is filled with sgminers I had to repair to work in unix environment. They work
- For My RX580- I can't make any gurantees they work for other cards. That's why I moved them
- Out Of Main Folder
-
-XMRig:
--In order to properly parse stats --Nocpu argument was use. HiveOS custom miners
- do not allow for stats of multiple platforms.
-
- 1.5.0b:
-
- DISCLAIMERS:
-
- DO NOT USE -Auto_Algo ARGUMENT! IT HAS BEEN REMOVED.
- Update set to YES. Remove Nvidia lolminer from unix folder
- prior to update!
- Should transfer oc-configurations. To be safe- back them up
- since this is first time.
-
--Auto_Algo argument removed. It is depreciated.
--Fixed GUI Display For -Favor_Coins.
--Fixed Threshold (confirmed).
--Attempted Fix For Benchmark Loop.
--Fixed SGMiners Temp & Fan HiveOS Stats.
--Changed NLPool location to Europe.
-
--Removed lolminer from unix miners that were placed on accident.
--Updated help file for accurate information.
-
-
-1.5.2b:
-
-Disclaimers:
-
--Best use of SWARM is in Stable Image currently
--AMD should see MUCH better HiveOS stats
--AMD MUST use either use stable version, or
- downgrade driver
--export for AMD is located in:
- Build > Unix > Hive > startupamd.sh
-
--New AMD miner: teamredminer
--Fixed -Favor_Coin Value Error
--Fixed Remote Update
--Fixed sgminer hs_units
--Fixed Logdata for teamredminer
--Fixed HiveCMD to send algo
--Fixed IncludeCoin for cpu
--Fixed Rejected shares for log miners
--Fixed lolMiner Coin Miner "Disable_Memcheck":0
--updated Cryptodredge 0.9.2
--updated Readme
--updated get-pool.txt
-
-1.5.3b
-
-Remote Updates: Not Safe! Complete fresh install required! All miner files changed!
-This version is Beta- Use with caution
-NOTE: Changed OC-Nvidia.conf for future implementations! Added "Cards"{"Cards":""}
-Nvidia Watt-O-Meter doesn't seem too accurate.
-AMD Watt-O-Meter seems fairly accurate.
-CPU is not working yet! Don't use!
-
--GetPower.ps1 added
--Added Watt-O-Meter for Nvidia
--Added Watt-O-Meter for AMD
--Argument -WattOMeter "Yes" "No" 
-activates watt detection at benchmark. Not stable for larger rigs!
--Miner Now Calculates Power
--power.conf is for manual entries- enter as watts total. Will create helpme soon.
--if WattOMeter is no: miner will defer to power.conf. It should be okay to leave blank-
- I reccommend at least setting a default based on your power limit.
--Fixed T-Rex logdata
--Added Folders in Config to remove confusion
--Added WildRig for AMD
--Small bug fixes
--Gui Changes
--Added "Watt/Day" to stats
--Ubuntu is not supported yet- HiveOS only. Will match soon.
--fixed version command for miner updating.
-
-
-1.6.1
-
-Disclaimers:
--WattOMeter feature causes increased load. Use with discretion with multiple platform use.
--OCTuning feature causes increased driver load. Use with discretion with multiple platform use.
--New Core Program! Front end looks same, backend totally different!
--I have read that using the method to oc tune I use on windows side +
-msi afterburner will cause crashes.
--I was having stability issues with NVIDIA miners on windows side-
-100% positive it was the miners themselves. I haven't used windows in awhile for tuning them.
--Set a shortcut to startup, and miner will restart at reboot.
--Last rebooot time for windows may be wrong (will fix).
--Load is by % on windows.
--Platform Windows argument must be specified.
--Did not do API for lolminer- Have no pool to test it.
--Cryptodredge threads API for me was timing out a lot. If you experience the same-
-message developer.
-
--Added first stage Windows HiveOS integration.
--Added stats,active,reboot,benchmark,get-scren version to windows.
--Added OC tuning to windows.
--Added WattOMeter to windows (and watt calcs).
--Miner now stats to HiveOS directly (windows).
--Miner now  parses threads instead of HiveOS (unix).
--Only 1 api call on miners now every 10 seconds.
--Fixed symlink export issue on AMD.
--Attempted fix to zpool GUI error.
--Automatic HiveOS logs-off (because my miner logs better).
--Added -AMDPlatform argument. Internally set at 1. If you have issues- try 0
--Divided up main core program into smaller functions for smoother runtime.
--Added difficulty parameter to miner files.
--Changed logdata screen to 'background'
--background screen shows relevant stat information going to hive (like agent-screen).
--Miner automatically parses -GPUDevices(1,2,3)
--Removed all other -Devices arguments, they are now depreciated
--Not all AMD miners will work with -GPUDevices: They're flawed design, not mine.
--Hybrid proper use is AMD1,NVIDIA2,CPU....Wallet2, CPUwallet & passwords must be specified
--Fixed NLPoool-specific arguments.
--Added 'dagger'
--Added -HiveID (Windows)
--Added -HivePassword (Windows)
--Added -HiveMirror (Windows)
--To not use hive- don't add those arguments.
--Fixed OC tuning to work faster.
--Fixed WattOMeter To work better. (--querygpu instead)
--CPUThreads argument must be specified if using CPU!
--extra wallets for donation are fixed
--ETHPill Added to octune (Linux only for now)
--Fan Startup For Windows Added
--Added Hybrid Support- Expiremental Status
--Cuda 10 added (-cuda 10). Drivers must be updated! I offer NO SUPPORT.
--Favor_Coin -Stat_Coin -Auto_Coin are still in code, but they have been disabled.
--zergpool removed.
--benchmark command now remove power files for wattometer as well. (if using)
-
-1.6.2
-
-
-
-Disclaimers:
-
-Dagger does not work on NLPool- leaving it miner regardless in case it does. It's
-a good test for new timeout system.
-This is mainly update for NVIDIA, and small bug fixes. AMD update coming soon.
-Some miner files were changed, so was stat system. Probably ideal to fresh install.
-CryptoDredge did not release a cuda 10.0 version of his miner
-only cuda 9.1 and 9.2. If you use -cuda 10 and want to use
-his new miner- You have to manually update.
-CryptoDredge was updated.
-Cnv2 added for NVIDIA
-To reset bans- run benchmark [algorithm]
-
--New Argument -Rejections
--Default is 20 (Do not need to specify if you like 20)
--Rejections is the amount of % rejections in order to consider a bad benchmark/strike
--Only flaw to this system, is if rejections are too high: It deletes stat
-and forces benchmarking, so pool ban can be enforced.
--Higher the number, the lower chance of enforcement. 100 is maximum.
-
--New Strike system for benchmarking
--miner no longer sets any stat to 0
--results in more accurate stats.
--strike 1: Notifications
--strike 2: Algorithm ban on said pool
--strike 3: Algorithm ban across all pools
--resets every [x] hours where [x] is -timeout argument
-
--Ensure stats are cleared before each miner
--prevents cross stat contamination
-
--Stats will default to 1.000 on HiveOS
--allows user to know miner is running,
-but API is awaiting stats.
-
--Watchdog does not closes down main program (hiveos)
--prevents shutdown of new restarted instance
-
--Changed ccminer api
--reduces chances of timeouts on SWARM.
--background first gets summary for total HashRates.
--background then tries to get threads.
-
-1.6.3
-
--Improved Strikeout System
- -Less chance of incorrect Strike
- -fixed small Typos
-
--hs_units
-  -fixed typo causing KHS to stat for hs_units
-  -Added truncate to remove \r at end
-
--cryptonightv8
-  -xmr-stak updated
-  -no negative rejections
-
--repaired download links
-  -fixed broken merges
-  -fixed broken typos
-  -fixed missed pushes
-
--fixed cpu
-  -bubasik and jaydee stat diffently
-  -noticed differences and fixed
-
--teamredminer
-  -upgraded
-  -new api
-
--WildRig
-  -upgraded
-  -prioritized api to get RAW for SWARM first
-  -less chance of 0.00 hashrates for benchmark.
-  -no negative rejections
-
--SGminer
-  -api changed
-  -prioritized api to get RAW for SWARM first
-  -less chance of timeouts
-
--clear hash log
-  -no incorrect hashrates
-  -increases chances of timeouts
-
--fixed typo with benchmark
-  -benchmark and interval should work correctly.
-
--fixed benchmark command
-  -benchmark should now erase bans correctly.
-
- -nicehash pool
-  -Stat_Algo parameter will now work
-  -Stat_Algo default is live
-
- -added .gitignore
-  -will help for those who self-develop
-  -ignores stats/timestamps/user specific data
-
- -added maker.ps1
-  -start of integrating excavator into SWARM
-  -not functional
-
- -fixed windows version
-  -some better stat work
-  -ensured paths are correct
-
- -updated wiki
-  -added strike system
-  -added windows version details
-
-    1.6.4
-
-  IMPORTANT NOTE:
-  All xmr-stak miner files were changed. Make copies of files before updating!
-  Then copy your settings over after update. They will be DELETED if you set
-  -Update "Yes"
-  All T-Rex miner files were changed. Make copies of files before updating!
-  Then copy your settings over after update. They will be DELETED if you set
-  -Update "Yes"
-
-  -Updates should be working.
-  -Safe to remote update.
-  -To remote update, add "-Update Yes" to arguments (HiveOS version only)
-  -Update will transfer old miner files and its settings
-  -Update will transfer old oc settings
-  -Update will transfer old naming settings
-  -Update will tranfer old power settings.
-
-  -Fixed Dual Mining For HiveOS (Stats)
-  -Forgot to push cpu export for XMR-Stak- Pushed Now. XMR-CPU should work.
-  -Added New Feature To Timeout System:
-   Strike outs reset to 0 if miner hasn't ran in last hour.
-   It still is previously set to reset strikes if a good benchmark occurs.
-
-  -fixed get-pool.txt to exclude algos not listed.
-
-  -new t-rex added.
-
-  -Added kill process to screen shutdown
-   -hopefully will stop processes that don't shutdown 
-    when background miner screen changes.
-
-  -Default -Rejections changed to 50%
- 
-  -Added Case-Specific Additions to Hashrate Arrays
-   -Will assist with multi-platform dual mining
-
-  -benchmark command now has the following additions:
-   -benchmark will remove backup hashrates of algo
-   -benchmark will remove backup power of algo
-   "-benchmark timeout"
-    will clear all pool/algo bans
-
-  1.6.5
-
-  Disclaimers:
-
-  Updates are safe.
-  All T-Rex miner files were changed. Make copies of files before updating!
-  Then copy your settings over after update. They will be DELETED if you set
-  -Update "Yes"
-
-  Updates are safe.
-  All WildRig miner files were changed. Make copies of files before updating!
-  Then copy your settings over after update. They will be DELETED if you set
-  -Update "Yes"
-
-
-  -SHA256t
-   Added algo SHA256t (zpool)
-
-  -Changed TRex version in update.
-
-  -Removed hashrate 0 on certain pools
-   -I want to support smaller pools
-   -Some smaller pools have different algos
-
-  -CCMiner API attempted fix:
-   -Attempted fix of ccminer
-   -converts API Data to a native powershell table
-   -hopefully this will stop/reduce Cryptodredge API errors
-  
-  -New WildRig Miner
-   -New Algos Added
-
-   1.6.6
-
-   This is a beta version.
-
-   FRESH INSTALL MANDATORY
-   Linux Version ONLY
-
-   -Wrote small help article for AMD users in help files.
-
-   -Fixed Clamore -Platform issue (AMD)
-
-   -Added argument -OnboardCard. Default is no. Specify Yes if 
-    using amd and rocm-smi detects integrated card. Quick fix
-    will find better fix in near future
-
-   -re-wrote config folder. config now contains miner control
-    files in json format. Adding commands, difficulty, oc
-    and pre-start commands are now done there.
- 
-   -added install git for CPU compiling.
-
-   -Fixed $RAW=0 placement to prevent double stacking of
-    hashrates, when total API failure occurs.
-
-   -Converted all config files to json for future use.
-
-   -Changed all miner files for new OC tuning.
-
-   -Changed stats file to come before miner launch.
-
-   -Ensured background agent is started before -delay
-    so users can specify delay for OC tuning.
-
-   -OC tuning is now launched in their own screens.
-    OC_NVIDIA is for NVIDIA
-    OC_AMD is for AMD
-    This prevents lockup of any of SWARM's processes
-    And lets users check for oc issues.
-
-   -Miners now lauch from one single script, made
-    on demand: startup.sh.
-
-   -trex updated, x22i added.
-
-  1.6.7
-
-  There are still beta features in this release.
-  Updates not availiable yet. Next release.
-  Fresh install as changes were made to core
-  program.
-
-  -New code in Background Agent In Attempt fix
-   incorrect hash on screen.
-
-  -Fixed t-rex .json.
-
-  -Fixed benchmark interval on timeouts.
-
-  -Teamredminer 0.3.4
-
-  -Cryptodredge 0.9.4
-
-  -DSTM 0.6.2
-
-  -Moved DSTM to project folder: equihash is
-   asic anyways.
-  
-  -Corrected Arguments in help files
-   added new arguments in help files.
-
-  -Fixed -recurse on timeout command
-
-    1.6.8
-
-  -Added Naming to some miner .json as a test.
-  -Teamredminer updated + naming fixed
-  -Recoded background- attempted fix 
-  -Increaded default rejections to 75%
-  -Added -PoolBanCount Argument
-  -Added -AlgoBanCount Argument
-  -Both above arguments define the
-   number of strikes required to institue
-   their respective bans.
-  -fixed a bad trigger in which if timeout
-   folder was deleted- Bans would not
-   reset unless restarted. Both -Timeout argument and 
-   benchmark timeout commands should now work.
-  
-  
-  1.7.0
-  
-  AMD USERS:
-  use -AMDPlatform to specify your platform.
-  use -OnboardCard Yes if you have an integrated
-  graphics card for hive stats.
-
-  Remote Updates Disabled- Too Many Changes!
-
-  -Phoenix miner added as per user request.
-  -WildRig updated
-  -CryptoDredge updated
-  -Trex Updated
-  -Enemy updated
-  -xmr-stak updated
-  -Added more to export directory for good measure.
-  -Miner now records top 3 pools for each algo.
-    -pool bans extend beyond just initial benchmarking.
-    -SWARM will now choose the best miner of the three pools.
-    -This means not all miner will make screen- only 1.
-    -Future implementations
-  -Database changed for new pool system.
-  -Miners Launched change to single launch script: startup.sh
-  -Added 10 second delay to api screen to prevent incorrect
-    api pulls.
-  -changed how miner launches background screen.
-  -confirmed benchmark timeout command working.
-    -however if you have a lot of timeouts,
-     I suggest restarting miner after using command.
-  -Power system changes:
-    -WattOMeter now records to power.json,
-      not to stat files.
-    -this allows users to lock in power
-      settings, by selecting -WattOMeter "No"
-  -Added Quotes to miner files.
-     -will allow for future implementations
-  -fixed small reported typos.
-  -Removed cuda 9.1. Default is now cuda 9.2
-  -added the start of get.ps1
-  -more json code staging.
-   -future implementations
-  -more algos on AMD side.
-
-    1.7.1
-
-  -Remote Updates Are Now Safe Again.
-  -Phoenix Miner NVIDIA moved to project folder
-  ``-Stat_Algo`` changed
-     -If you specify Day, SWARM will use 24 hour api data
-  -Fixed Nicehash pool drop
-  -Write-File Check: Miner will confirm information for
-   api and oc have been pulled, if not- try again.
-      -This allows OC to be started before miner starts.
-  -``get`` command added. Limited functionality:
-     ``get help``
-     ``get benchmarks``
-     ``get stats``
-     ``get active``
-       -will add more in near future
-
-      1.7.2
-
-  -Remote Updates Are Safe.
-  -AMD Users
-    ``-AMDPlatform`` to specify OpenCL platform
-    ``-OnboardCard`` Yes or No to specify motherboard has integrated GPU
-  -Argument Changes IMPORTANT!!
-    -NlWallet1 2 3 removed
-    -NlPassword1 2 3 removed
-    -BlockmastersWallet1 2 3 removed
-    -BlockmastersWallet1 2 3 removed
-  -New ARGUMENTS!
-   ``-AltWallet1`` 2 and 3
-   ``-AltPassword1`` 2 and 3
-     specify these if you wish to use a wallet other than BTC
-     check with pool to confirm wallet is accepted. Is meant
-     to be used in conjucntion with -Wallet1/-PasswordCurrency1 (BTC address)
-  -New COMMANDS!
-     ``get parameters``
-       used to see current arguments you have specified.
-       can be used to troubleshoot issues.
-  -Updated teamredminer
-  -Updated CryptoDredge
-  -Updated T-Rex
-  -Moved lyclMiner to project folder after multiple user requests.
-  -Fixed OC system, both platforms. OC tuning should now work
-    without fail from SWARM.
-
-  1.7.3
-
-  AMD Users: Use -AMDPlatform to specify Opencl platform
-  AMD Users: Use -OnboardCard Yes if you have an integrated Graphics Card
-  ALL USERS: -Delay argument has been removed!
-
-  IMPORTANT UPDATES:
-    -NEW MINERS 
-      -sgminer-VII (Made by ME, faster than kl)
-         -sgminer-kl was removed- New version is not compiliable for linux.
-         -sgminer-VII is fastest x16/x16s/skunk/tribus/aergo miner for AMD
-          for linux. Fork of sgminer-kl, repaired his bugs.
-      -zjazz
-      -excavator
-    -SWARM LITE
-      -Specify ``-Lite Yes`` in arguments
-      -Will launch an HTTP api version of SWARM
-      -http://localhost:4099/summary
-      -Changes based on -Becnhmark or -Interval rate,
-       after miner has calculated database.
-      -Will list all available miner/pool combinations
-       that SWARM can calculate.
-      -Will display best miner to use & arguments
-      -Will relay port to set if you wish SWARM to read
-       miner API's and record benchmarks.
-      -If no benchmarks are made: SWARM will sort list by pool estimates
-      -If there is a benchmark- SWARM will sort by hashrates
-   ``-DELAY`` REMOVED
-      -all delays are decided at miner level
-      -'delay' param added to all miner.json
-    -miners folder changes
-     -lyclminer moved to project folder
-     -excavator moved to project folder
-     -linux folder deleted
-     -windows folder deleted
-     -gpu folder added
-
-    New Miners:
-    -excavator
-    -fancyIX sgminer (does allium)
-    -zjazz
-    -sgminer-vii
-    Note On Excavator:
-    Excavator is unpacked and installed via dpkg.
-    you may have to manually install, and copy
-    'excavator' from "/usr/bin/" to ".\bin\excavator-1"
-    Cryponightv8 and CryptonightV7 did not work.
-    Excavator miner files is located in ".\miners\project"
-    folder. Move them to ".\miners\gpu" to use.
-
-    New Features:
-    -miner now records intensities and block difficulties
-     from background miners.
-        -these are saved in .txt files located in the ".\bin\minerdir"
-        -These can be used to fine tune miners.
-        -This is done during benchmarking phase.
-    -AMD oc fans
-      -Attempted fix of AMD oc settings, added fans
-    
-    -CryptoDredge updated
-    -Wildrig Updated
-    -Sgminer-Kl updated
-    
-    1.7.4
-
-  AMD Users: Use -AMDPlatform to specify Opencl platform
-  AMD Users: Use -OnboardCard Yes if you have an integrated Graphics Card
-  ALL USERS: -Delay argument has been removed!
-
-    Remote Updates Safe
-    Note: You may see errors on screen while updating. They are not
-    an issue: I was too lazy to silent them.
-
-    -Changed Pool Ban System To prevent
-     potential uneeded re-benchmarking
-    -Updated Wildrig-Multi
-    -Fixed logfile error for SWARM Lite feature.
-    -Fixed Timestamps Issues.
-    -SWARM watchdog will clear hive stats on close.
-    -SWARM will record close time (for 24 donation rollover)
-    -Fixed Rigname switch after Donate.
-    -arguments.json is written as proper json (future implementation)
-    -Ensured 24 hour estimates are accurate.
-
-    1.7.5
-
-    Remote Updates are safe
-  AMD Users: Use -AMDPlatform to specify Opencl platform
-  AMD Users: Use -OnboardCard Yes if you have an integrated Graphics Card
-  ALL USERS: -Delay argument has been removed!
-
-   -Fixed encoding carriage return happening when arguments
-    were saved to config.
-   -Added blakecoin to power.json to prevent errors (note:
-    did not add to remote updates. You will have to add
-    manually) or just ignore error for now.
-   -Donation Wallet goes to only 1 pool. If you see only one
-    pool on stats screen- It is not a bug. I can't make thresholds
-   -Fixed small typo in stak-opt with MinerName/path
-   -Code staging for wallet tracking (not implemented yet)
-   -Code stating for beta profit calc. system (users will be
-    able to use new system or old system when finished.)
-  
-  NEW MINERS!
-  xmrig-amd
-
-  Miners Updated!
-  enemy
-
-  New Arguments
-  ``benchmark [command] [name]``
-
-  Command List:
-
-  timeout
-  algorithm
-  miner
-  all
-
-  -algorithm name must be lower case.
-  -miner name must match name on ``stats`` screen. Case-Sensitive
-  -timeout removes bans only (all of them).
-   however, this may cause miner to bench algo again.
-
-
-1.7.6
-
-Windows Update!
-
-Windows core side is 100%, and works with HiveOS
-  -hashrate watchdog works.
-  -oc tuning/clocking does not work (however, SWARM can control oc better- see config > oc).
-  -windows fan set at start.
-  -Auto-Fan does NOT work. (yet)
-  -90% of the commands linux has works in windows.
-  -reboot will reboot computer.
-  -changing flight sheet will restart miner with new arguments.
-  -once flight sheet has been rocket launches (with arguments),
-   bat file arguments is ignored.
-  -HiveOS "No" turns off hiveos integration.
-     -To Use:
-          -Start a new worker on HiveOS. Go to settings on worker. Save worker ID & Password
-          -Open SWARM.bat, edit -HiveID -HivePassword -HiveMirror
-          -Start SWARM.bat
-          -Configure a flight sheet as you would with Linux HiveOS. Add your arguents. (See Wiki)
-          -Rocket Launch Flight Sheet.
-  -save a shortcut of SWARM.bat in your startup folder.
-  -current working windows commands for HiveOS (report if bugs):
-     -get help
-     -get benchmarks
-     -get oc
-     -get active
-     -get stats
-     -get screen
-     -reboot
-     -version
-     -benchmark 
-
--fixed the benchmark command
--fixed "minername" issue with Claymore-1
--code staging for ASIC switching (coming in next release).
--code staging for AMD Windows (two releases away).
--code staging for wallet tracking (coming in next release).
--Strike 4/Miner bans added: Miner will shut off non-functional miners.
--Ban system greatly improved! Rewritten entirely.
--Added user configured oc settings to Lite API
--AMD oc is 100% working: Multiple user tested.
--Added fans to AMD OC: 100% working.
-
-1.7.7
-
-NOTES: -HiveID argument has been removed!
-       -HivePassword argument has been removed!
-
-Use -Farm_Hash argument for Windows version.
-
- -Windows AMD initial test version!
-   -Type AMD should work on windows version.
-   -coded an entire ADL exectuable to get stats.
-   -oc is not done yet- Do not use OC tuning for AMD.
-   -please report if issues.
-
- -Fixed typo causing oc setting on HiveOS website
-  for Windows version.
-    -It's not coded yet, but users will soon be
-     able to set oc for windows.
-
- -Updated  Trex
- -Updated  Enemy
- -Updated  CryptoDredge
- -Updated  Xmrig-amd
- -Updated  Xmrstak
- -Updated  fancyIX
- -Updated  WildRig-Multi
- 
- -fixed typo in benchmark all
- -fixed typo in benchmark timeout
- -code staging for wallet tracking (not done yet)
- -fixed busid for NVIDIA gpus
- -basic subvendors for NVIDIA & AMD (Windows)
-      -Works if it can be detected
- -codefixes regarding windows stats
- -background Agent for windows displays power.
- -more code staging for ASIC.
- 
- 1.7.8
-
-This is a HUGE update. Please note any issues,
-so they can be patched asap.
-
--AMDPlatform is no longer needed: it was removed (not for windows)
--OnboardCard is no longer needed: it was removed
-
-Bleeding Edge is now supported and working.
-
-Because of Bleeding Edge- SWARM cannot restart
-agent. You may have to manually restart agent
-yourself to update h-stats version.
-
-Type ASIC now in initial test stages. Currently
-only have Linux version (not HiveOS). I will
-create a write-up on how it works. I was side-lined
-with ASIC due to the crazy amount of miner updates/new algos.
-I will create a write-up on how it works, as it works dramatically
-differenly than other platforms.
-
--phiphipool is fixed and working again. Pool file updated.
--icserver.ps1 added
--ccmineryescrypt.ps1's added
--All miner files updated for Bleeding Edge Support
--created C++ script to get opencl platform
--Parse GPU's differently- Report if issues with hiveOS stats
--AMDPlatform is no longer needed: it was removed
--OnboardCard is no longer needed: it was removed
--yescryptR32 added
--dedal added
--x18 added
--lyra2vc0banhash added
--x21s added (UNSTABLE AS HELL)
--phoenix miner updated and added back into rotation
--klausT cuda 10 (compiled by myself)
--tpruvot cuda 10 (fixed and compiled by myself)
--ccmineryescrypt (fixed and compiled by myself) Cuda 10 only
--cpuminer-opt pre-compiled
--cpuminer-opt-yespower pre-compiled
--trex updated
--cryptodredge updated
--enemy updated
--wildrig updated
--SWARM_help.txt accurate now.
--Wiki heavily updated on github.
-
-
-1.8.0
-
--Zhash added.
--EWBF added back to rotation.
--Gminer added. (Does not work with NiceHash- Contact Dev).
-  added to "project" folder
--CryptoDredge Cuda 10 link fixed.
--New zpool URL schema added (It's working in SWARM- seems like pool has issues).
--trex updated
-
-Note: I am looking for a 144_5 --pers auto miner for AMD
-
-
-1.8.1
-
--new command: ``get miners``
-  use ``get help`` for instructions
--new command: ``get wallets``
-  use ``get help`` for instructions
-  first run- may be bugs
-  did not do nicehash yet (no public method)
-  plan to integrate into SWARM core
--new command: ``get stats lite``
-  lighter version of stats screen for phones
--new feature: Download bans
-  miner will stop attempting to download on failure
-  miner will notify on stats and screen
-  first run- may be bugs
--fixed all ``get`` commands
--fixed all ``benchmark`` commands
-  benchmark command displays more input
--improved ``wattometer``
-  -using new c++ program using cuda api
-  -increased timeout so it has better change of not failing
-  -fixed issues with adding new algorithms
--new arguments
-  ``-conserve Yes/No``
-    default is no
-    conserve will stop all miners if profit is negative
--cleared out some useless algorithms from miners
--fixed HiveOS boot time for windows version
--code staging for HiveOS OC setting integration for windows version
--Ban messages on windows screen.
--Actual load averages in windows on HiveOS.
--CryptoDredge 0.14.0
--Z-Enemy 1.27
--Xmr-Stak 2.7.1
-  
-1.8.2
-
-Warning: Larger changes in codebase was made
-prepare to rollback in case you have issues.
-
-Remote Updates are safe.
-Windows Users will be able to update after this
-version with a command.
-
-All Versions:
-
-New Arguments!
-
-``-SWARM_Mode``  ``Yes No``
-    -Default is ``No``
-    -Sycronized switching across all users!
-    -Sycronize with your friends/other users
-     to switch at the same time on the same
-     pools!
-    -Increases hedged shares for all SWARM
-     users!
-    -Research shows most cards of the same
-     platform will often mine the same algo.
-    -WE ARE THE SWARM!
-
-``-Switch_Threshold``
-     -Default is ``1`` (for testing)
-     -This allows a threshold requirement
-      in order to initiate a switch.
-     -Figure is percent based.
-     -Will increase incoming quotes by
-      defined percentage, to prevent too
-      much switching, if user's strategy
-      prefers such method.
-     -Figures are displayed on screen.
-    
--Profit Database will now correctly factor
- negative figures, for -Conserve users.
--Database Sorting was recoded and streamlined:
- Beta in design. Future implementation.
-
-Windows:
-
--Removed annoying update HiveOS on site.
--Hive Mirror is no longer required.
--Woker password can now be set successfully.
--HiveOS mirror can now be set sucessfully.
--Remote "run" commands have been completely
- rewritten, and are more efficient.
--Created HiveReset.bat
-  This is will remove all saved HiveOS
-  parameters.
-  This is ran to re-sync worker to HiveOS.
-  After running, you can now attempt to
-recconnect worker as if it was the first time.
--OC can now be adjust on HiveOS website.
-  -nvidia only
--Nvidia driver version correct on Hive Site.
--Added timestamps on main screen.
--Added added bans on main screen.
--Removed some of the debug errors in agent.
-   -Some are still present.
--Small bug fixes in commands.
--After this version: Windows Users can now
- run ``get update`` to update their SWARM
- version.
--Code staging for autofan.
--fixes in agent screen.
--Default Argument .json added.
--Default Arguments will allow Windows users
- to add/change/remove arguments from flight sheet.
- Any argument not specified: Default .json will be
- referenced.
--Better NVML monitoring.
-
-Linux:
--Changed some color outputs on screen for ease of reading.
--Internal SWARM version now linked to h-manifest.conf.
--Small bug fixes.
--Miner changes in ``get wallet`` command.
--Code Staging for optional xterm windows
- rather than screen for miners.
--Attempted fix of Phoenix Miner api failure.
--Code Staging for ``get power`` command.
--Minor fix of ``get miners`` command.
-
-
-To use new features included in this release:
-
--Add ``-SWARM_Mode Yes`` to your flight sheet.
--Add ``Switch_Threshold [number]`` to your flight sheet.
-
-All miners should be up to date. If I missed one, or you
-have a request for a new miner to be added- Contact me via
-discord.
-
-
-1.8.2
-
-
--This fixes ``-SWARM_Mode`` parameter and
- millisecond bug.
--SWARM_Mode should work as intented.
-
-New Command (Windows)!
-
-``ps``
-  -ps allows you to run powershell/cmd based commands remotely.
-  -can only run commands that will eventually end! Running processes
-   will put your rig offline, just like HiveOS version. You can start
-   processes, but use powershell's ``Start-Process`` cmdlet.
-  -example:  ``ps Get-Process`` will get you a list of running
-   processes on pc.
-
--Updated trex
--Fixed background miner versions.
--RTX series USB-controller fix. (Stats correct number of GPU's)
-
-This release is mainly a patch for users interested in SWARM_Mode.
-
-
-1.8.4
-
-Major Changes:
-
-NOTE: FRESH INSTALL HIGHLY SUGGESTED! Beta version from all
-the changes/additions.
-
--Statics have been compeletly rebuilt. 
-  -Pool files were all modified,
-  -Most of every databasing function has been rewritten.
-  -Taking a new, completely my design approach to profit statistics.
-  -Taking workers, fees, and pool hashrates into accout- Beyond simple estimates.
-  -Entirely new profit equation.
-  -Returns seem to be more exact, especially when stat_algo day is used. (but live seems to be best).
-  -System is improved, but more changes to account for SWARM_Mode will be made.
-
--Custom Yiimp Miner Pools
-  -You can now create your own mining pool files
-  -Instructions on how to create them included in sample file:
-    .\algopools\custom.ps1
-  -It's as easy as filling out a small 10 question form.
-  -Can be duplicated, but same pool duplication not advised.
-  -Rename custom.ps1 to bsod.ps1, and you should add a lyra2vc0ban coin
-  -Requires wallets for coins- No Auto-Exchange.
-  -Useful for testing profitibility of coins outside auto-exchange pools.
-
--API server now established:
-  -http://localhost:4099/summary will get you swarm pricing data
-  -http://localhost:4099/getstats will get you mining data
-  -Much more is coming soon- Full API method to modify SWARM will exist
-  -Sample API for demonstration is included: Sample-API.ps1
-      note: As I update API, I will add how to use via Sample-API.ps1
-  -Currently this is local, until I finish. I plan to make remote.
-
--New Arguments:
-   -AMDPlatform was removed. Use CLPlatform instead, only if needed.
-    Swarm should detect.
-   -API: Default is yes, if you have issues, you can remove it its
-    by specifying -API No
-   -Nicehash_Wallet(1,2,3) no longer needed, however, you can still specify.
-   -NiceHash_Fee set to default of 2% if using Nicehash_Wallet, 5% if not (per site).
-
--Time Syncronization:
-  For better SWARM_Mode optimization, all swarm apps will Sycronize
-  their time with NIST servers at start.
-
--Adminstrator
-  SWARM now runs in administrator mode. This allows the following:
-    -more GUI manipulation.
-    -Modify time settings.
-    -Launch miners with admin privelages (it helps amd side).
-    -modify registry entries for Vega Soft Powerplay Tables.
-    -in future: modify registry for gpu optimizations users may
-     not be aware of.
-    -in future: remotely update NVIDIA/AMD drivers with single command.
-    -``ps`` can not run applications as admin
-    -ensure security settings are good on your windows computer/network.
-
--Agent rebuild
-  -Rebuilt agent to better gather api stats from miners.
-  -Rebuilt C++ software to better gather api stats from GPU drivers.
-  -Removed as much error generation as I could possibly find (when API fails).
-  -background no longer closes, but still octunes when switch occurs. (within a few seconds).
-  -GPU stats are gathered from hive stats file, no gpu api is used.
-  -Rebuilt linux api gpu stat generation.
-  -Rebuilt windows api gpu stats generation.
-  -Rebuilt most of the api's for each miner.
-  -Focused on lowered mem use, and resource uses...However more things
-   are happening in background, so there should be no change.
-  -There is a table corruption in .\odvii.exe. This is an AMD driver bug.
-   I cannot fix, but it doesn't seem to cause issues. It just creates error logs
-   in windows event veiwer.
-
--New miners
-  -bminer added
-  -zhash & Phoenix Miner API are fixed (I believe).
-  -warning: Miniz was giving me issues.
-  -warning: ccmineryescrypt, cryptodredge, fancyIX,
-            wildrig on certain algos may cause issues.
-  -warning: Some AMD gpu's may not run all AMD miners.
-
--Bus statistics fixed.
-  -Better GPU detection.
-  -Windows now automatically detects OpenCL Platform
-     note: This was working for me. Please let me know
-     if you have issues.
-  -Does not count GPU's that SWARM isn't using
-     note: This was working for me. Please let me know
-     if you have issues.
-  -Removed NVIDIA integrated motherboard cards from count.
-
--Minimized
-   -All windows are either ran hidden/minimized except main
-    window.
-   -Windows will now set their own colors for visualization
-    optimizations.
-
--Crash reporting
-   -If miner is restarted- SWARM detects this, and will
-    perform an crash report.
-   -Crash reports takes a "flashed image" of all debugging
-    data located txt folder, which accounts for 75% of SWARMs
-    internal statistics.
-   -This data is unchanged, which means you can review incidents,
-    what miners were running, etc., to determine failures. Or send
-    me the crash report, and let me figure it out.
-
--Miners Updated
-
--Gui fixes everywhere. Attempted to remove as many erroneous powershell
- errors/warnings as possible.
-
--Lots, and lots, and LOTS of small fixes. Too many to detail.
- 
-
-1.8.5
-
-NOTE: Windows user can run get update to remote update. This will
-be first working instance of it, and it deletes old version folder
-in original directory. You may want to make a backup of it first.
-
-NOTE: I am having a hard time with setting SWARM to startup in
-windows. Windows blocks the .bat file if added to startup. You have
-to add the new file path yourself. I am working on fix.
-
-NOTE: Windows updated in order- 1.8.3 to 1.8.4, 1.8.4 to 1.8.5, etc.
-
--WildRig Updated
--CryptoDredge Updated
-   Note- CryptoDredge algos were removed. A fair amount.
-         I didn't code automatic removal on your old files.
--nicehash eq to eu
--small 'tweaks' to profit calc.
--cpu only stats table in agent.
--overdrive api (new version) was not working
- the program was corrupted. I reverted back to original.
- this means no fans/stats for Vega on windows. :(
--watt/day will only show if you have watt values.
--attempted fix for better XMR-STAK stats.
--Increased actual miner ban count to six- meaning 3 bad algo
- runs, and it is banned.
--fixed AMD temps/fans for HiveOS.
--Small Gui fixes with commands.
--Fixed Sgminer stats for good (I think).
--Rolled back vega support for windows. Sorry. It still works, just
- fans and temps won't stat.
--Small tweaks to XMR-STAK/XMRIG api.
--Added lolminer for zhash (AMD).
--Removed tpruvot- Depreciated.
--Added more GUI notations.
-
-1.8.6
-
-Critical X16r patch for 1.8.5
-
-1.8.7 (Not Released)
-
--Windows version will start connection to HiveOS as soon as first
- agent window starts.
-
--Fixed commmand ``get benchmarks`` to show only benchmarks.
-
--Made it so that if command fails- It will not display old commands (Windows).
-
--Agent message spacing is cleaner
-
--SWARM_MODE was causing an issue with "Becnhmark Miner" command- It was resolved.
-
--Agent will now build empty stats array if SWARM is not running (Windows).
- This allows you not to have to wait for miners to download to connect flightsheet.
-
--Fixed API stats so it is all in KHS (include making decimal for Sol/s).
-
--Found Issue with multiple device groups not sending total hash to API- resolved.
-
--Noticed some incorrect hash units being sent to HiveOS (khs was mhs, etc)- resolved.
-
--SWARM will remotely notify you if there is no miners available (argument/pool/miners issues).
-
--Migrated More Output files to .\build\txt instead of bash folder. (Helps with debugging).
-
--SWARM will not remove its tar.gz download for HiveOS.
-
--SWARM will now copy over last known miner logs into crash-reports.
-
--SWARM will clean Trash folder for HiveOS (remove old miners/downloads).
-
--Much better organization of API/summary. Organized by type, then profits (or pool estimates if no benchmarks).
-
--Lite Mode disables timeout system (so you can run, and it won't block miner stats).
-
--Removed API-Sample.ps1, will add back when I am finished (Still changing it).
-
--Added ``-Remote`` parameter, for making API remote.
-
--Added ``-APIPassword`` parameter, to set a password endpoint on remote api.
-
--Upadated Help_File with new arguments.
-
--Increased miner ban to 12 count default (because of zergpool equihash).
-
--Zergpool Added. Equihash Algos fixed. (I was having trouble with some on zergpool).
-
--KW/h cost can now be set hourly by power.json, for variable rates. If use in conjucntion
- with ``-Conserve Yes`` argument, you can effectively stop mining if values drop to negative.
-
--Moved Custom pools to custompools directory. Swarm will check that folder now.
-
-1.8.9
-
--API now runs through background screen.
--API with windows closes 1 second after background screen exit.
--New default configs (if new are developed) will automatically be added to windows flight sheet.
--Fixed CryptoDredge Download.
--Fixed SWARM re-download on reboot.
--Rolled back deletion of tar.gz from hive downloads folder.
--Windows NVIDIA should now oc with default all GPU's (not just per card)
- If you have only 1 value set.
--API summary table loads faster.
-
--Rebuilt version command from scratch. It should work decent now.
--version update command should work for regular *nix users, but
- it will not restart SWARM (Working on restart commands).
--version command is new, and is beta- report if issues.
-
-
-1.9.0
-
--Windows by default will add itself to startup. (``-Startup No`` to disable).
--Added new algos on zergpool (trex).
--Fixed Version command issues on linux side.
--Slowed the update process down on Windows side: It appears to resolve issues.
--Added -i 12.5 to ccminer yescrypt algorithms.
--Updated gminer links. Moved gminer back into production.
--Whalesburg Pool added (please let me know how your returns factor in comparison to nicehash).
--clear_watts command added- resets power.json.
--clear_profits now works in windows.
--miner restart now works in windows.
--``get wallets`` displays altwallets.
--zergpool added to wallet list.
--New arguments
-   ``-Eth`` Eth wallet address
-   ``-Worker`` Used where worker is needed (Whalesburg pool).
-   ``-Startup`` Default "yes". Adds SWARM to windows startup.
--Select only single Process ID for miners that run multiple processes. (linux)
--gminer API fixed.
--configs for equihash miners (- instead of --) fixed.
--new miner esshand/ccminer for windows/linux
--added algorithms to lolminer.
--wallet table now is shown as decimal instead of scientific notations.
-
-1.9.1
-
-Note: cuckoo will not work for lower-end cards.
-Note: Suggested AMD drivers for Windows: 18.6.1.
-Note: It is highly advised for linux users to 410.93 drivers.
-
--zjazz bitcash added.
--argon2d miner for AMD added.
--xmrig updated
--new api command: /getbest
--found/fixed typo for default claymore_amd file for Ethash.
- affected fresh install or users that did not remote update.
--was getting stability issues from a claymore/phoenix miner export. 
- Removed it.
-
- 1.9.2
-
- -Zjazz multiplier fixed for pool vs. miner. You may want to rebenchmark it.
- -Note: Solution was discussed on handling MTP. Will have something next release.
-
--``version update`` command can be ran with 'source' rather than
-   uri, allowing users to update miners from swarm repository.
-   example: 
-   ``version update gminer miner 1.21 source``
-
--gminer 1.21
--Ehssand for AMD.
--added glt token algos to wildrig.
--bminer 13.0 updated & added to windows.
--added 1445 back to bminer.
--API watchdog start first, then server.
-
-
-1.9.3
-
-Note: With new -No_Algo1,-No_Algo2,-No_Algo3 arguments
-      you will be able to divide rig, allowing smaller
-      number of gpus to mine algos like mtp and cuckoo.
-      This allows larger rigs to still be able to mine
-      algorithms.
-
-Example: ``-Type NVIDIA1,NVIDIA2 -GPUDevices1 0,1 -GPUDevices2 2,3,4,5,6,7,8 -No_Algo2 mtp,cuckoo``
-          The above example: GPU 0 & 1 will factor mtp and cuckoo, Remaining GPUS will not.
-
-Note: Huge change in miner files. Windows users: z-enemy stats may not transfer over.
-      Linux users- No miner stats may transfer over on update.
-      Miner filenames were changed to enforce simplistic Uniformity- It had to be done
-      eventually.
-
-Note: Update to fix glt-astralhash for wildrig will work.
-
--Noticed small bug in version command. Works as intented,
- but windows version posted to hiveOS too soon before was finished.
--Fixed powershell bug -ne was failing for zjazz stats.
--Added ``-No_Miner`` argument. See help file for use.
--Uniformity of all miner names.
--``No_Algo`` argument has been removed.
--Added ``-No_Algo1`` argument. See help file for use.
--Added ``-No_Algo2`` argument. See help file for use.
--Added ``-No_Algo3`` argument. See help file for use.
--gminer 1.22
--xmrig removed from rotation, as XMR-STAK now has dual threads
-
-Note: First time users may notice profit calculations are
-different compared to other available mining applications.
-This is intentional- My method of calculation is different,
-and has been discussed at length and supported by userbase.
-
-Note: ``-SWARM_Mode Yes`` allows all SWARM users to switch at same
-time. All rigs/users will be syncronized. This does not
-apply to pool or choice of miner- Just switching times.
-
-1.9.4
-
--Algo/Pool specific prohibition.
-   -users can turn "off" algorithms on certain pools.
-   -to turn "off", add the pool name to "config\pools\pool-algos.json"
-   -instructions are inside the .json itself.
--Found typo for ehssand amd minername
--rewrote entire ADL for windows AMD, stats will match correct GPU.
- fan % will match. temp will work correctly. Vega works.
- note about vega/amd cards: reported fan speeds are based on maximum
- rpm, which is gathered from ADL/vbios. Some manufacturers have incorrect
- fan speed, resulting in incorrect fan %. If you wish fixed- Report to manufacturer.
--Code staging for ADL oc and autofan
--Fixed xmr-stak stats to display summary hashrate faster.
--Added energiminer for windows
--``ps`` command will now wait until process finishes, and should work correctly.
--Miner Logging for background miners is a little better in windows
--Windows users can run ``nvidia-smi`` remotely.
--Small tweaks to profit table.
--Moved ports on all nebutech miners to help with benchmarking.
-
--HiveOS OC for AMD in windows.
-   -Read config\oc\new_sample.json on how it works.
-   -It is not the same as linux OC.
-   -Drivers MUST be at least 19.1.1
-   -Advised to install 18.6.1 driver,
-    then update (without clean install / install over)
-    if this is not done- some miners may fail.
-    to 19.1.1
-
--Windows will now generate a swarm-start.bat file in
- each miner folder in .\bin
-    -This allows you to test miners with
-     swarm settings.
-     
--Cleaned up code base- A lot.
--teamredminer update.
--progpowminer added.
--ttminer added.
--wildrig updated.
--Crytpodredge updated.
--bminer updated. (note: beam not working)
--gminer updated.
--trex updated.
--cc-mtp added.
--fixed cc-yescrypt naming.
-
-1.9.5
-
--Added cc-mtp windows
--Power Target set for HiveOS oc setting 
-  1[value]  for positive (125 is +25 power target)
-  2[value]  for negative (225 is -25 power target)
-        works with vegas. Requires 19.1.1 drivers.
-        install 18.6.1, upgrade to 19.1.1 (not clean install)
-
--Upgraded gminer
--Added lyra2rev3 support
--ProgPowMiner recompiled in linux, used Cuda 10 toolkit
-
-Includes changes from test/beta release:
-
--Algo/Pool specific prohibition.
-   -users can turn "off" algorithms on certain pools.
-   -to turn "off", add the pool name to "config\pools\pool-algos.json"
-   -instructions are inside the .json itself.
--Found typo for ehssand amd minername
--rewrote entire ADL for windows AMD, stats will match correct GPU.
- fan % will match. temp will work correctly. Vega works.
- note about vega/amd cards: reported fan speeds are based on maximum
- rpm, which is gathered from ADL/vbios. Some manufacturers have incorrect
- fan speed, resulting in incorrect fan %. If you wish fixed- Report to manufacturer.
--Code staging for ADL oc and autofan
--Fixed xmr-stak stats to display summary hashrate faster.
--Added energiminer for windows
--``ps`` command will now wait until process finishes, and should work correctly.
--Miner Logging for background miners is a little better in windows
--Windows users can run ``nvidia-smi`` remotely.
--Small tweaks to profit table.
--Moved ports on all nebutech miners to help with benchmarking.
-
--HiveOS OC for AMD in windows.
-   -Read config\oc\new_sample.json on how it works.
-   -It is not the same as linux OC.
-   -Drivers MUST be at least 19.1.1
-   -Advised to install 18.6.1 driver,
-    then update (without clean install / install over)
-    if this is not done- some miners may fail.
-    to 19.1.1
-
--Windows will now generate a swarm-start.bat file in
- each miner folder in .\bin
-    -This allows you to test miners with
-     swarm settings.
-     
--Cleaned up code base- A lot.
--teamredminer update.
--progpowminer added.
--ttminer added.
--wildrig updated.
--Crytpodredge updated.
--bminer updated. (note: beam not working)
--gminer updated.
--trex updated.
--cc-mtp added.
--fixed cc-yescrypt naming.
-
-
-1.9.6
-
-Windows AMD users:
-   Install 18.6.1 Drivers
-   Install 19.1.1 Drivers (Do not select "clean install")
-   This will ensure OpenCL for some miners are correct.
-
--Full ADL oc for AMD should match HiveOS
-    -Core State is ignored- It doesn't matter in Windows.
--ADL records default clock/voltage settings for cards in Windows.
--Fixed Fan speed for Vegas- Should now display correct % in Windows. 
-    -(thank tede of OverdriveNtool for sharing his source with me).
--Updated Phoenix Miner
--Updated bminer
--Updated wildrig
--Compiled BCI ProgPow miner, manually fixed linux stratum issues. Should work for zergpool in future.
--Attempting another logging sequence for miners in Windows.
--miner stop added in windows
--miner start added in windows.
-
-1.9.7
-
-includes changes from beta release:
-
-Windows AMD users:
-   Install 18.6.1 Drivers
-   Install 19.1.1 Drivers (Do not select "clean install")
-   This will ensure OpenCL for some miners are correct.
-
--Full ADL oc for AMD should match HiveOS
-    -Core State is ignored- It doesn't matter in Windows.
--ADL records default clock/voltage settings for cards in Windows.
--Fixed Fan speed for Vegas- Should now display correct % in Windows. 
-    -(thank tede of OverdriveNtool for sharing his source with me).
--Updated Phoenix Miner
--Updated bminer
--Updated wildrig
--Compiled BCI ProgPow miner, manually fixed linux stratum issues. Should work for zergpool in future.
--Attempting another logging sequence for miners in Windows.
--miner stop added in windows
--miner start added in windows.
-
--Attempted fix of xmr-stak stat issue.
--Added lolminerv7 for beam support.
--Updated bminer (again).
--Stats going to HiveOS should make correct algorithms.
-    -note: If you see error let me know. There is a lot
-      of algorithms.
--Code staging for wallet swapping (not done yet).
-
-1.9.8
-
-test release
-
-1.9.9
-
-HUGE NOTE:
-
-There are soooo many developers botching cuckoo algorithms.
-I am adding whatever they state they add, support whatever
-they support. If it doesn't work- consult developers. They
-are prone to lots of glitches and issues. See memory requirements
-for each miner.
-
-I can provide limited support on their uses. I have spent days
-testing miners, and I frankly give up. I will just add as I see
-them...And I let whatever doesn't work timeout.
-
-Bminer works fine in linux. Windows version I kept version the same.
-Windows users may get algorithms that fail immediately from this-
-SWARM will ban them, as usual.
-
--grin-miner added for AMD in linux
--gminer added for amd, doesn't work (no opencl detection).
--cd miner updated, beam added, doesn't work.
--many, many miners were updated and tested.
--x16rt and miners on nlpool is experimental.
--added veil support for nlpool.
--added cuckoo31 support for bminer.
-    note: This will work with 8gb nvidia cards, highly reccommend.
-    note: This will not work with windows.
-
--added killcx script to help with bad miners that won'table
- free ports. killcx is now depency for linux.
-
--added launch scripting for grin-miner.toml.
-
--xmr-stak was compiled with reduce developer fee.
-
--commands like ``stats`` ``benchmark`` ``active`` and other common
- commands can now be ran through windows locally- may require restart
- after PATH variable is set. Open cmd.exe and then run the command.
-
-
- 2.0.0
-
- Important
-
- ``GPUDevices`` arguments have changed. For simplicty-
- Removed the need to add ' ' for devices
-      i.e. ``-GPUDevices1 1,2,3,4,5``  okay
-      i.e. ``-GPUDevices1 '1,2,3,4,5'`` depreciated
- -Removed beam from cryptodredge.
- -removed ethash (not nicehash) from bminer.
-
-2.0.1
-
-Important: Default -Cuda is on -Cuda 10 in 
-linux! If you want to use 9.2, use -Cuda 9.2,
-about 1/4 of the miners will not be loaded.
-
-Changes for generic *nix packages:
-
--SWARM for the sake of confusion now
- requests to start with sudo. Half the
- features/functions will not work if
- you do not run with sudo.
-
--chmod .local/share/powershell folder after
- installer is ran, to prevent future access
- denied errors if not ran in root.
-
--libcurl3 added to installer, for 18.04
- distributions.
-
--added persistance mode ENABLE to NVIDIA oc.
- (for generic *nix)
-
-Other Changes:
-
--fixed small typo in device group 3
-
--moved some installer processes for hive
- into if ($HiveOS -eq "yes), to prevent error
- output on generic version.
-
--add fans to NVIDIA oc.
-
--axed zjazz
-
--Attempted fix of AMD fans/temps in HiveOS.
-
--Note: energiminer stats are gathered through
- logs, as it has no API. It can take up to
- two minutes before it gathers individual
- gpu hashrates. This cannot be controlled.
- Contact developer to make API.
-
--``get stats`` and ``get stats lite`` 
-   can now be shortened!
-   example: ``get stats 10``: Shows you top 10
-   example: ``get stats lite 10``: Shows you top 10
-   in shortened version for cell-phones.
-
--phoenix miner arguments updated.
-
--enable serialization build of dag. This may solve
- those having issues with ethash miners at startup.
-
--updated bminer
--updated gminer
--updated fancyIX
--updated lolminer- merged versions
--updated klausT
-
--removed libcrypto.so.1: This may cause
- compatibility issues in Ubuntu 18.04 (bleeding edge).
- I am working on fix, but it was causing errors to
- some miners in 16.04 versions.
-
- 2.0.2
-
- -Fixed Stats table output to not miss algorithms
-   (was glitching in linux faulty match operator)
-
- -Changed Databasing from standard Arrays, to
-  resizable arrays- Seems to help in Linux.
-
- -Compressed miner pulling functions to one
-  .ps1 file.
-
- -Database now works by adding everything
-  then eliminating miners via resizable
-  Arrays.
-
- -Improper $stats use in minerpool files-
-  changed to prevent possible glitches.
-
- -Aded miners to exclude back to pool-algos.json
-
- -Coded Staging for intelligent versioning, so SWARM
-  will detect previous versions, and only apply updates
-  for that version, not for all prior. This will prevent
-  potential losses of data.
-
-2.0.3
-
-Warning: Fan speed will not work in HiveOS for RTX cards in
-Windows. I am working on a fix.
-
--New Optional Arguments
-   -Algorithm
-    Algorithm lets you select algorithms of your choice.
-   -Coin
-    Coin will mine a specific coin
-    Example: -Poolname nlplool,blockmasters,zergpool -Algorithm x16r -Coin RVN
-
--With new arguments- SWARM will automatically select
- best miner for combination (after benchmarking).
- Note: SWARM does not auto-detect if coin is on Pool yet.
-       That feature is coming soon.
-
--Updated Bminer
--Updated ttminer- Added lyra2rev3
--Updated lolminer:
-   created 2 versions for linux --asm kernel
-
-Note: Am aware that XMRig and XMRstak have Updates
-      skipped over until I see what Nicehash does
-      regarding fork. They boast no improvements other
-      than adding algorithms.
-
--Fixed bugs with AMD oc in Linux.
--Fixed lolminer crashes with new version update.
--Updated CPU miner algos:
-    -Note: Binarium miners are incaple of making a
-    generic version for linux. They must be built directly
-    on PC. Cannot add in linux.
-
--improved bminer compatiblity in bleeding edge/Ubuntu 18.04 - libcurl
-
--Added AMD oc tool to install.ps1 for generic *nix versions.
-
--Updated cuckoo names, since HiveOS updated.
-   -Note: Did not add to remote update.
-          Either use new pool-algos.json,
-          or leave as-is.
-          Will add to update in future version.
-
--Some more removal of powershell errors in windows
- agent between miner switches (still trying to find them all).
-
--SWARM will detect if there is C:\ , if not it assumes it is working
- on a linux OS, if so, then it will assume it is working on
- windows OS
-
--SWARM will now notify you if you accidentally place a file or folder 
- in a directory it shouldn't be in, instead of outputting powershell
- errors.
-
--Fixed issue in which some miners where skipped over on initial benchmarks
- from new database system.
-
--get active shows name of miner instead of speed- It was redundant,
- however, you can now tell which miner is which if they have the same
- exe name.
-
-###############################################################################
-###############################################################################
-
- 2.0.4
-
- NOTE: AMD Users- Gminer_amd is in project folder. To acivate, move to gpu folder.
-  ``mv /hive/miners/custom/SWARM.2.0.4/miners/project/gminer_amd.ps1 /hive/miners/custom/SWARM.2.0.4/miners/gpu``
-
- New Feature!
-   SWARM will now create startup.sh inside .\bin\[minername] dir, which allows a test run of
-   last known settings.
-
- -TTminer -di to -d for devices.
- -TTminer lyra2v3 fix
- -Removed more window background agent powershell errors (turned into warnings)
- -Slowed launchcode for miner down, there was chance bash script would finish before read/write
-  of instance.
- -Fixed more hiveOS algo naming.
- -Gminer_Amd is now working.
-    -added in project folder- to use, move to gpu folder.
-    -may crash hybrid rigs / doesn't work for rigs with AMD & NVIDIA.
--updated gminer
--updated xmr-stak: added new algos.
--updated xmrig: added new algos.
--Windows: reboot now closes SWARM first, then reboots.
-    -displays message on screen.
--Added reboot.ps1
--Cleaned up Claymore/ethminer style API for windows agent errors.
--Removed -pers auto args on grin algo launches- Did not add to remote update.
--Added cryptonight/r
--Removed lyra2z from fancyIX- It would just crash cards.
-
-2.0.5
-
-Note: ``start-stop-daemon`` is now dependency of SWARM for
-    linux. It comes with HiveOS & Ubuntu, may not with
-    other OS's.
-
- The entire linux launch sequence is written- I advise
- to be prepared to rollback if issues, and save your
- backup and config folder remotely to not lose data.
-
--Linux: Launchcode reconfigured.
- -uses natively designed ``start-stop-daemon`` to create
-  an artificial handle that SWARM can track.
- -PID files are generated to build\pid
- -Info regarding path information and dates are generated
-  to build\pid
- -This should eliminate startup errors for good, in regards
-  issue with "file cannot be found!" instance errors.
- -Swarm will now launch exectuable directly, will not rename.
- -Swarm continues to make startup test script in .\bin folder.
- -This may help with miners that zobmie on startup for some
-  users (usually that is GPU compatibility issues).
-
--Windows: Removes old PATH settings for SWARM, so there isn't
-          issue with updates, or moving folder.
-          -environment.ps1 added
-          -can now run ``get update`` locally through cmd.exe
-           and through HiveOS.
-             (must be running cmd.exe as administrator)
-          -new ``get update`` will happen upon updating to
-           next version- Will not work updating to this release.
-
- -New Features!
-    ``benchmark help`` added
-    -can now do benchmark miner [minername] [algo]
-    ``-CoinExchange`` is now an optional parameter.
-
- -cnr added to teamredminer on update.
- 
- -Get-ChildItemContent now converts items into an array of non-fixed
-  size from start, in hopes to resolve conversion issues.
-
- -moved ehssand_amd to project folder. FancyIX is faster, and ehssand
-  is very buggy (no further developement).
-
- -devices are now parsed literally to avoid issues between OS's.
-    -This should finally resolve issues with OC starting.
-    -This does NOT resolve issue with AMD and integrated cards
-     on linux- I am working on fix.
-
- -progminer recompiled, attempted to fix NVIDIA issue.
- -bminer updated
- -wildrig updated, added rainforest algorithm
-
- 2.0.6
-
- -This is a beta hot-fix version in attempt to fix the following issues:
-
-         https://github.com/MaynardMiner/SWARM/issues/31
-         https://github.com/MaynardMiner/SWARM/issues/27
-         https://github.com/MaynardMiner/SWARM/issues/28
-
-        
- -Log settings are now parsed at miner.ps1/miner phase
-       -Hoping this will resolve anti-hacking issues:
-       -Miners that have a logging command will defer
-        to logging.
-       -Miners that have no logging feature- SWARM will
-        attempt to log.
-        -May improve miner screen output in windows for
-         some miners.
-
- -Found and fixed typo in new benchmark command for
-  ``miner``.
-
- -Discovered / applied more proper way to implement
-  system.collections.arraylists
-
- -added balloon to pool-algos.json (somehow was missed).
-   -note: no exchange stats from pool. Won't load in
-    profit switching.
-
- -implemented changes I maded a few versions back to
-  algopools to custompool files (I missed doing so).
-
- -found typo when loading custompools. It is now fixed.
-
- 2.0.7
-
- New Feature!
-   Windows: ``get update`` now allows a link to be used.
-     example: ``get update https://github.com/MaynardMiner/SWARM/releases/download/v2.0.7/SWARM.2.0.7.zip``
-
- -Found typo from beta 2.0.6 in bminer-1.ps1
-   overwrote "-" from -api
- -wildrig updated
- -bminer updated
- -ttminer updated
- -xmrig updated
- -xmrig-nvidia added
- -xmr-stak updated
- -teamredminer updated
- -phoenix miner updated
- -built another version of ProgPOW for testing
-
- -Applied proposed fix https://github.com/MaynardMiner/SWARM/issues/34 
- 
- 2.0.8
-
- NOTE: I have set SWARM up for git. You do not have to
- technically update with new link. Here is quick steps
- if you wish to set up git:
-
-     1.) run the following command:
-         ``git clone https://github.com/maynardminer/SWARM.git /hive/miners/custom/SWARM``
-     2.) Leave link empty in flight sheet
-     3.) Set miner as SWARM   (important: No .name.of.version)
-
-  If you wish to update miner going forward, direct from developement:
-
-     ``cd /hive/miners/custom/SWARM && git pull``
-
-  If you wish ever wish to update from beta test branch developement:
-
-     ``cd /hive/miners/custom/SWARM && git checkout beta_testing``
-
-   **Note: Releases are released for a reason. Use with caution**
-
-  Commands are same for windows, but git must be installed.
-  These commands will work remotely. SWARM will transfer
-  old SWARM.Name.Of.Version folders if ``-update Yes`` is
-  specified, or if using in windows (automatically).
-
- -I believe I fixed all miners, and logging, so they will
-  no longer cause issue with anti-hacking / tee
- -added verushash algorithm / cc-verus
- -4th decimal for stats (for Sol/s)
- -``get stats lite`` much cleaner on cell phones.
-    Good alternative for ``get stats`` on the go.
- -fixed nicehash wallets in ``get wallets``
- -miner typo fixes.
- -added ProgPOW devices (for NVIDIA2 and NVIDIA3)
- -attempted new compile again- Still works for me
-  on both RTX and GTX cards. Compiled with Cuda 10.1
-  this time.
- -added cuda-10.1 libs to export folder. It seems
-  cuda 10.0 and 10.1 are interchangable. no need for
-  ``-Cuda 10.1``
- -improved miner displays in windows, where possible.
-
- 2.0.9
-
- -Removed Some Params no longer used.
- -Upated xmrig-nvidia link on linux.
- -updated phoenix miner 4.2b
- -updated teamredminer
- -gminer updated in windows (missed)
- -wildrig updated
- -Made small fixes in profit calcs.
-  Should improve stat accuracy slightly.
- -Oldest updated that can be performed
-  is 2.0.3.
-
-
-2.1.0 (Beta)
-
-Alpha: #56
-
-Items / Enhancements / Issues:
-
-Nebutech / Equihash miners telemetry #51
-Reduce background.ps1 size #47 
-Wildrig-Multi Doesn't Start Up #58
-Logging Errors #52
-Covert API from Job to Runspace #57 
-Improve Pool Profit Calculations #45 
-New ttminer #55 
-New Phoenix Miner #53
-
-Beta Test Version- 2.1.1 will be final.
-
-2.1.1 (Official Release)
-
-Items / Enhancements / Issues:
-
- Allow specifying more levels for fans speed #26 
- Add config\wallets\wallets.json #43 
-    -This allows you to be more specific regarding
-     the use of your wallets.
-    -This was heavily self-tested by myself, but I
-     always am concerned about larger changes such at this.
-     If you use, please keep an eye on wallet address and
-     ensure there is no issues.
-  -``get active`` shows active miners that aren't active #66 
-  -z-enemy / t-rex port overlap NVIDIA3 #65
-  -``get wallets`` command was redone, much cleaner output.
-
-   config\wallets\wallets.json has instructions inside the
-   .json on how to use. NOTE: -AltWallet and -AltPassword
-   arguments are MEANT to overwrite this config, so you can
-   force bind wallets remotely. If you use this config, don'table
-   use -AltWallet arguments.
-
-
-2.1.2
-
-``-AUTO_COIN`` is back and highly improved!!
-  * features a more streamlined design.
-  * faster calculations that before.
-  * better analysis between coins vs. algorithms. 
-    (However, still asyncrounous in design)
-  * no possibility of GUI stat issues.
-  * pre-tested by users.
-  * Note: Coins by design in Yiimp source code
-    are calculated asyncrounously between algorithm
-    profits. Stats will never match algorithm pricing,
-    but a more accurate / live figure is generated.
-  * Currently only zergpool.
-  * Plans to add fairpool coming very soon (after feedback
-    of bug / issue correction).
-
--Shares 
-  * SWARM now tracks user share count on certain pools.
-  * zergpool will only work if -Auto_Coin yes is on.
-  * I am still working on all pools. Not all pools are
-    supported.
-
-New Commands:
-
- ``-get charts``
-   * will display a bar graphic chart on miners, in 
-     relation to each other.
-   * not implemented but coming soon: Can be sorted
-     by user input.
-
-API overhaul:
-  * API can now run 80% of commands through it.
-  * If a command has an argument, it is parsed with an '&'
-  * examples:
-    * http://localhost:4099/get&stats
-    * http://localhost:4099/version&query
-
-  * minor fixes on commands (I'm not sure if all working, I was
-    still testing while coding -Auto_Coin, report if a command give
-    you an issue.
-
--Various small fixes were performed, too numerous to account for each one.
--Most of them were small fixes found while going through miner files, and
- had little to no real affect to the performance of SWARM.
-
--build\api created, plan to use this for all api uses, via with other programs,
- or with SWARM itself.
-
--ASIC is working! (remote version verified)
-   * tested only remote version.
-   * two new arguments are added for ``-Type ASIC``
-     * ``-ASIC_IP`` is the IP of the ASIC. If installing
-       directly on ASIC, this argument is not needed.
-     * ``-ASIC_ALGO`` algorithms to be use for asic
-          comma seperated if more than 1
-     * new command for ASIC support:
-       * ``get asic``
-       * This will allow you to get details of
-         the asic, and return in a readable format.
-    * I will generate wiki after initial user testing.
-    * Should work with other device types (if using remotely).
-    * DOES NOT work with HiveOS. I will not create support for HiveOS- 
-      If you wish support, use HiveOS image, and then run SWARM with it.
-
--New COMMAND:
-  * ``get charts``: Since so much data is being displayed in stats
-      screen, I have attempted to make a better visualization of the
-      stats, using simple comparative bar charting.
-
--I tried to push out release and over 10k changes to codebase asap,
- core features are working 100%, some sub-features may have been broken
- due to new changes. If you see any issues- please report, and I will fix
- asap.
-
-``-CoinExchange`` is now calculated pre-power figures, so before watt
-   calculations are added in. So you can use -CoinExchange BTC to get
-   calculations before watt applied, and then the normal BTC /day will
-   be after.
-
--Linux version will now set core speed for all AMD P-States, not just
- the p-state for Mdpm (minor bugfix).
-
-  Github Other fixes / Enhancements references:
-  * Update XMR-Stak #83
-  * OC - Added details for memory voltage and fan speed setting on Windows #75
-  * Update Wildrig-Multi #80 
-  * ASIC restoration #62
-  * Feature Request: New Argument for True Crypto Stats #77
-  * Update TeamRedMiner #84 
-  * Update TT-Miner #81
-  * Update Bminer #85 
-  * Glitch where -Algorithm and -Coin switches back. #79
-  * Restore Auto-Coin switching. #78
-  * update xmrig #82 
-
-
-  2.1.3
-
-  Here are the relevant issues fixes / Enhancements:
-
-  CryptoDredge 0.18 #88
-  update cpuminer-bubasik #92 
-  miniz --cuda-devices doesn't work in linux #98
-  update miniz #93
-  update gminer #94 
-  reorganize miners directory #97 
-  ASIC API Issues #99
-  update wiki with new wallet config #71 
-  windows: Connection to HiveOS. #87
-  Add Total BTC Profit in get wallets command #96
-  Reduce miner.ps1 files #95 
-
-  -Windows will now detect AMD drivers.
-  -Windows will now detect AES support.
-
-  2.1.4
-
-  -Fixed small typos in Phoenix miner.
-  -Fixed small typos in XMrig miner files.
-  -Background screen should stat only group 1 algos (AMD1,NVIDIA1)
-   or stat CPU if only CPU.
-  -Invoked security protocols for ``get update`` command.
-  -Invoked tls security protocols for background agent.
-  -Added yespower8 and yespowerr32 algos to pool files
-   (will load a yespower8 algo miner soon).
-  
-  As of 2.1.3, miner files were heavily changed so that
-  there is only 1 .ps1 file for each miner. This invovled
-  changing a lot. If you see any further bugs, please report.
-
-  2.1.5
-
-  This release continues to fix little issues reported with
-  api and hashrates. It is reccommended to update to it.
-  
-  -Entire background agent was redone:
-    -API now lists ASIC hashrates.
-    -CPU now lists individual threads (if miner supports it).
-    -API now lists CPU hashrates.
-  
-  -New Miner:
-     -cpuminer-sugarchain: Created by Cryptozenny
-     -It is reccommended on slower CPU's to increase
-      benchmark times.
-  
-  -Fixed Gminer API issues.
-  -Fixed Gminer miner.ps1 and device launch.
-  -Moved xmrig_nv to optional folder- Too many
-   users report crashes from compiling issues.
-  -Updated bubaik cpu miner
-  -Fixed ethminer API.
-  -Replaced x16rt to veil for HiveOS.
-
-  New Windows HiveOS information!
-   -SWARM now sends C: size and free space.
-   -Slighly improved RAM measurements.
-   -Windows version now includes everything on
-    HiveOS accept watchdog and autofan. (working on it).
-   -Shows correct CPU AES support.
-
-  -Added some more libs for export to support miners.
-
-  -``get wallets`` command: Some pools balances
-    show differently. I removed totaling of unpaid
-    and paid combination, as it was inaccurate.
-
-  -New Feature!
-    -wallets.json config now has AllAltWallets.
-     For auto-coin, Miner will intuitively switch to address of same
-     coin if it is most profitable to mine if AllAltWallets
-     is listed with the rest of the config.
-
-  -Minor fixes of .ps1 files.
-
-  NOTE: I have not completed the AMD miners in the optional folder.
-  The will not work as of now- It is the next immediate thing I plan
-  To Do.
-
-
-  2.1.6
-
-  -Fixed All_Altwallets in Wallet.Json. Should be working now.
-  -Made it so that ``-Coin`` argument disables ``-Auto_Coin``.
-  -Made it so that ``-Coin`` argument disables ``-Altwallet``  related arguments.
-  -Fixed ``-No_Miner`` so that it uses naming conventions from
-   stats screen (for each devices group), rather than name of
-   .ps1 file.
-  -Wallet tables doesn't stat automatically stat ``-Wallet1`` as
-   BTC, in case ``-Coin`` parameter is used.
-  -Refreshed Wallets API, should be working.
-     (Note, will only display if you have unsold coins / actively mining).
-  -Added blazepool coin shares.
-  -Minor tweaks to API codebase / cleaning.
-  -Noticed small error in HiveOS stats: ccminers were showing mhs
-   when they should be showing khs: Fixed.
-   not by .ps1 file name now.
-  -All_Altwallets are fixed.
-  -Changed shares % to stat at N3 (3rd decimal place).
-  -Gminer updated
-     -Gminer runs better than lolminer for AMD.
-     -Moved Gminer into AMD rotation.
-     -Suggest to look into optimizing for equihash mining.
-  -Fixed bug involving coins not being selected with the same name
-   as algo (only if a pool with algo option was present).
-
-  New Features!
-
-  -zpool can now auto_coin switch.
-  
-  2.1.7
-
-  #106 fixed gminer and grinminer AMD oc
-
-  -Fixed z-enemy miner numbering for device groups.
-  -Added progpow to Phoenix Miner for AMD.
-  
-  New Miner
-  * Nebutech Miner added!
-
-  New Features!
-  * Time stamps on output / logging.
-  * Windows Side formatting has Now
-    been changed to match linux formatting
-    on main screen.
-  * SWARM will now generate a batch to
-    open CMD / basic instructions on
-    desktop in windows (for commands).
-
-  -Performed some code staging for
-   oc & web control (not implemented yet).
-
-  -AMD optional_and_old miners were updated
-   to new .ps1 format (some may not work in
-   general). I did not test, as I don't
-   support them.
-
-  -miner screens in windows output was fixed
-   further, for miners that do not support logging.
-   (Windows)
-
-  2.1.8
-
-  NOTE: Remote Updates has been disabled! You will not be able to
-  remote update, and version must be cleanly installed. Transferring
-  old statistics and miners will cause major errors.
-
-  HUGE UPDATE
-
-  -Statistics system is now greatly improved, and was completely
-  rewritten. Here are the bullet points:
-  * Statistics for time frames are now based on exponential
-    weighted moving averages.
-  * ``-Stat_All`` argument has been added which when enabled to
-      Yes, it will pull / save ALL coin stats. However, this is
-      a huge expenditure of CPU and system resources to do. Not
-      reccommend on 2 threaded CPU's. Default is No
-  * ``-Custom_Periods`` argument has been added. This will allow the
-      user to specify the number of periods that SWARM should gather
-      its data from, with "periods" defined as each pull from pool.
-      Default is 1 (to reduce use).
-  * Stat files will store values from every pull from pool.
-  * Stats are pulled on demand, and only when needed to reduce RAM use.
-  * Default is still Live stats.
-
-  Note: This new statistics system does increase load times slighty.
-  It is a little more stressful on USB sticks as well. If you are 
-  using USB, you may consider increasing -Interval, and limiting
-  Number of ``-Type`` you use. This system is much better, but does
-  increase resource use.
-
-  -Overclocking system was reworked- It now runs sycnrously to miner
-   launch. It will close miner, start OC, and then open miner when finished.
-   * OC values are displayed on main screen when this occurs.
-
-  -Added "fees" to miner files. SWARM now factors fees into calculations.
-
-  -Switch culture for time data to ENUS to avoid weird time errors.
-  
-  -Screen will now display average profit / day
-  -Screen will now display current profit / day
-
-  -``view`` command has been created. This allows a command to be run
-     that will refresh every ``-n`` seconds. ``-OnChange`` flag will
-     make it so that it will only update screen if output has changed.
-     * example: ``view get stats -n 60 -OnChange``
-       This will run the command ``get stats`` every 60 seconds,
-       and if the output is different- Will update the console screen.
-
-  New Miner!
-  SRBMiner
-
-  -bminer Updated
-  -ttminer updated
-  -wildrig Updated
+  -xmrig linux update
+  -xmr-stak linux updated
+  -cpuminer updated (note- avx2 only!!)
+  -cc-mtp updated
+  -nminer updated
   -teamredminer updated
 
-    2.1.8
+  SWARM 2.4.1
 
-  Bug Fixes:
-    -Resored zpool Auto_Coin
-    -Fixed timeout looping issue
+   GUIDED HELP
+   * There are four different ways to start guided help:
+     * run command ``swarm_help`` after SWARM has started in HiveOS/Windows
+     * [Linux] Run sudo ./help.sh (will install SWARM first, then run help)
+     * [Windows] Run Help.bat
+     * [ALL] opening either SWARM.bat or ./swarm, and adding ``-help``
+   * Will allow users to set up a basic configuration
+   * After basic config is created, will allow users to modify advanced settings.
+   * Everything is guided, and additional information beyond help.txt is supplied.
+   * Guided help will save your configuration to newarguments.json, as well as
+     provide a copy/paste of arguments for flighsheets/configs.
 
-  Default Changes:
-    -All miner files that has "_" in its name was changed to "-"
-    -This resovles 'get-benchmark' issues.
-    -The miner.json in config folder will not be tranferred on update.
-        -You may have to fill out that file.
-    -Stat_Algo and -Stat_Coin defaults are now "Day"
+  -Fixed bug in Windows which would freeze SWARM when miner retroactively crashes
+  -Fixed auto-install of swarm_help for hiveos
+  -Using different method for PCI bus changes in Windows.
+  -Hive_Windows_Reset.bat will reset gpu count as well.
+  -WildRig updated skein2 added
+  -T-rex updated honeycomb added
+  -Claymore updated
+  -Attempted to add kbminer- Does not work on nicehash
+  -Added more params to global vars parameter (for modules)
+  -TypeBanCount added to help files
+  -Slowed background timer for stats down - 5 second interval.
+  -Miner name will show in get stats lite
 
-  New Features!
 
-   -Miners are "Pre-sorted"
-        -Instead of pulling all the miner files, and creating a miner
-         combination for every coin / algo, miners hashrates are compared
-         first. This means only the miners that have the highest hashrates
-         will be added to the initial database, reducing load times.
-        -This new method reduces the time it takes to load miners / database
-                 On Pentium 2 thread CPU:
-                 -With one algo pool - ~20 seconds
-                 -With one coin pool - ~1 minute
-                 -With two coin pools - ~2 minutes
-                 -With two coin pools and -Stat_All "Yes": ~3 minutes.
-                 -All pool combos and -Stat_All "Yes": ~4-5 minutes.
-        -This makes -Stat_All Yes on lower end CPU's feasable.
-        -Stat_All Yes means EVERY coin statistic is stored (that are gpu mineable)
-         when pool is qued for data, not just the ones that are most profitable.
-         This allows for better historical data for ``-Stat_Algo``
-        -SWARM always only uses a single CPU thread.
+  SWARM 2.4.2
 
-   -SWARM log is greatly improved.
-      -transcript method was removed.
-      -SWARM now logs screen output in the same manner it was displayed.
-      -SWARM will store verbose warning/error output that was created
-       at the end of each loop, and and startup.
-      -get screen miner output is much cleaner.
+   GUIDED HELP
+   * There are four different ways to start guided help:
+     * run command ``swarm_help`` after SWARM has started in HiveOS/Windows
+     * [Linux] Run sudo ./help.sh (will install SWARM first, then run help)
+     * [Windows] Run Help.bat
+     * [ALL] opening either SWARM.bat or ./swarm, and adding ``-help``
+   * Will allow users to set up a basic configuration
+   * After basic config is created, will allow users to modify advanced settings.
+   * Everything is guided, and additional information beyond help.txt is supplied.
+   * Guided help will save your configuration to newarguments.json, as well as
+     provide a copy/paste of arguments for flighsheets/configs.
 
-    -Cleaned up some more older miner files.
-    -Some old .ps1 files were removed.
-    -Cleaned some of the codebase (Spring Cleaning)
+    -Critical fix for AMD Linux miners
+    -Fixes SWARM freeze at "waiting for port" for grin miner
+    -Fixes grin-miner API
+    -Fixes grin-miner launch.
+    -These items were missed during beta-testing.
+
+
+
+    SWARM 2.4.3
+
+    NOTE: Powershell 7.0.0 has issues with the command ``invoke-restmethod`` in linux.
+    Do not use it!
+
+   GUIDED HELP
+   * There are four different ways to start guided help:
+     * run command ``swarm_help`` after SWARM has started in HiveOS/Windows
+     * [Linux] Run sudo ./help.sh (will install SWARM first, then run help)
+     * [Windows] Run Help.bat
+     * [ALL] opening either SWARM.bat or ./swarm, and adding ``-help``
+   * Will allow users to set up a basic configuration
+   * After basic config is created, will allow users to modify advanced settings.
+   * Everything is guided, and additional information beyond help.txt is supplied.
+   * Guided help will save your configuration to newarguments.json, as well as
+     provide a copy/paste of arguments for flighsheets/configs.
+
+     NEW FEATURES!
+
+    -Windows: Hashrate Watchdog in HiveOS now works!
+     * LA reboot is not working- coming soon.
     
-    Note: There is further I can do to reduce load times for
-    Database sorting, I am working on it.
+    -Windows: Push Interval works on HiveOS.
 
+    -Windows: GPU watchdog works on HiveOS.
+     * If a GPU shows a temperature of 0,
+       SWARM reboots computer
 
+    -Windows: Miner Delay works on HiveOS.
+     * SWARM starts, but goes to sleep.
 
-    2.2-frickin.0
+    -HiveOS: Auto-Upgrade of pwsh to 6.2.0
 
-   Note: Thank you very much for your patience and
-   helping me assist with trial and error of figuring
-   out this new system. I am fairly certain as of this
-   release, every bug has been fixed with your help,
-   and we now have an awesome new system.
+    -SWARM will now save version of miner to
+    swarm-version.txt in bin folder of miner.
 
-   -Volume equation changed, performs much better.
-    * Volume had an issue with conversion of [Double]
-    * This issue made it appear to work, but the calcs
-      were off.
-    * After 100+ debug trials, I have confirmed for myself
-      it is correct now. Pre-Tested by trial users.
-
-   -Pool Load times for coins sped up.
-        -Over 50% faster. This includes -Stat_All.
-         Using more sophisticated pipeline input to
-         reduce time.
+    -if version in swarm-version.txt and update.json
+     are a mismatch- SWARM will download miner to
+     latest version.
     
-   -Forced Stat conformity.
-       -if there are more than 3 tracked stat values:
-         SWARM will begin to start comparing the incoming
-         stat with the last three. If the stat is 70% Higher
-         or lower than one of the 3 previous stats- It is ignored.
-       -This will create better Profit / Day averages.
-       -This will ignore bs over-inflated stats.
-         
-       NOTE: If the super ultra-rare circumstance occurs- that the first three
-       stats pulled by SWARM from pools were insanely high, or insanely
-       low- I can't control the fact that it will ignore the next stats.
-       Be advised that you should be careful to watch the very first 3
-       runs when profit is cleared.
+    -Version checking is useuful for users cloning
+     SWARM rather than downloading new version.
+    
+    -Wildrig updated
+    -gminer updated
 
-   -Switch Threshold
-      -Now factors miners with previous coins, even if that coin was
-       not pulled.
+    FIXES
 
-   NEW FEATURES!
+    -There was a bug with oc-tuning for SWARM that was causing it to not start.
+     This version fixes.
+     
+    -Fixed culture info of datetime errors.
 
-   -Miner Downloads have been re-done. Very much improved:
-      -SWARM now self-determines the compression type.
-      -SWARM will run the correct decompression software.
-      -SWARM will determine the correct file path of the exectuable
-       and other files. This includes compression not originally
-       packaged in a folder, or folders that had different names
-       than the name of the compression file.
-      -I removed previous code for dpkg files and ergo excavator miner.
+    -Windows 7/8: https://github.com/PowerShell/PowerShell/issues/6561
+     fixed -wait parameter issues- Known powershell bug.
+    
+    -Windows ASIC: Prevent GPU-detection from running if only ASIC specified.
 
-    -Version update no longer has ridiculous rules to use.
-       -If a miner has a direct download (megashared and google download won't work).
-       -Use that link.
-       -Done.
+        -``version update`` commmand for Windows is now
+      working again. Tested it repeatedly. It still
+      works for linux. To use:
 
-    -If Wallet1 is not specifed, miner will shut down.
-      * Because of this, if you use -Wallet1 as your last
-        argument, you will be able to tell if there is an
-        issue with your arguments, such as spacing between them,
-        etc.
+      ``version update [miner name] [version number] [download uri]``
+       (Still must be a direct download, Mega will not work)
 
-    -StatsInterval argument will default to 1 if miners are benchmarking.
+      If you are unsure of the denoted name SWARM uses for miner-
+      use the ``version query`` command.
 
-    -Because it confused users: -CoinExchange will show profit / day of coin
-     of you own choosing (can use BTC). This will NOT calculate power draw.
-     Only Miner Fees & Current Profit.
+    -For All_Altwallets
+     * Since your mining the coin directly, mc= / zap= is not needed .
+     * SWARM will now remove the mc= / zap= .
 
-     Note: There is one item unaddressed with the system, that is Switching_Threshold-
-       Switching_Threshold argument works fine with algorithms. However, coins, which
-       are piped into database only when they are profitable- Creates a scenario in
-       which the current coin you are mining may not be added to the database next pull.
-       This means the Switching_Threshold will not be applied to it.
-       I am working on a solution, but this one will take time.
+    -``swarm_help`` in linux was glitching out during selection of
+     advanced paramters- Fixed.
 
 
-   2.2.1
+    # SWARM 2.4.4
 
-  Note: Windows users. It is advised to rocket launch arguments after update. This
-  is because parameters have changed!
+    NOTE: Wallet.json has changed, because of this- your old wallets.json will
+    not transfer on update. You will have to fill out new wallet.json.
 
-  -Stats were removed of potential compounding of figures due to modifiers, should
-   be closer to realistic when -Volume "yes" is used.
+    ## New features!
+    * Windows: Added -Hive_Hash to Windows_Help.bat
+    * SWARM will close miners before updating new version
+     (mainly fixes windows "file is in use" potential error).
+    * If user has nicehash as only pool- Donate pool becomes nicehash.
+    * SWARM will remove optional miners when not specified.
+    * Lyraz330 algorithm added
+    * Windows: SWARM will show .json sent to HiveOS for stats.
+    * NEW wallet.json
+      * easier to understand.
+      * allows solo mining settings.
+      * allows auto-exchange settings with solo mining.
+      * admin wallet settings added
+      * note: As before- All arguments have a higher precedence.
+        * If you set -Admin_fee, SWARM will ignore admin in .json
+        * If you set -Altwallet1, SWARM will ignore all altwallet settings.
+        * This is so you can remotely force "remove" settings if need be.
 
-  -No_Miner was removed
-  -All No_Algo arguments was removed.
+    ## NEW arguments!
+    * ``-Admin_Fee``
+        [0-50] Percentage
+        Admin_Fee allows users to set a seperate wallet, and specify
+        a certain percentage of time mined on that wallet a day. Admin
+        Mode is done first, and then normal mode begins. Every 24 hours-
+        Admin_Mode starts again, mining % of day specified by this parameter.
+        If SWARM enters donation mode, time is either added to Admin_Fee, or
+        removed, to encompass an even distribution between admin mode and user mode.
+        Simple timestamp of when last Admin ran occurred will be
+        placed in ".\admin" folder for reference. They will be transferred on update.
+        ``-Admin`` must be specified if using ``-Admin_Fee``
 
-  ``-Xnsub [Yes/No] now added for extranonce.subscribe method. Default is no.``
+    * ``-Admin``
+        Admin Wallet for ``-Admin_Fee`` Parameter
+    * ``-Admin_Pass`` Password symbol for ``-Admin``
+        Default is "BTC"
 
-  ``-Bans`` argument now added! Allows user to specify in depth
-    prohibitions from algorithms from anywhere to pools to specific
-    devices. See help.txt for usage.
+    ## FIXES:
+    * oc tuning between website and local is fixed- OC tuning can now
+      interchange between website and local oc.
+      * note: HiveOS can only do group 1 (AMD1/NVIDIA1)
+      * SWARM can do all device groups, so you can combine both, but
+        it will skip over group 1 if it is was done already through site.
+      * You can set SWARM oc to use as a backup in case website oc fails.
+        * At least the default oc, so you don't crash cards because web oc failed.
+    * SWARM will stop miners before updating miner if new version
+      is detected in update.json. This prevents access-denied errors.
+    * Added internal parameters to $(vars) parameter for modules.
+    * Fixed issues in which SWARM did not stats fans/temps/power in
+      Windows version (HiveOS agent).
+    * Weird parsing of wallets happening with -Coin argument. Was fixed.
 
-    ``Bans`` command added. Allow users to permenantly adjust config\pool
-      .json to add bans to miners. Can be ran remotely. It works exactly 
-      like ``-Bans`` argument, only that the changes are permanent until removed
-      unles ``-Bans`` argument, which is temporary to instance of current running
-      SWARM.
+    ## UPDATES:
+    * Wildrig updated
+    * cc-mtp updated
+    * cpuminer updated
+    * Lyraz330 added
+    * t-rex updated
+    * cc-mtp updated
+    
+    2.4.5
 
-      ``bans add c11:zergpool,sonoa:z-enemy1,grincuckatoo31:NVIDIA2,RVN:zpool``
-      ``bans remove c11:zergpool,sonoa:z-enemy1,grincuckatoo31:NVIDIA2,RVN:zpool``
+    ## FEATURES
+    * Cleaned up repository, removed uncessary files.
+    * All major variables for core program are now
+      contained in $(vars) variable.
+    * Add new functions to add/remove/check variables
+      for modules (see swarm.ps1 for description).
+    * SWARM will now try to 'guess' miner binary downloads,
+      when the link doesn't end with the package name.
+      * example: https://mybadassminer.com/download
+        * SWARM will assume this is a .zip or 7z if windows.
+        * SWARM will assume this is a tar.gz if linux.
+    * ``version update`` command was edited so that
+        links can contain special characters.
+        * example: https://mybadassminer.com/&getdownloads_1=&download_8008135
+          * The '&' would previously break ``version update`` command.
+          * This works if you the url is between quotes (' ')
+            example: ``version update cc-awesome 1.0.0 'https://mybadassminer.com/&getdownloads_1=&download_8008135'``
+    * Remove certification checks for github, and some other sites- This may Help
+      issues with users who's internet connection is not so great download miners.
+        
+    ## FIXES (from beta release)
+    * When SWARM restarts loop (no miners! error, bad download, etc.), it
+      will not remove all previous variables, preventing dictionary errors.
+    * There was a typo for Windows AMD overclocking in beta version for
+      core voltage - Fixed.
+    * Reduced GPU Watchdog sensitivity from the first time it fails to displays
+      temps, to 10 times in a row it must fail to display temps before restart.
+    * Beta version- Coin miners would load, even when Auto_Coin wasn't specified:
+      was resolved.
+    * Beta version - Error output was missing in logs. This was fixed.
 
-  ``-Coin`` argument can accept multiple coins! Can be used to mine a finite
-     set of coins of your choosing. Note: This is expiremental. Please report
-     issues.
+    ## Updates:
+    * TeamRedMiner updated
+    * lolminer updated
+    * gminer updated
+    * miniz updated
 
-    ``-Coin RVN,VEIL,GIN,XZC -Algorithm x16r,VEIL,x16rt,mtp -Auto_Coin Yes -Auto_Algo No``
-                Will mine only those coins on pools that support coinpools.
+    2.4.6
 
-    ``-Coin RVN,VEIL,GIN,XZC -Algorithm x16r,VEIL,x16rt,mtp -Auto_Coin Yes -Auto_Algo Yes``
-              Will mine those coins on coinpools, and will mine algorithms on algo pools
+    ## NEW FEATURES
 
-     Again, this is expirimental, please let me know if you try and have issues.
+    * If NVIDIA NVSMI folder is missing- SWARM will 
+      try to self-install.
+    * SWARM will now catch and list exceptions when if fails to
+      contact HiveOS for troubleshooting.
+    * Timeout system improved
+      * Shows number of timeouts on miner in past hour.
+      * Clears count of bad benchmarks on miner after hour
+        of it working fine.
+      * Ban for Miner to HiveOS now shows Miner:Type.
 
-  -Issues with zpool coin and algo files were fixed.
-  -Switching_Threshold should now add previously mined coins to database.
-  -Colors was removed at the end of launch in h-run.sh, it is depreciated.
-  -.git information will no longer be added to release- It was causing extraction issues.
-  -Updated parameter parsing on windows side to prevent potenial issues.
-  -ASIC_ALGO should add to pool-algos.json, so you can ban coins remotely.
-  -``view`` command has changed to ``nview`` to prevent conflict with ``mc``
-  -Attempted fix of -GPUDevices argumetns when 0 is specified. It appears to work for me.
-  -Miner fixes to ``Write-Log`` function users pointed out.
-  -bans.json added, for global bans. Will only be created when used.
-  -Cleaned up some API methods.
+    ## FIXES
+    * Exit Reason 1 error: Fixed.
+    * Fixed linux ``version query``
+    * Fixed nvidia-smi.exe issue for Windows.
+       * SWARM will install it.
+    * HiveOS changed web methods, causing issues
+      in Windows with single GPU rigs- Fixed.
+    
+    ## Updates
+    * Cpuminer-opt/sugarchain updated to 3.9.5.2
+    * Cryptodredge updated
+    * gminer updated    
 
 
+SWARM.2.4.7
 
-     2.2.2
+## Improvements
+* No more generated errors for multiple device groups in Windows
+* SWARM will not just download miners that get on stats list
+  but all miners that require binaries now. So you can
+  monitor downloading.
+* typo in bminer on windows side- Added 'export LD_LIBRARY'
+  from linux side, didn't cause any issues, but fixed
+  to prevent error.
 
-  -Updated TeamRedMiner
-  -Updated Gminer
+## Fixes
+* Wallets.json full depth was not being covertedto-Json on update.
+  This is resolved.
+* Wallets.json "Add another coin here" was getting added on occasion
+  to arguments as c=, causing certain miners to fail- This was resolved.
 
-  Small Fixes:
+## Updates
+* Wildrig_Multi (windows only release) 
+  * glt-globalhash not added HiveOS yet. Did not add to SWARM.
+    Very complicated to add one algorithm for Windows, but not Linux.
+  * note: SWARM by default bans glt coins on -Auto_Coin.
+  * another note: SWARM skips over coins or algorithms with no hashrate.
+* new teamredminer added
+  * cuckatoo31 added
 
-  -Fixed Global ``-Bans`` #118
-  -Fixed Zpool with -Coin argument.
 
-  -SWARM can now handle tar.xz links.
-  -Attempted fix of error when Switching_Threshold
-   is applied to a miner that is benchmarking. #117
+SWARM 2.4.8
 
-  Note: Update will not transfer pool-algos.json this release
-        This means you must add bans again, if done through
-        command.
+## FEATURES
+* Nicehash v2 api/methods added. SWARM will connect
+  to new platform.
+* If ``-Startup`` is "Yes" (Default is "Yes")
+  SWARM will migrate backup stats from backup
+  folder to stats folder, and restart rig.
+  After 10 intervals of "No Miner Found!"
+
+## Fixes
+* Fixed iDictionary error for Device Groups.
+* Fixed "Name" missing for All_Altwallets
+   ( solo mining can now work again).
+
+# SWARM.2.4.9
+
+## NEW COMMAND!
+* ``send-config`` [linux only]
+  * Usage-example: ``send-config power '[your power .json config]'``
+  * Having the .json between ' ' is very important!
+  * Allows you to send a .json config remotely through
+  HiveOS web interface.
+  * ``send-config [json name without .json at end] [.json data]``
+  * Will have it work for Windows soon, but am still testing.
+
+## Features
+* Added nicehash_v1 file. You have to specify -Poolname nicehash_v1
+  * You can use either or. You cannot use both!
+
+## Updates
+* lolminer updated
+* added some algos to miniz that were missed.
+
+# SWARM 2.5.0
+
+## New Features!
+* Added more to GUI
+  * every minute:
+    * Active Miner
+    * Rejections & Shares
+    * Command to view screen
+    * Arguments (excluding -d parameter, added at runtime)
+  * will add color to make output easier to read later.
+
+## Fixes
+* Corrected zpool currencies statistics. (Algo was fine).
+
+## Updates
+* lolminer updated
+* gminer updated
+* cpuminer-opt/sugarchain updated
+
+# SWARM 2.5.1
+
+Note: I am still trying to figure out the new changes
+for nicehash and grin miners. I believe I have it
+set between both nicehash platforms, consider it all
+beta changes- report if you have issues.
+
+## New Features!
+* cuckaroo29d support
+* added color and formatting to new miner list
+  on main screen.
+* chmod +x miners before starting them (in case
+  developers screwed permissions).
+* nanominer added
+  * I did not add ethash - It was crashing cards within a minute.
+  * You can add ethash to ``config\nanominer.json`` if you wish to try yourself.
+
+## Updates
+* teamredminer updated
+* nbminer updated
+* lolminer updated
+* gminer updated
+* xmrig-amd updated
+* xmrstak updated
+* cpuminer-opt updated
+* bminer updated
+* ttminer updated
+* z-enemy updated
+
+## Fixes
+* better temporary support for nicehash_v1
+   * Some miners weren't launching correctly,
+   due to certain features being specifically for
+   nicehash- Added nicehash_v1 to those features.
+* removed grin-miner AMD (need to re-compile), with
+  nicehash support and cuckaroo29d.
+
+# SWARM 2.5.2
+
+## New Features
+* ethminer added
+  * Is an optional miner
+    * ``-Optional ethminer``
+    * ``-Optional etminer-amd``
+* tt-miner beta linux test version added.
+  * ``-Optional tt-miner`` must be specified to use.
+  * Placed for testing by developer.
+  * Report issues in discord (nvidia channel)
+  * myr-gr algorithm removed.
+* GPU watchdog looks for power as well as temperature.
+   * more accurate detector of a crashed card for AMD
+
+## Fixes
+* Fixed equihash miners occasionally stuck in benchmarking.
+* Prevent agent screen from freezing if a card crashes.
+  * Set a timeout for running gpu stat programs.
+  * If it fails, it will continue on, not wait endlessly.
+
+## Updates
+* Bminer updated
+* ttminer updated (This is beta release for testing)
+* cc-mtp updated
+
+# SWARM 2.5.3
+
+## New Features
+* SWARM-MINER added
+  * Optimized/improved version of basic ccminer.
+  * replaces tpruvot's version, which is falling out of date.
+  * Does bmw512 algorithm (with some miner kernel optimizations).
+* ``version update`` not supports links that are direct
+    binaries, not just zip or tar files.
+* ethminer added
+  * Is an optional miner
+    * ``-Optional ethminer``
+    * ``-Optional etminer-amd``
+* tt-miner beta linux test version added.
+  * ``-Optional tt-miner`` must be specified to use.
+  * Placed for testing by developer.
+  * Report issues in discord (nvidia channel)
+  * myr-gr algorithm removed.
+* GPU watchdog looks for power as well as temperature.
+   * more accurate detector of a crashed card for AMD
+
+## Fixes
+* Fixed equihash miners occasionally stuck in benchmarking.
+* Prevent agent screen from freezing if a card crashes.
+  * Set a timeout for running gpu stat programs.
+  * If it fails, it will continue on, not wait endlessly.
+* Fixed path assertion for amdmeminfo (linux).
+
+## Updates
+* Bminer updated
+* ttminer updated (This is beta release for testing)
+* cc-mtp updated
+* Updated Blockmasters estimate divisor.
+
+# SWARM 2.5.4
+
+Notes: At the time of this release, there was
+issues with grin network/nicehash. If you experience
+issues- It is network related.
+
+## New Features!
+* ASIC improvements:
+  * ASIC miners on main screen listed
+    by designated nickname
+  * background agent lists hashrates
+    for each ASIC.
+* Port Checking
+ * SWARM will now only attempt to run
+   ``killcx`` for 10 seconds. If it
+    continues to fail: It stops and
+    moves on, printing a lesser warning.
+    In most cases, this will not harm
+    api and hashrate gathering.
+* Agent improvements:
+  * Agent will now wait until ALL
+    miner groups have launched/switched,
+    before it continues to query API.
+
+## Fixes
+* miniz miner was not downloading correctly with last
+  miner download change- Fixed.
+* bmw512 was not loading when you updated- Fixed.
+  both x14 and bmw512 should work via remote update.
+
+## Adjustments
+* zergpool hashrate volume is measured by
+  hashrate_shared, and not hashrate (both shared and solo).
+  Should slightly improve ``-Volume`` argument.
+
+# SWARM 2.5.5
+
+Notes: SWARM will continue to update miners. If you
+have issues, you can use the remote command ``version update``
+to roll them back.
+
+## New features!
+* CPU miner for cpupower added.
+
+## Fixes
+* Noticed last change with port clearing caused killcx
+  to get 'stuck' in background- fixed. Should Reduced
+  cpu load by 5%
+
+## Updates
+* Wildrig Windows updated
+* xmrig cpu updated
+* jayddee cpu updated
+* bminer updated
+* Phoenix miner updated.
+* Swarm-Miner updated to version 1.03
+  * Slighly better optimizations for RTX
+    card performance
+* SWARM will send nofitication for 
+  incompatible mega.nz links.
+* SWARM notifies how to clear bans.
+* tt-miner updated (beta test version)
+  * still optional.
+* Adjusted nlpool mbtc_mh_factor.
+
+# SWARM 2.5.6 (beta)
+
+## Old Arguments Removed!
+* ``-Stat_all`` is no longer needed. Do not use.
+* ``-Ban_GLT`` default is now "No". (was "Yes").
+
+## New Arguments! (beta)
+* ``-Historical_Bias``   [0-100]   Expressed as Percentage. 
+  * Will only affect Auto_Algo.
+  * Will not affect niechash or whalesburg.
+  * This if for users who ONLY want coins that historically
+    turn a profit. However, the drawback is that you may
+    avoid profitable coins due to bad luck streaks.
+  * You may completely different algorithms at the
+    top of the list using this parameter, depending on
+    how high you set the bias.
+  * Historical_Bias bias does two things:
+    * Reduces algorithms that have no 24h returns by 100%
+    * Compares the deviation between 24hr estimates and 24hr
+      returns into a %, and then creates a EMA with each
+      value. (for smoothing). SWARM then applies a bonus/penality
+      to the algorithm based on how well it has performed
+      over time historically. SWARM will only apply a % penality
+      or bonus of x%, where x is -Historical_Bias figure.
+      Deviations will be listed in stat files.
+      If you use, reccommended starting values are somewhere
+      around 25-35% historical bias.
+
+## Updates
+* Pool files were heavily changed/updated to increase
+  speed, and add new features.
+* Nicehash file updated to new platform (You require a
+  new account and update from old nicehash platform).
+* nanominer update (warning: users were stating in linux
+  it was failing, though settings were correct. Contact dev
+  if that is the case.
+* t-rex updated
+* new equihash algos added.
+
+## Fixes:
+* Pool files were updated/fixed, and tested individually.
+  * Note: If you recieve a fairly high estimate, notify
+    pool that their mbtc_mh_factor is incorrect for that
+    item. Please let me know if you spot any bugs.
+* Prevent agent in Windows from locking up if you close
+  main screen while "waiting for miners to start"
+  message appears.
+
+###########################################
+###########################################
+# SWARM 2.5.7
+
+## Beta changes
+* Includes all new features from beta.
+* See release prior.
+
+## Updates
+* wilrig updated
+* tt-miner updated
+* cc-mtp updated
+* SWARM-MINER updated
+  * improved hasrate on bmw512
+
+## Fixes:
+* Removed -Volume errors caused by
+  typo in pool files.
+* Removed easy-mode message (not
+  used feature).
+###########################################
+###########################################
+
+# SWARM 2.5.8
+
+## Note: Cuckaroo29 will likely timeout.
+This is due to miners switching to 29d fork.
+You can prevent needlessy benchmarking by use
+-Bans argument, or you can downgrade miner to
+an older version using ``version update`` command.
+I will work on splitting miners for each algo.
+
+## NEW FEATURES!
+* Fan control now works for RTX cards in
+  Windows- Program created by me. (beta).
+  * Will control dual fan-control GPUS.
+
+## Updates
+* TeamRedMiner updated
+* SWARM-MINER updated
+  * New windows version
+  * improved performance on bmw512
+* TT-Miner updated
+  * Did not do linux yet.
+    Read api specs may have changed.
+    Need to test further.
+* Swarm help programs/commands updated.
+###########################################
+###########################################
+
+# SWARM 2.5.9
+
+## New Parameters!
+
+* ``-Time_Wait`` Default is 10 seconds.
+               For linux version only.
+               The maximum amount of time
+               SWARM will continue to 
+               clear miner API ports,
+               before continuing on.
+
+* ``-Coin_params`` See SWARM_help.txt for usage.
+                 Is meant to allow remote change
+                 of wallets.json for solo mining
+                 or direct mining of coins.
+
+
+## Updates!
+* miniz updated
+* gminer updated
+* cryptodredge updated
+* cpuminer-opt updated
+* xmrig update
+* lolminer updated
+* swarm-miner updated
+   * slight improvements
+     to speed (1%-2%)
+     for bmw512.
+   * Fix small issues in
+     Windows version. 
+
+## New Features
+* Condensed ``get stats`` command
+  to fit on screen remotely.
+  Colorized output.
+
+* Stat files have a new format.
+   (profit.txt)
+
+## Fixes
+* Fixed potential issue with parsing
+  Windows flight sheet for multiple
+  NVIDIA device groups.
+* Fixed issues with ``-Volume`` parameter,
+  and divide by 0 when pool hashrate was
+  0.
+
+###########################################
+###########################################
+
+# SWARM 2.6.0
+
+## Changes
+* wallets.json has changed. "solo" has
+  become "params"
+* ``-Coin_Params`` argument has changed.
+   [symbol]:[address]:[params]:[exchange]
+* See SWARM_help.txt and wallets.json
+  for info - Allows party mining as well.
+
+## Updates
+* bminer updated
+* lolminer updated
+* beamv2 on nicehash added
+* nbminer updated
+* updated cpuminers
+
+## Fixes
+* Adjusted -Stat_Algo Day & -Stat_Coin Day
+to allow full values.
+* Fixed new ``get stats lite`` table
+
+############################################
+############################################
+
+# SWARM 2.6.1
+
+## New features
+* ``get stats`` will show daily profit for rig.
+* hiveos version creates a newarguments.json
+  like windows version.
+* Slight improvemnt to pool load times
+
+## Updates
+* TT-Updated
+* Gminer Updated
+* Updated ``get help``
+
+## Fixes
+* Fixed ``-coin_param`` params value
+* Fixed gminer equihash_150/5
+* Removed "Waiting for all miners to launch"
+  * It can cause issues with hiveos oc settings.
+
+############################################
+############################################
+
+# SWARM 2.6.2
+
+## CRITICAL UPDATE
+* Restores Nicehash Pool
+  From Last Release's
+  changes with pool.
+
+## Updates
+* Updates Gminer Windows
+
+############################################
+############################################
+
+# SWARM 2.6.3
+
+## CRITICAL UPDATE
+* Fixes first time load of pool stats
+  For ``-Auto_Coin``
+* This is only for users with ``Auto_Coin``
+  You can ignore if not using.
+
+############################################
+############################################
+
+# SWARM 2.6.4
+
+## Fixes
+* Resolved issues with Windows ``get update``
+  * Should now work from this version forward.
+* Fixed some more pool issues- Everything
+  should be resolved now.
+
+## Updates
+* HiveOS SWARM will now write newarguments.json
+  on startup- For future use. You will see
+  "New arguments detected message- This is normal."
+
+############################################
+############################################
+
+# SWARM 2.6.5
+
+## New Command! [Highly Expiremental]
+* ``swarm_batch``
+  * Will only work if you are using
+    ``-API_Key`` argument
+  * Allows users to run a command that
+    will run on all rigs in farm running
+    SWARM.
+  * Example: ``swarm_batch clear_profits``
+    * will run ``clear_profits`` on all
+      rigs.
+  * The issue is, is that HiveOS API
+    was not working for me. I could 
+    only get "reboot" command to work.
+    I notified web dev, and command is created
+    for when their API is working correctly. 
+    If you would like it working- try command 
+    and post your output to developers. It will 
+    output the .json sent to their API.
+
+## Improvements
+* Force bind onboard card to first on list
+  * Caviet- If gpu crashes and drivers reload
+    It will change the order in Windows.
+* If no GPU cards are detected- SWARM should
+  default cpu mine, and auto detect -CPUthreads.
+* Improved windows output on HiveOS connect failure.
+
+## Updates
+* Removed lolminer equihash_150/5
+* Updated lolminer
+* Updated miniz
+* Updated tt-miner
+* Updated Bminer
+* Claymore updated
+
+## Notes
+* If you experience errors after updating-
+  Run ``clear_profits``. I have changed
+  stat files over time.
+
+############################################
+
+############################################
+############################################
+
+# SWARM 2.6.6
+
+## Fixes
+* This fixes the new ``swarm_batch`` command.
+  There was an issue with syntax I wasn't aware
+  of. It should now be able to run any SWARM
+  command, and do so on all workers running
+  SWARM if ``-API_Key`` is supplied. You
+  just run through shell or can do
+  through command dashboard.
+
+############################################
+############################################
+
+# SWARM 2.6.7
+
+## Improvements
+* Heavily cleaned up web methods for
+  Windows HiveOS. Simplified codebase.
+* Added ``swarm_batch`` command to Windows.
+  * Alredy in HiveOS version.
+  * Allows you to send command to one rig,
+    which will execute that command on all
+    rigs in that farm running SWARM.
+    * Example:
+      * ``swarm_batch get stats``
+         All rigs running SWARM in your
+        farm will all simulatenously
+        run ``get stats``
+      * This should work with most native
+        HiveOS commands as well, but will
+        only run on rigs running SWARM. I
+        can't gurantee or support this- Just
+        SWARM specific commands.
+  * Requires using ``-API_Key argument``
+
+* created ``miner stop|start|restart|log``
+  commands that can run locally on Windows
+  version. (Note- ``miner stop`` does not
+  close agent, just stops SWARM``), so you
+  can still communicate with HiveOS
+
+############################################
+############################################
+
+# SWARM 2.6.8  -- beta 1
+
+Note: This is 1 of 2 new upcoming beta releases
+to test new Expiremental features.
+
+## New Features!
+* Autofan for HiveOS now works in Windows!
+  * This is a expiremental beta implementation
+    please notify if you have issues.
+* AMD Memtweak settings from HiveOS added
+  to OC in Windows.
+* ``swarm_batch`` can accept -windows or -linux
+    to specify specific OS.
+    * example:
+      * ``swarm_batch get stats -linux``
+        * Will only run ``get stats`` in linux rigs.
+
+## Updates
+* Gminer - added 125/4 for AMD.
+* Bminer
+
+## Fixes
+* Made it so you don't have to enters
+  Hive_Hash every time you run ``swarm_help``.
+* Fixed typo in nvidia oc, which caused an issue
+  if you set a singular value for one oc, but multiple
+  values for another in HiveOS.
+* Fixed/updated install.ps1/install.sh
+  * wolfamdctrl symlink error fix.
+  * ./help.sh guided help start fix. (path moved).
+  * typo with $dir path in one of the install transfers.
+* Adjusted nvidia oc Pl to work as watts, not % in Windows
+  * This means it matches HiveOS's website interface.
+
+############################################
+############################################
+
+# SWARM 2.6.9
+
+## Updates
+* Gminer updated
+* bminer updated
+* xmrig updated
+* phoenix miner updated
+* nbminer updated
+
+## fixes
+* Users stated they were having some Issues
+  with whalesburg pool- It was fixed. Updated
+  pool to new pool class like rest.
+
+* ethminer should work on whalesburg (optional miner)
+* updated phoenix miner arguments.
+
+############################################
+############################################
+
+# SWARM 2.7.0
+
+## Guided Help
+* Windows: Run SWARM.bat
+* Linux: Run ./swarm
+* HiveOS: Specify SWARM as custom miner
+  * extra config arguments no longer mandatory.
+* SWARM should now run guided help
+on first launch if no arguments
+are specified. Simply answer the
+very simple questions, and you
+are mining!
+
+## Updates
+* gminer 1.66
+* tt-miner moved from optional to
+  regular miner in linux.
+* tt-miner updated
+* teamredminer updated
+* z-enemy updated
+* t-rex updated
+* SWARM is x16rv2 ready
+* xmrig (cpu) updated.
+
+## Fixes
+* Found bug regarding auto-restart
+  after 10 bad intervals- It was
+  resolved. Should migrate backups,
+  clear, bans, and automatically restart
+  if 10 consecutive bad intervals of no hash.
+* Some mismatched algo names in teamredminer config.
+  Is now fixed.
+
+## What's New?
+* Shortened "cryptonight" to "cnight" to
+  help with fitting stats on screen.
+* ``get stats`` will sort device groups by name.
+* nlpool divisor is no correct on some algos-
+  manually adjusted them until fixed.
+* SWARM will run --help by default if no arguments
+  are specified.
+
+############################################
+############################################
+
+# SWARM 2.7.2
+
+## Guided Help
+* Windows: Run SWARM.bat
+* Linux: Run ./swarm
+* HiveOS: Specify SWARM as custom miner
+  * extra config arguments no longer mandatory.
+* SWARM should now run guided help
+on first launch if no arguments
+are specified. Simply answer the
+very simple questions, and you
+are mining!
+
+## What's New?
+* Made it so that arguments.json is ALWAYS
+  overidden by newarguments.json. arguments.json
+  is local config, while newarguments.json is a config
+  created either by guided help or remotely (HiveOS).
+* Force initial params to be user_params. In some rare
+  circumstances if you ran guided help, it would load
+  defaults initially (must have taken a specific course
+  of action). user_params are now force overidden by default.
+* ``-CPUthreads`` param is not overidden if leaving SWARM to autodetect
+  system (no ``-Type`` parameter used).
+* added sample of adding args to ./swarm and ./swarm.bat,
+  since initial arguments are removed (to initiate guided help).
+
+## Updates
+* TeamRedMiner x16rv2 added.
+* tt-miner
+
+## Fixes
+* Desktop for Windows to add a SWARM_Terminal link will be
+  set, even if user is using one drive.
+* Removed Nvidia table-add error if cpu mining only
+
+############################################
+############################################
+
+# SWARM 2.7.3
+
+# What's New?
+* ``benchmark`` command has been changed to
+  ``bench``. Wiki will be updated soon to
+  reflect this.
+* ``bench timeout`` is now ``bench bans``.
+
+## Updates
+* tt-miner was updated.
+
+############################################
+############################################
+
+# SWARM 2.7.4
+
+THIS IS A CRITICAL UPDATE- IF USING 2.7.0
+OR NEWER- UPDATE IMMEDIATELY.
+
+## Fixes
+* Powershell changed slightly how syncronized hashtables
+  worked in 6.2.3 (or maybe I found bug). This can a potential 
+  issue with donation parameters vs user parameters! I have 
+  created a workaround to update from the new change.
+
+## What's New?
+* Per user request - Added BTC/Day on main screen.
+* cpuminer jayddee updated.
+* gminer updated (good RTX cuckaroo29d improvement)
+
+############################################
+############################################
+
+# SWARM 2.7.5
+
+## What's New?
+* SWARM should not run oc programs if no
+  oc is set through HiveOS.
+
+## Fixes
+* Fixed miniz- equihash_96/5 was removed,
+  added it back.
+
+## Updates
+* Added x16rv2 to pool-algos.json, this means
+  it will start attempting to mine it. You can
+  ban it until ready with ``-Bans x16rv2:Poolname``
+
+############################################
+############################################
+
+# SWARM 2.7.6
+
+## NOTE: There is some larger Windows
+   changes in this release. If using
+   Windows, and have issues, let me know
+   and I will fix asap. So far I have been
+   unable to find any issues.
+
+## What's New?
+* Moved cc-rfv2 to optional miners
+  * Was causing high CPU issues.
+  * Was getting "invalid arguments"
+    CUDA errors.
+* -no-nvml added to nbminer
+* -log added to nbminer,
+   SWARM logging is removed in Windows.
+* Windows now start miners without
+  application lost of focus.
+  * Added custom launchcode.dll in apps folder.
+* Removed extra console launch in Windows version.
+  * cmd.exe isn't used anymore in SWARM.
+  * everything works directly from pwsh.exe
+* Add more console info.
+   * notifies user test batch files are made
+     to test miners, and location
+   * notifies user that SWARM attempt to
+     record difficulty and intensity for
+     them.
+   * veil warning.
+* Fixed cc-rfv2 link.
+  * moved to optional folder-
+    Cuda error: invalid params.
+* SWARM now not only generates batch/bash
+  files for testing, but one for each algorithm.
+  * It uses same environment params as SWARM itself.
+
+## Fixes
+* Fixed AMD errors for autofan in Windows
+  if only using NVIDIA.
+* Removed cuckaroo from nbminer.
+  * cuckaroo29d still present.
+* Rare error that arguments aren't saved
+  after first time connection to HiveOS
+  when user used guided help.
+* Missed port for x16rv2 on nicehash- fixed.
+* T-rex x16rv instead of x16rv2 - fixed.
+
+############################################
+############################################
+
+# SWARM 2.7.7
+
+## What's New?
+* Added x12 algorithm to SWARM-MINER and
+  SWARM.
+* Improved AI to make better miner choices
+  when multiple bans start occurring.
+* Removed miner_hashtable variable - previous
+  optimization made feature no longer needed.
+* Set Claymore argument -eres to 0 to help
+  with Windows mining. You can change in
+  respective claymore and claymore-amd.ps1
+  files in the "Arguments=" line.
+* AMD no longer requires voltages to be set
+  for overclocking in windows, and vice-versa
+  in HiveOS. (still need to change in local
+  SWARM oc if used, and it requires both voltages
+  and clock speed)
+* ``-Coin`` Parameter behaves differently now.
+  * ``Auto_Coin`` set to "No", you will direct mine
+    the coin (c=``-PasswordCurrency1``) in pool.
+  * ``Auto_Coin`` set to Yes, you will auto-exchange
+    coin. (c=``-PasswordCurrency1``,mc=``-Coin``)
+  * Examples of both:
+    ``-Algorithm x16rv2 -Auto_Coin No -Coin RVN -Wallet1 [RAVEN ADDRESS] -PasswordCurrency1 RVN`` 
+      You will mine RVN to RVN wallet.
+    ``-Algorithm x16rv2 -Auto_Coin Yes -Coin RVN -Wallet1 [BTC ADDRESS] -PasswordCurrency1 BTC`` 
+      You will mine RVN and auto-exchange to BTC wallet.
+    ``-Algorithm mtp,x16rv2 -Auto_Coin Yes -Coin RVN,XZC -Wallet1 [BTC ADDRESS] -PasswordCurrency1 BTC``
+      You will mine either RVN and XZC (which ever one is more profitable), and auto-exchange to BTC
+* Remember: -Auto_Coin on works on pools with mc= argument. If you add other pools, SWARM
+   will default auto-algo switch with them instead using algorithms in ``-Algorithm`` argument.
+
+## Updates
+* z-enemy updated
+* cryptodredge updated
+* tt-miner updated
+* nbminer updated
+
+############################################
+############################################
+
+# SWARM 2.7.8
+
+## Updates
+* Removed cuckaroo29 from gminer (but d29 still available)
+* updated gminer
+* updated t-rex
+* updated nbminer
+* updated wildrig-multi
+* updated phoenix miner
+* updated tt-miner
+
+## Fixes
+* EU users were having issues with nicehash.
+  its "-new" stratum. Changed to original stratum,
+  and seemed to resolved.
+* Fixed issues with auto-detection of -type if not
+  specified.
+
+## Notes
+* It has been confirmed that cuckaroo29 dredge has issues
+  in hashrate API.
+* It has been confirmed that lower end cards have issues
+  with ethash in Windows for most miners (don't message me
+  as it is miner).
+* If you have issues with miners, consider changing
+  driver, older drivers have been reporting to work
+  better.
+
+############################################
+############################################
+
+# SWARM 2.7.9
+
+## What's New?
+* Blockmasters added mc= to pool.
+* Added Blockmasters to auto_coin
+  switching: BETA
+* Enabled Blockmasters for party
+  mining: BETA
+* ``-Bans Algorithm:Coin`` should now work: BETA
+
+## Updates
+* nanominer updated.
+* gminer updated.
+* wildrig updated.
+ * mtp added
+* miniz updated.
+* tt-miner updated.
+
+## Fixes
+* Removed "True" output for stray
+  miner detection.
+* Remove process info from API,
+  was occassionally causing issues
+  with agent detecting new miner
+  switch.
+
+############################################
+############################################
+
+# SWARM 2.8.0
+
+## What's New?
+* Added new nicehash API for wallet data
+  ``get wallets``
+  * Will only work for external wallets.
+    ``-NiceHash_Wallet`` will be skipped over.
+* Added ethash for gminer (NVIDIA).
+* ``-PoolBanCount`` is no longer in affect if
+  user is using only 1 pool. If they are using
+  only one pool, there is no reason to create
+  a pool ban if there are no other pools to mine
+  to.
+
+## Improvements
+* System.Diagnostic.Data is not recorded in
+  ban information to prevent .json conversion.
+* Small typo fix for ASIC.
+
+## Updates
+* Gminer updated.
+* Tt-miner updated.
+* Wildrig updated.
+
+############################################
+############################################
+
+# SWARM 2.8.1
+
+## What's New?
+* Added new cc-yescrypt compiled miner.
+  - Does most yescryptr algorithms for nvidia.
+  - warning: it produces nearly 100% rejections for
+    yescrypt algorithm. New miner file has yescrypt
+    removed, updating may keep alogorithm.
+  - warning: It is common for yescrypt algorithms
+    to produce rejections due to stale share submission.
+* Added new cpuminer 'rplant'
+* New argument/parameter: "Rej_Factor"
+  * Default Is "Yes".
+  * Options are "Yes"/"No"
+  * Will factor average rejection rate
+    of shares into profit/hash equation,
+    reducing profitabilty if miner is
+    known to produce rejections.
+  * This is a beta feature- If you are not
+    interested in testing, set ``-Rej_Factor No``
+
+## Improvements
+* Removed -Id from all Process detection
+  to prevent erroneous errors.
+* Cleaned up pool files/algorithms including
+  fixing bad algorithm links (suck as phi2 -> phi2-lux)
+* cuckaroo29 and cuckaroo29d will register from SWARM
+  to HiveoS as 'Cuckoo'.
+* change set to $env for windows environment variables.
+* did some miner file cleanup.
+* fixed issue with nvidia-smi not running on local oc
+  in linux to gather max power-limit, if pl was not
+  set in config.
+
+## Updates
+* gminer updated
+* bminer updated
+* nbminer updated
+* jayddee updated
+* phoenix-miner updated
+
+############################################
+############################################
+
+# SWARM 2.8.2
+
+What's New?
+* Price Factoring For Algos With
+  Share Rejections - Final
+  * average rejection rate will
+     update every loop, not just
+     when miners switch on screen.
+  * very minor corrections to system.
+  * See 2.8.1 release notes on details
+    regarding new addition.
+* Linux cuda 10.2 libs added.
+  * No cuda 10.2 miners yet in SWARM. 
+  * Next release will have compiled
+    10.2 miners- You may want to 
+    update drivers and test issues now.
+* ``get benchmarks`` command now shows
+   rejections for all algorithms.
+* ROLLBACK. From this verion on- You will
+  now be able to rollback SWARM versions
+  if you have issues with a new version.
+   * miner configs are not saved on rollback.
+   * pool configs are not saved on rollback.
+   * will only work on 2.8.2 and up with new
+     code changes.
+   * this is a beta test-change.
+* debug folder added.
+  * contains helpful debug information for SWARM.
+  * was previously build\txt.
+
+
+Fixes
+* Attempted fix towards auto-detection
+  * If it still has issues, notify me
+    and I will try other things.
+  * You can always you ``-Type`` arguement
+    to force devices used in SWARM.
+* Recompiled cc-yescrypt, should work now.
+  * typo in compile instruction.
+
+Updates
+* gminer updated.
+* lolminer updated.
+* nbminer updated.
+
+############################################
+############################################
+
+# SWARM 2.8.3
+
+## What's New?
+* Issue #214
+  * added cc-Lyraz330 to Nvidia miners.
+
+## Improvements
+* Issue #222
+  * Improved Load Average/Detection in Windows.
+* Issue #225
+  * Fixed small typos on SWARM Screen.
+
+## Fixes
+* Issue #213
+  * Updated odvii.exe
+  * Updated how SWARM gathers information from odvii.exe
+  * Removed need to run wattometer - stats pulled from agent API.
+  * Extended wait time for gpu stats to 15 seconds.
+
+## Updates
+* Issue #219
+  * gminer updated.
+* Issue #220
+  * teamredminer updated.
+  * ethash added.
+
+############################################
+############################################
+
+# SWARM 2.8.4
+
+## What's New?
+* Issue #237
+  * Added support for randomx algorithm.
+  * SWARM will run HiveOS hugepages command for
+    randomx.
+* Issue #218
+  * Added win_optimize.ps1 in build\powershell\scripts.
+    * Runs various commands to update registry in windows
+      to disable things like defender/one-drive/hibernation.
+    * Auto-Optimizes registry for AMD cards.
+      * Will reset drivers, so don't be alarm if screen
+        flashes.
+  * Standalone script for now, will integrate in SWARM. Not
+    Fully completed either.
+
+## Improvements
+* Issue #238
+  * ``-Location JAPAN`` argument
+* Issue #233
+  * Fixed small typos on SWARM Screen.
+* Issue #225
+  * ``-Coin`` parameter can be used a
+     an array, to specify a finite number
+     of coins to mine (must use ``-alogorithm``)
+     parameter in conjunction.
+     * example:
+       ``-Coin RVN,XZC,GUN``
+* #242
+  * Added instructions in batch files on what they do.
+
+## Fixes
+* Issue #235
+  * xmr-stak api updated in case total hasrate
+    is $null.
+* Issue #234
+  * Miner dir is pointed as a library path
+    as well as exports folder in linux.
+
+## Updates
+* Issue #230
+  * gminer updated.
+* Issue #239
+  * teamredminer updated.
+* Issue #229
+  * lolminer updated.
+* Issue #237
+  * xmrig upated
+  * removed no longer supported algos
+    on xmr-stak.
+
+
+############################################
+############################################
+
+# SWARM 2.8.5
+
+## BETA RELEASE
+* A lot of changes were made to SWARM to support
+  cryptonight changes. Please let me know if you have
+  issues.
+  
+## What's New?
+* Issue #254
+  * Updated cryptonight miners (except srbminer, will
+    do next release/soon).
+  * Added cryptonight algorithm support for zergpool.
+  * Created xmr-stak-rx and xmr-stak as they are
+    seperate miners.
+  * Since ``get stats`` command shows cryponight
+    algorithms as abbreviated (cnight), made it so
+    that ``bench`` and ``get`` commands, along with
+    user arguments will auto-convert 'cnight' to
+    'cryptonight', which is proper. So 'cnight-v8'
+    should become 'cryptonight-v8'.
+
+## Fixes
+* Issue #251
+  * removed ``get version`` command
+  * removed ``get miners`` command
+  * both were depreciatied.
+
+* Issues #252
+  * Use -log argument for tt-miner instead
+    of tee
+
+* Issue #245
+  * default m=solo for zergpool (force lower case for
+    solo and party for ``-coin_params``)
+  * default m=SOLO for blockmasters (force upper case for
+    solo and party for ``-coin_params``)
+
+## Updates
+* TT-miner updated
+* xmrig updated (cpu, nvidia, and amd)
+* xmr-stak updated
+* gminer updated
+
+############################################
+############################################
+
+# SWARM 2.8.6
+
+## What's New?
+ * Issue #248
+   * Users can now 'lock' stats.
+    * there is a new value in every stat file:
+      "locked": false
+    * if you change it to true, it will not update
+      the file. This means you can set your own
+      hashrate/watt/etc., and it will stay 
+      that way.
+    * It will still record benchmarked values,
+      and pool estimates for troubleshooting, 
+      but it will not change the 
+      values SWARM uses.
+    * This is a beta change.
+    * Command to do this remotely coming soon.
+      * want to verify no user issues.
+ * Issue #258
+   * Added new ccminer-verus
+   * Compiled for Sandybridge CPU only.
+   * If it doesn't work- you will have to compile
+     your own version:
+     https://github.com/monkins1010/ccminer/releases
+ * Issue #257
+   * Added old algorithms back.
+     * zergpool lists them as GPU algorithms.
+
+## Improvements
+ * Issue #252
+   * ``get stats`` starts at position 1 not 0.
+ * Issue #242
+   * hugepages is set to default on exit.
+   * hugepages is set to default on start.
+     (in case user closes and restarts SWARM
+      very quickly).
+ 
+
+## Updates
+* tt-miner updated
+* cc-verus updated
+* gminer updated
+* lolminer updated (linux version is newer)
+
+############################################
+############################################
+
+# SWARM 2.8.7
+
+## What's New?
+ * Issue #260
+   * New algos for cryptonight added.
+ * Issue #261
+   * Future cpu algorithms added.
+
+## Improvements
+ * Issue #262
+  * Swarm will notify on main screen when
+    stats and active data had been refreshed for
+    commands.
+ * Issue #265
+  * Latest HiveOS broke 'hello' for Windows.
+  * Fixed hello connection, and ensured it
+    won't happen again.
+
+## Updates
+ * gminer updated
+ * xmrig updated
+ * jayddee updated
+ * rplant updated
+
+
+############################################
+############################################
+
+# SWARM 2.8.8
+
+## What's New?
+ * Issue #266
+   Fixed xmrig issue in NVIDIA (linux)
+   new lib added to exports folder.
+
+ * Issue #267
+   Added algorithms back to cryptodredge.
+   Added cryptonight_conceal.
+
+## Improvements
+ * Issue #268
+   * Improved xmrig/xmr-stak api
+     for HiveOS
+
+## Updates
+ * xmrig update
+ * xmr-stak-rx update
+
+############################################
+############################################
+
+# SWARM 2.8.9
+
+## Note
+Pay attention to pool hashrate for
+cryptonight algorithms and miner hashrate-
+They may not be the same.
+
+You can manually adjust the stat in the
+.\stats folder, and then set 'locked'
+to true in order to prevent SWARM from
+changing it- It is in simple .json format.
+
+## Improvements
+  * Issue #266
+    * Correct link for xmrig windows for CUDA
+  * Issue #269
+    * Fixed ``version`` command for Windows.
+  * Issue #247
+    * export folder is packaged as tar.gz,
+      is extracted on first run.
+
+## Updates
+ * Jayddee updated
+ * gminer updated
+
+############################################
+############################################
+
+# SWARM 2.9.0
+
+## Note
+There is some large beta changes in linux
+contained in this release, which could be
+greatly beneficial to how SWARM operates.
+Be advised they are potentially beneficial,
+but beta in design.
+
+## Improvements
+* Issue #270
+   * Process control improvements in linux.
+   * Process Parent is used to track/identify
+     actual core processes of miners within
+     terminal emulators (screen).
+   * Since definitive miner core processes can
+     be identified, a new system to
+     reboot computer on errors was written
+     if the process fails to close (if argument
+     ``startup`` is set to default "Yes").
+   * Users will be notified through HiveOS
+     if a process or one of its subprocesses
+     is a zombie process if using HiveOS
+     now in both Windows or Linux.
+
+## Fixes
+* Issue #271
+  * Last release there was a change implemented
+    for HiveOS hello in Windows. There was a
+    typo that was corrected.
+
+## Updates
+* None - This is a release to test linux
+  improvements.

@@ -1,81 +1,84 @@
-$CPUTypes | ForEach-Object {
+$(vars).CPUTypes | ForEach-Object {
     
     $ConfigType = $_;
     $CName = "xmrig-cpu"
 
     ##Miner Path Information
-    if ($cpu.$CName.$ConfigType) { $Path = "$($cpu.$CName.$ConfigType)" }
+    if ($(vars).cpu.$CName.$ConfigType) { $Path = "$($(vars).cpu.$CName.$ConfigType)" }
     else { $Path = "None" }
-    if ($cpu.$CName.uri) { $Uri = "$($cpu.$CName.uri)" }
+    if ($(vars).cpu.$CName.uri) { $Uri = "$($(vars).cpu.$CName.uri)" }
     else { $Uri = "None" }
-    if ($cpu.$CName.minername) { $MinerName = "$($cpu.$CName.minername)" }
+    if ($(vars).cpu.$CName.minername) { $MinerName = "$($(vars).cpu.$CName.minername)" }
     else { $MinerName = "None" }
 
     $Name = "$CName";
 
     ##Log Directory
-    $Log = Join-Path $dir "logs\$ConfigType.log"
+    $Log = Join-Path $($(vars).dir) "logs\$ConfigType.log"
 
     ##Parse -CPUThreads
-    if ($CPUThreads -ne '') { $Devices = $CPUThreads }
+    if ($(arg).CPUThreads -ne '') { $Devices = $(arg).CPUThreads }
 
     ##Get Configuration File
-    $GetConfig = "$dir\config\miners\$CName.json"
-    try { $Config = Get-Content $GetConfig | ConvertFrom-Json }
-    catch { Write-Log "Warning: No config found at $GetConfig" }
-
+    $MinerConfig = $Global:config.miners.$CName
+    
     ##Export would be /path/to/[SWARMVERSION]/build/export##
-    $ExportDir = Join-Path $dir "build\export"
+    $ExportDir = Join-Path $($(vars).dir) "build\export"
+    $Miner_Dir = Join-Path ($(vars).dir) ((Split-Path $Path).replace(".",""))
 
     ##Prestart actions before miner launch
-    $BE = "/usr/lib/x86_64-linux-gnu/libcurl-compat.so.3.0.0"
     $Prestart = @()
-    $PreStart += "export LD_LIBRARY_PATH=$ExportDir"
-    $Config.$ConfigType.prestart | ForEach-Object { $Prestart += "$($_)" }
+    $BE = "/usr/lib/x86_64-linux-gnu/libcurl-compat.so.3.0.0"
+    if (Test-Path $BE) { $Prestart += "export LD_PRELOAD=libcurl-compat.so.3.0.0" }
+    $PreStart += "export LD_LIBRARY_PATH=$ExportDir`:$Miner_Dir"
+    $MinerConfig.$ConfigType.prestart | ForEach-Object { $Prestart += "$($_)" }
 
-    if ($Coins -eq $true) { $Pools = $CoinPools }else { $Pools = $AlgoPools }
+    if ($(vars).Coins) { $Pools = $(vars).CoinPools } else { $Pools = $(vars).AlgoPools }
+
+    if ($(vars).Bancount -lt 1) { $(vars).Bancount = 5 }
 
     ##Build Miner Settings
-    $Config.$ConfigType.commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
+    $MinerConfig.$ConfigType.commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
 
         $MinerAlgo = $_
 
-        if ($MinerAlgo -in $Algorithm -and $Name -notin $global:Exclusions.$MinerAlgo.exclusions -and $ConfigType -notin $global:Exclusions.$MinerAlgo.exclusions -and $Name -notin $global:banhammer) {
-            $Stat = Get-Stat -Name "$($Name)_$($MinerAlgo)_hashrate"
-            $Check = $Global:Miner_HashTable | Where Miner -eq $Name | Where Algo -eq $MinerAlgo | Where Type -Eq $ConfigType
+        if ($MinerAlgo -in $(vars).Algorithm -and $Name -notin $global:Config.Pool_Algos.$MinerAlgo.exclusions -and $ConfigType -notin $global:Config.Pool_Algos.$MinerAlgo.exclusions -and $Name -notin $(vars).BanHammer) {
+            $StatAlgo = $MinerAlgo -replace "`_", "`-"
+            $Stat = Global:Get-Stat -Name "$($Name)_$($StatAlgo)_hashrate" 
+            if($(arg).Rej_Factor -eq "Yes" -and $Stat.Rejections -gt 0 -and $Stat.Rejection_Periods -ge 3){$HashStat = $Stat.Hour * (1 - ($Stat.Rejections * 0.01)) }
+            else{$HashStat = $Stat.Hour}
         
-        if ($Check.RAW -ne "Bad") {
             $Pools | Where-Object Algorithm -eq $MinerAlgo | ForEach-Object {
-                    if ($Config.$ConfigType.difficulty.$($_.Algorithm)) { $Diff = ",d=$($Config.$ConfigType.difficulty.$($_.Algorithm))" }else { $Diff = "" }
-                    if ($Platform -eq "windows") { $APISet = "--http-enabled --http-port=10002" }
-                    else { $APISet = "--api-port=10002" }
-                    [PSCustomObject]@{
-                        MName      = $Name
-                        Coin       = $Coins
-                        Delay      = $Config.$ConfigType.delay
-                        Fees       = $Config.$ConfigType.fee.$($_.Algorithm)
-                        Symbol     = "$($_.Symbol)"
-                        MinerName  = $MinerName
-                        Prestart   = $PreStart
-                        Type       = $ConfigType
-                        Path       = $Path
-                        Devices    = $Devices
-                        DeviceCall = "xmrig-opt"
-                        Arguments  = "-a $($Config.$ConfigType.naming.$($_.Algorithm)) $APISet -o stratum+tcp://$($_.Host):$($_.Port) -u $($_.User1) -p $($_.Pass1)$($Diff) --donate-level=1 --nicehash $($Config.$ConfigType.commands.$($_.Algorithm))"
-                        HashRates  = [PSCustomObject]@{$($_.Algorithm) = $Stat.Day }
-                        Quote      = if ($Stat.Day) { $Stat.Day * ($_.Price) }else { 0 }
-                        PowerX     = [PSCustomObject]@{$($_.Algorithm) = if ($Watts.$($_.Algorithm)."$($ConfigType)_Watts") { $Watts.$($_.Algorithm)."$($ConfigType)_Watts" }elseif ($Watts.default."$($ConfigType)_Watts") { $Watts.default."$($ConfigType)_Watts" }else { 0 } }
-                        MinerPool  = "$($_.Name)"
-                        FullName   = "$($_.Mining)"
-                        Port       = 10002
-                        API        = "xmrig-opt"
-                        Wallet     = "$($_.$User)"
-                        URI        = $Uri
-                        Server     = "localhost"                        
-                        Algo       = "$($_.Algorithm)"
-                        Log        = $Log 
-                    }            
-                }
+                if ($MinerConfig.$ConfigType.difficulty.$($_.Algorithm)) { $Diff = ",d=$($MinerConfig.$ConfigType.difficulty.$($_.Algorithm))" }else { $Diff = "" }
+                [PSCustomObject]@{
+                    MName      = $Name
+                    Coin       = $(vars).Coins
+                    Delay      = $MinerConfig.$ConfigType.delay
+                    Fees       = $MinerConfig.$ConfigType.fee.$($_.Algorithm)
+                    Symbol     = "$($_.Symbol)"
+                    MinerName  = $MinerName
+                    Prestart   = $PreStart
+                    Type       = $ConfigType
+                    Path       = $Path
+                    Devices    = $Devices
+                    Stratum    = "$($_.Protocol)://$($_.Pool_Host):$($_.Port)" 
+                    Version    = "$($(vars).cpu.$CName.version)"
+                    DeviceCall = "xmrig-opt"
+                    Arguments  = "-a $($MinerConfig.$ConfigType.naming.$($_.Algorithm)) --http-enabled --http-port=10002 -o stratum+tcp://$($_.Pool_Host):$($_.Port) -u $($_.User1) -p $($_.Pass1)$($Diff) --donate-level=1 --nicehash $($MinerConfig.$ConfigType.commands.$($_.Algorithm))"
+                    HashRates  = $Stat.Hour
+                    Worker     = $(arg).Rigname1
+                    Quote      = if ($HashStat) { $HashStat * ($_.Price) }else { 0 }
+                    Rejections = $Stat.Rejections
+                    Power      = if ($(vars).Watts.$($_.Algorithm)."$($ConfigType)_Watts") { $(vars).Watts.$($_.Algorithm)."$($ConfigType)_Watts" }elseif ($(vars).Watts.default."$($ConfigType)_Watts") { $(vars).Watts.default."$($ConfigType)_Watts" }else { 0 } 
+                    MinerPool  = "$($_.Name)"
+                    Port       = 10002
+                    API        = "xmrig-opt"
+                    Wallet     = "$($_.User1)"
+                    URI        = $Uri
+                    Server     = "localhost"                        
+                    Algo       = "$($_.Algorithm)"
+                    Log        = $Log 
+                }            
             }
         }
     }

@@ -1,168 +1,198 @@
 {
-  "name": "xmrig-nv",
-  "NVIDIA1": {
-    "name": "NVIDIA1",
-    "delay": "1",
-    "prestart": [],
-    "commands": {
-      "cryptonightv8": "",
-      "cryptonightv7": "",
-      "cryptonightheavy": "",
-      "cryptonightr": ""
+    "name": "xmrig-nv",
+    "NVIDIA1": {
+        "name": "NVIDIA1",
+        "delay": "1",
+        "prestart": [],
+        "commands": {
+            "cryptonight-v8": "",
+            "cryptonight-v7": "",
+            "cryptonight-heavy": "",
+            "cryptonight-heavyx": "",
+            "cryptonight-haven": "",
+            "cryptonight-saber": "",
+            "cryptonight-r": "",
+            "cryptonight-gpu": "",
+            "cryptonight-fast": "",
+            "cryptonight-xeq": "",
+            "randomsfx": "",
+            "randomv": "",
+            "randomx": ""
+        },
+        "difficulty": {
+            "cryptonight-v8": "",
+            "cryptonight-v7": "",
+            "cryptonight-heavy": "",
+            "cryptonight-heavyx": "",
+            "cryptonight-haven": "",
+            "cryptonight-saber": "",
+            "cryptonight-r": "",
+            "cryptonight-gpu": "",
+            "cryptonight-fast": "",
+            "cryptonight-xeq": "",
+            "randomsfx": "",
+            "randomv": "",
+            "randomx": ""
+        },
+        "naming": {
+            "cryptonight-v8": "cn/2",
+            "cryptonight-v7": "cn/1",
+            "cryptonight-heavy": "cn-heavy",
+            "cryptonight-heavyx": "cn/double",
+            "cryptonight-haven": "cn-heavy/xhv",
+            "cryptonight-saber": "cn-heavy/tube",
+            "cryptonight-r": "cn/r",
+            "cryptonight-gpu": "cn/gpu",
+            "cryptonight-fast": "cn/half",
+            "cryptonight-xeq": "cn/gpu",
+            "randomsfx": "rx/sfx",
+            "randomv": "rx/v",
+            "randomx": "rx/0"
+        },
+        "fee": {
+            "cryptonight-v8": 1,
+            "cryptonight-v7": 1,
+            "cryptonight-heavy": 1,
+            "cryptonight-heavyx": 1,
+            "cryptonight-haven": 1,
+            "cryptonight-saber": 1,
+            "cryptonight-r": 1,
+            "cryptonight-gpu": 1,
+            "cryptonight-fast": 1,
+            "cryptonight-xeq": 1,
+            "randomsfx": 1,
+            "randomv": 1,
+            "randomx": 1
+        }   
     },
-    "difficulty": {
-      "cryptonightv8": "",
-      "cryptonightv7": "",
-      "cryptonightheavy": "",
-      "cryptonightr": ""
+    "NVIDIA2": {
+        "name": "NVIDIA2",
+        "delay": "1",
+        "prestart": [],
+        "commands": {
+            "cryptonight-v8": "",
+            "cryptonight-v7": "",
+            "cryptonight-heavy": "",
+            "cryptonight-heavyx": "",
+            "cryptonight-haven": "",
+            "cryptonight-saber": "",
+            "cryptonight-r": "",
+            "cryptonight-gpu": "",
+            "cryptonight-fast": "",
+            "cryptonight-xeq": "",
+            "randomsfx": "",
+            "randomv": "",
+            "randomx": ""
+        },
+        "difficulty": {
+            "cryptonight-v8": "",
+            "cryptonight-v7": "",
+            "cryptonight-heavy": "",
+            "cryptonight-heavyx": "",
+            "cryptonight-haven": "",
+            "cryptonight-saber": "",
+            "cryptonight-r": "",
+            "cryptonight-gpu": "",
+            "cryptonight-fast": "",
+            "cryptonight-xeq": "",
+            "randomsfx": "",
+            "randomv": "",
+            "randomx": ""
+        },
+        "naming": {
+            "cryptonight-v8": "cn/2",
+            "cryptonight-v7": "cn/1",
+            "cryptonight-heavy": "cn-heavy",
+            "cryptonight-heavyx": "cn/double",
+            "cryptonight-haven": "cn-heavy/xhv",
+            "cryptonight-saber": "cn-heavy/tube",
+            "cryptonight-r": "cn/r",
+            "cryptonight-gpu": "cn/gpu",
+            "cryptonight-fast": "cn/half",
+            "cryptonight-xeq": "cn/gpu",
+            "randomsfx": "rx/sfx",
+            "randomv": "rx/v",
+            "randomx": "rx/0"
+        },
+        "fee": {
+            "cryptonight-v8": 1,
+            "cryptonight-v7": 1,
+            "cryptonight-heavy": 1,
+            "cryptonight-heavyx": 1,
+            "cryptonight-haven": 1,
+            "cryptonight-saber": 1,
+            "cryptonight-r": 1,
+            "cryptonight-gpu": 1,
+            "cryptonight-fast": 1,
+            "cryptonight-xeq": 1,
+            "randomsfx": 1,
+            "randomv": 1,
+            "randomx": 1
+        }   
     },
-    "naming": {
-      "cryptonightv8": "cn/2",
-      "cryptonightv7": "cn/1",
-      "cryptonightheavy": "cn-heavy",
-      "cryptonightr": "cn/r"
-    },
-    "fee": {
-      "cryptonightv8": 1,
-      "cryptonightv7": 1,
-      "cryptonightheavy": 1,
-      "cryptonightr": 1
-    },
-    "oc": {
-      "cryptonightv8": {
-        "Power": "",
-        "Core": "",
-        "Memory": "",
-        "Fans": ""
-      },
-      "cryptonightv7": {
-        "Power": "",
-        "Core": "",
-        "Memory": "",
-        "Fans": ""
-      },
-      "cryptonightheavy": {
-        "Power": "",
-        "Core": "",
-        "Memory": "",
-        "Fans": ""
-      },
-      "cryptonightr": {
-        "Power": "",
-        "Core": "",
-        "Memory": "",
-        "Fans": ""
-      }
+    "NVIDIA3": {
+        "name": "NVIDIA3",
+        "delay": "1",
+        "prestart": [],
+        "commands": {
+            "cryptonight-v8": "",
+            "cryptonight-v7": "",
+            "cryptonight-heavy": "",
+            "cryptonight-heavyx": "",
+            "cryptonight-haven": "",
+            "cryptonight-saber": "",
+            "cryptonight-r": "",
+            "cryptonight-gpu": "",
+            "cryptonight-fast": "",
+            "cryptonight-xeq": "",
+            "randomsfx": "",
+            "randomv": "",
+            "randomx": ""
+        },
+        "difficulty": {
+            "cryptonight-v8": "",
+            "cryptonight-v7": "",
+            "cryptonight-heavy": "",
+            "cryptonight-heavyx": "",
+            "cryptonight-haven": "",
+            "cryptonight-saber": "",
+            "cryptonight-r": "",
+            "cryptonight-gpu": "",
+            "cryptonight-fast": "",
+            "cryptonight-xeq": "",
+            "randomsfx": "",
+            "randomv": "",
+            "randomx": ""
+        },
+        "naming": {
+            "cryptonight-v8": "cn/2",
+            "cryptonight-v7": "cn/1",
+            "cryptonight-heavy": "cn-heavy",
+            "cryptonight-heavyx": "cn/double",
+            "cryptonight-haven": "cn-heavy/xhv",
+            "cryptonight-saber": "cn-heavy/tube",
+            "cryptonight-r": "cn/r",
+            "cryptonight-gpu": "cn/gpu",
+            "cryptonight-fast": "cn/half",
+            "cryptonight-xeq": "cn/gpu",
+            "randomsfx": "rx/sfx",
+            "randomv": "rx/v",
+            "randomx": "rx/0"
+        },
+        "fee": {
+            "cryptonight-v8": 1,
+            "cryptonight-v7": 1,
+            "cryptonight-heavy": 1,
+            "cryptonight-heavyx": 1,
+            "cryptonight-haven": 1,
+            "cryptonight-saber": 1,
+            "cryptonight-r": 1,
+            "cryptonight-gpu": 1,
+            "cryptonight-fast": 1,
+            "cryptonight-xeq": 1,
+            "randomsfx": 1,
+            "randomv": 1,
+            "randomx": 1
+        }   
     }
-  },
-  "NVIDIA2": {
-    "name": "NVIDIA2",
-    "delay": "1",
-    "prestart": [],
-    "commands": {
-      "cryptonightv8": "",
-      "cryptonightv7": "",
-      "cryptonightheavy": "",
-      "cryptonightr": ""
-    },
-    "difficulty": {
-      "cryptonightv8": "",
-      "cryptonightv7": "",
-      "cryptonightheavy": "",
-      "cryptonightr": ""
-    },
-    "naming": {
-      "cryptonightv8": "cn/2",
-      "cryptonightv7": "cn/1",
-      "cryptonightheavy": "cn-heavy",
-      "cryptonightr": "cn/r"
-    },
-    "fee": {
-      "cryptonightv8": 1,
-      "cryptonightv7": 1,
-      "cryptonightheavy": 1,
-      "cryptonightr": 1
-    },
-    "oc": {
-      "cryptonightv8": {
-        "Power": "",
-        "Core": "",
-        "Memory": "",
-        "Fans": ""
-      },
-      "cryptonightv7": {
-        "Power": "",
-        "Core": "",
-        "Memory": "",
-        "Fans": ""
-      },
-      "cryptonightheavy": {
-        "Power": "",
-        "Core": "",
-        "Memory": "",
-        "Fans": ""
-      },
-      "cryptonightr": {
-        "Power": "",
-        "Core": "",
-        "Memory": "",
-        "Fans": ""
-      }
-    }
-  },
-  "NVIDIA3": {
-    "name": "NVIDIA3",
-    "delay": "1",
-    "prestart": [],
-    "commands": {
-      "cryptonightv8": "",
-      "cryptonightv7": "",
-      "cryptonightheavy": "",
-      "cryptonightr": ""
-    },
-    "difficulty": {
-      "cryptonightv8": "",
-      "cryptonightv7": "",
-      "cryptonightheavy": "",
-      "cryptonightr": ""
-    },
-    "naming": {
-      "cryptonightv8": "cn/2",
-      "cryptonightv7": "cn/1",
-      "cryptonightheavy": "cn-heavy",
-      "cryptonightr": "cn/r"
-    },
-    "fee": {
-      "cryptonightv8": 1,
-      "cryptonightv7": 1,
-      "cryptonightheavy": 1,
-      "cryptonightr": 1
-    },
-    "oc": {
-      "cryptonightv8": {
-        "Power": "",
-        "Core": "",
-        "Memory": "",
-        "Fans": ""
-      },
-      "cryptonightv7": {
-        "Power": "",
-        "Core": "",
-        "Memory": "",
-        "Fans": ""
-      },
-      "cryptonightheavy": {
-        "Power": "",
-        "Core": "",
-        "Memory": "",
-        "Fans": ""
-      },
-      "cryptonightr": {
-        "Power": "",
-        "Core": "",
-        "Memory": "",
-        "Fans": ""
-      }
-    }
-  }
 }

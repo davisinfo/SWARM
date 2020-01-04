@@ -1,70 +1,54 @@
 {
-  "name": "lolminer",
-  "AMD1": {
-    "name": "AMD1",
-    "delay": "1",
-    "prestart": [
-      "export GPU_MAX_HEAP_SIZE=100",
-      "export GPU_USE_SYNC_OBJECTS=1",
-      "export GPU_SINGLE_ALLOC_PERCENT=100",
-      "export GPU_MAX_ALLOC_PERCENT=100"
-    ],
-    "commands": {
-      "zhash": "--coin AUTO144_5",
-      "equihash192": "--coin AUTO192_7",
-      "beam": "--coin BEAM --tls 0",
-      "grincuckatoo31": "--coin GRIN-AT31"
-    },
-    "difficulty": {
-      "zhash": "",
-      "equihash192": "",
-      "beam": "",
-      "grincuckatoo31": ""
-    },
-    "naming": {
-      "zhash": "zhash",
-      "equihash192": "equihash192",
-      "beam": "beam",
-      "grincuckatoo31": "grincuckatoo31"
-    },
-    "fee": {
-      "zhash": 1,
-      "equihash192": 1,
-      "beam": 1
-    },
-    "oc": {
-      "zhash": {
-        "dpm": "",
-        "v": "",
-        "core": "",
-        "mem": "",
-        "mdpm": "",
-        "fans": ""
-      },
-      "equihash192": {
-        "dpm": "",
-        "v": "",
-        "core": "",
-        "mem": "",
-        "mdpm": "",
-        "fans": ""
-      },
-      "beam": {
-        "dpm": "",
-        "v": "",
-        "core": "",
-        "mem": "",
-        "mdpm": "",
-        "fans": ""
-      },
-      "grincuckatoo31": {
-        "dpm": "",
-        "v": "",
-        "core": "",
-        "mem": "",
-        "mdpm": "",
-        "fans": ""
-      }
+    "name": "lolminer",
+    "AMD1": {
+        "name": "AMD1",
+        "delay": "1",
+        "prestart": [
+            "export GPU_FORCE_64BIT_PTR=1",
+            "export GPU_MAX_HEAP_SIZE=100",
+            "export GPU_USE_SYNC_OBJECTS=1",
+            "export GPU_SINGLE_ALLOC_PERCENT=100",
+            "export GPU_MAX_ALLOC_PERCENT=100"
+        ],
+        "commands": {
+            "equihash_96/5": "",
+            "equihash_144/5": "",
+            "equihash_192/7": "",
+            "equihash_125/4": "",
+            "beamv2": "",
+            "cuckatoo31": "",
+            "cuckaroo29": "",
+            "cuckaroo29d": ""        
+        },
+        "difficulty": {
+            "equihash_96/5": "",
+            "equihash_144/5": "",
+            "equihash_192/7": "",
+            "equihash_125/4": "",
+            "beamv2": "",
+            "cuckatoo31": "",
+            "cuckaroo29": "",
+            "cuckaroo29d": ""
+        },
+        "naming": {
+            "equihash_96/5": "equihash_144/5",
+            "equihash_144/5": "equihash_144/5",
+            "equihash_192/7": "equihash_192/7",
+            "equihash_125/4": "equihash_125/4",
+            "beamv2": "beamv2",
+            "cuckatoo31": "cuckatoo31",
+            "cuckaroo29": "cuckaroo29",
+            "cuckaroo29d": "cuckaroo29d"        
+        },
+        "fee": {
+            "equihash_96/5": 1,
+            "equihash_144/5": 1,
+            "equihash_192/7": 1,
+            "equihash_125/4": 1,
+            "beamv2": 1,
+            "cuckatoo31": 1,
+            "cuckatoo29": 1,
+            "cuckaroo29d": 1
+        }
     }
-  }
 }

@@ -1,99 +1,100 @@
-$NVIDIATypes | ForEach-Object {
+$(vars).NVIDIATypes | ForEach-Object {
     
     $ConfigType = $_; $Num = $ConfigType -replace "NVIDIA", ""
 
     ##Miner Path Information
-    if ($nvidia.nbminer.$ConfigType) { $Path = "$($nvidia.nbminer.$ConfigType)" }
+    if ($(vars).nvidia.nbminer.$ConfigType) { $Path = "$($(vars).nvidia.nbminer.$ConfigType)" }
     else { $Path = "None" }
-    if ($nvidia.nbminer.uri) { $Uri = "$($nvidia.nbminer.uri)" }
+    if ($(vars).nvidia.nbminer.uri) { $Uri = "$($(vars).nvidia.nbminer.uri)" }
     else { $Uri = "None" }
-    if ($nvidia.nbminer.minername) { $MinerName = "$($nvidia.nbminer.minername)" }
+    if ($(vars).nvidia.nbminer.minername) { $MinerName = "$($(vars).nvidia.nbminer.minername)" }
     else { $MinerName = "None" }
 
     $User = "User$Num"; $Pass = "Pass$Num"; $Name = "nbminer-$Num"; $Port = "6200$Num";
 
     Switch ($Num) {
-        1 { $Get_Devices = $NVIDIADevices1 }
-        2 { $Get_Devices = $NVIDIADevices2 }
-        3 { $Get_Devices = $NVIDIADevices3 }
+        1 { $Get_Devices = $(vars).NVIDIADevices1; $Rig = $(arg).RigName1 }
+        2 { $Get_Devices = $(vars).NVIDIADevices2; $Rig = $(arg).RigName2 }
+        3 { $Get_Devices = $(vars).NVIDIADevices3; $Rig = $(arg).RigName3 }
     }
 
     ##Log Directory
-    $Log = Join-Path $dir "logs\$ConfigType.log"
+    $Log = Join-Path $($(vars).dir) "logs\$ConfigType.log"
 
     ##Parse -GPUDevices
     if ($Get_Devices -ne "none") { $Devices = $Get_Devices }
     else { $Devices = $Get_Devices }
 
     ##Get Configuration File
-    $GetConfig = "$dir\config\miners\nbminer.json"
-    try { $Config = Get-Content $GetConfig | ConvertFrom-Json }
-    catch { Write-Log "Warning: No config found at $GetConfig" }
+    $MinerConfig = $Global:config.miners.nbminer
 
     ##Export would be /path/to/[SWARMVERSION]/build/export##
-    $ExportDir = Join-Path $dir "build\export"
+    $ExportDir = Join-Path $($(vars).dir) "build\export"
+    $Miner_Dir = Join-Path ($(vars).dir) ((Split-Path $Path).replace(".",""))
 
     ##Prestart actions before miner launch
-    $BE = "/usr/lib/x86_64-linux-gnu/libcurl-compat.so.3.0.0"
     $Prestart = @()
-    $PreStart += "export LD_LIBRARY_PATH=$ExportDir"
-    $Config.$ConfigType.prestart | ForEach-Object { $Prestart += "$($_)" }
+    $PreStart += "export LD_LIBRARY_PATH=$ExportDir`:$Miner_Dir"
+    $MinerConfig.$ConfigType.prestart | ForEach-Object { $Prestart += "$($_)" }
 
-    if ($Coins -eq $true) { $Pools = $CoinPools }else { $Pools = $AlgoPools }
+    if ($(vars).Coins) { $Pools = $(vars).CoinPools } else { $Pools = $(vars).AlgoPools }
+
+    if ($(vars).Bancount -lt 1) { $(vars).Bancount = 5 }
 
     ##Build Miner Settings
-    $Config.$ConfigType.commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
+    $MinerConfig.$ConfigType.commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
 
         $MinerAlgo = $_
 
-        if ($MinerAlgo -in $Algorithm -and $Name -notin $global:Exclusions.$MinerAlgo.exclusions -and $ConfigType -notin $global:Exclusions.$MinerAlgo.exclusions -and $Name -notin $global:banhammer) {
-            $Stat = Get-Stat -Name "$($Name)_$($MinerAlgo)_hashrate"
-            $Check = $Global:Miner_HashTable | Where Miner -eq $Name | Where Algo -eq $MinerAlgo | Where Type -Eq $ConfigType
-
-            switch ($MinerAlgo) {
-                "daggerhashimoto" { $Stratum = "ethnh+tcp://"; $A = "ethash" }
-                "grincuckaroo29" { $Stratum = "stratum+tcp://"; $A = "cuckaroo" }
-                "grincuckatoo31" { $Stratum = "stratum+tcp://"; $A = "cuckatoo" }
-                "ethash" { $Stratum = "stratum+ssl://"; $A = "ethash" }
-                default { $Stratum = "stratum+tcp://" }
-            }
-            $Check = $Global:Miner_HashTable | Where Miner -eq $Name | Where Algo -eq $MinerAlgo | Where Type -Eq $ConfigType
-            if ($Check.RAW -ne "Bad") {
-                $Pools | Where-Object Algorithm -eq $MinerAlgo | ForEach-Object {
-                    if ($Config.$ConfigType.difficulty.$($_.Algorithm)) { $Diff = ",d=$($Config.$ConfigType.difficulty.$($_.Algorithm))" }
-                    [PSCustomObject]@{
-                        MName      = $Name
-                        Coin       = $Coins
-                        Delay      = $Config.$ConfigType.delay
-                        Fees       = $Config.$ConfigType.fee.$($_.Algorithm)
-                        Symbol     = "$($_.Symbol)"
-                        MinerName  = $MinerName
-                        Prestart   = $PreStart
-                        Type       = $ConfigType
-                        Path       = $Path
-                        Devices    = $Devices
-                        DeviceCall = "ccminer"
-                        Arguments  = "-a $A --api 0.0.0.0:$Port --url $Stratum$($_.Host):$($_.Port) --user $($_.$User) $($Config.$ConfigType.commands.$($_.Algorithm))"
-                        HashRates  = [PSCustomObject]@{$($_.Algorithm) = $Stat.Day }
-                        Quote      = if ($Stat.Day) { $Stat.Day * ($_.Price) }else { 0 }
-                        PowerX     = [PSCustomObject]@{$($_.Algorithm) = if ($Watts.$($_.Algorithm)."$($ConfigType)_Watts") { $Watts.$($_.Algorithm)."$($ConfigType)_Watts" }elseif ($Watts.default."$($ConfigType)_Watts") { $Watts.default."$($ConfigType)_Watts" }else { 0 } }
-                        ocpower    = if ($Config.$ConfigType.oc.$($_.Algorithm).power) { $Config.$ConfigType.oc.$($_.Algorithm).power }else { $OC."default_$($ConfigType)".Power }
-                        occore     = if ($Config.$ConfigType.oc.$($_.Algorithm).core) { $Config.$ConfigType.oc.$($_.Algorithm).core }else { $OC."default_$($ConfigType)".core }
-                        ocmem      = if ($Config.$ConfigType.oc.$($_.Algorithm).memory) { $Config.$ConfigType.oc.$($_.Algorithm).memory }else { $OC."default_$($ConfigType)".memory }
-                        ocfans     = if ($Config.$ConfigType.oc.$($_.Algorithm).fans) { $Config.$ConfigType.oc.$($_.Algorithm).fans }else { $OC."default_$($ConfigType)".fans }
-                        ethpill    = $Config.$ConfigType.oc.$($_.Algorithm).ethpill
-                        pilldelay  = $Config.$ConfigType.oc.$($_.Algorithm).pilldelay
-                        MinerPool  = "$($_.Name)"
-                        FullName   = "$($_.Mining)"
-                        API        = "nebutech"
-                        Port       = $Port
-                        Wallet     = "$($_.$User)"
-                        URI        = $Uri
-                        Server     = "localhost"
-                        Algo       = "$($_.Algorithm)"                         
-                        Log        = $Log
-                    }            
-                }
+        if ($MinerAlgo -in $(vars).Algorithm -and $Name -notin $global:Config.Pool_Algos.$MinerAlgo.exclusions -and $ConfigType -notin $global:Config.Pool_Algos.$MinerAlgo.exclusions -and $Name -notin $(vars).BanHammer) {
+            $StatAlgo = $MinerAlgo -replace "`_", "`-"
+            $Stat = Global:Get-Stat -Name "$($Name)_$($StatAlgo)_hashrate" 
+            if($(arg).Rej_Factor -eq "Yes" -and $Stat.Rejections -gt 0 -and $Stat.Rejection_Periods -ge 3){$HashStat = $Stat.Hour * (1 - ($Stat.Rejections * 0.01)) }
+            else{$HashStat = $Stat.Hour}
+            $Pools | Where-Object Algorithm -eq $MinerAlgo | ForEach-Object {
+                $SelName = $_.Name
+                switch ($MinerAlgo) {
+                    "ethash" {
+                        Switch ($SelName) {
+                            "nicehash" { $Stratum = "nicehash+tcp://"; $A = "ethash" }
+                            "whalesburg" { $Stratum = "stratum+ssl://"; $A = "ethash" }
+                        }
+                    }
+                    "cuckaroo29" { $Stratum = "nicehash+tcp://"; $A = "cuckarood" }
+                    "cuckaroo29d" { $Stratum = "nicehash+tcp://"; $A = "cuckarood" }
+                    "cuckatoo31" { $Stratum = "nicehash+tcp://"; $A = "cuckatoo" }
+                    default { $Stratum = "nicehash+tcp://" }
+                }        
+                if ($MinerConfig.$ConfigType.difficulty.$($_.Algorithm)) { $Diff = ",d=$($MinerConfig.$ConfigType.difficulty.$($_.Algorithm))" }
+                [PSCustomObject]@{
+                    MName      = $Name
+                    Coin       = $(vars).Coins
+                    Delay      = $MinerConfig.$ConfigType.delay
+                    Fees       = $MinerConfig.$ConfigType.fee.$($_.Algorithm)
+                    Symbol     = "$($_.Symbol)"
+                    MinerName  = $MinerName
+                    Prestart   = $PreStart
+                    Type       = $ConfigType
+                    Path       = $Path
+                    Devices    = $Devices
+                    Stratum    = "$($_.Protocol)://$($_.Pool_Host):$($_.Port)" 
+                    Version    = "$($(vars).nvidia.nbminer.version)"
+                    DeviceCall = "ccminer"
+                    Arguments  = "-a $A --api 0.0.0.0:$Port --no-nvml --log-file `'$log`' --url $Stratum$($_.Pool_Host):$($_.Port) --user $($_.$User) $($MinerConfig.$ConfigType.commands.$($_.Algorithm))"
+                    HashRates  = $Stat.Hour
+                    Quote      = if ($HashStat) { $HashStat * ($_.Price) }else { 0 }
+                    Rejections = $Stat.Rejections
+                    Power      = if ($(vars).Watts.$($_.Algorithm)."$($ConfigType)_Watts") { $(vars).Watts.$($_.Algorithm)."$($ConfigType)_Watts" }elseif ($(vars).Watts.default."$($ConfigType)_Watts") { $(vars).Watts.default."$($ConfigType)_Watts" }else { 0 } 
+                    MinerPool  = "$($_.Name)"
+                    API        = "nebutech"
+                    Port       = $Port
+                    Worker     = $Rig
+                    Wallet     = "$($_.$User)"
+                    URI        = $Uri
+                    Server     = "localhost"
+                    Algo       = "$($_.Algorithm)"                         
+                    Log        = "miner_generated"
+                }            
             }
         }
     }

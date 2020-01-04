@@ -1,107 +1,93 @@
 {
-  "name": "teamredminer",
-  "AMD1": {
-    "name": "AMD1",
-    "delay": "1",
-    "prestart": [
-      "export GPU_MAX_HEAP_SIZE=100",
-      "export GPU_USE_SYNC_OBJECTS=1",
-      "export GPU_SINGLE_ALLOC_PERCENT=100",
-      "export GPU_MAX_ALLOC_PERCENT=100"
-    ],
-    "commands": {
-      "phi2": "",
-      "lyra2z": "",
-      "cryptonightv8": "",
-      "lyra2re": "",
-      "lyra2rev3": "",
-      "lyra2v3": "",
-      "cryptonightr": ""
-    },
-    "difficulty": {
-      "phi2": "",
-      "lyra2z": "",
-      "cryptonightv8": "",
-      "lyra2re": "",
-      "lyra2rev3": "",
-      "lyra2v3": "",
-      "cryptonightr": ""
-    },
-    "naming": {
-      "phi2": "phi2",
-      "lyra2z": "lyra2z",
-      "cryptonightv8": "cnv8",
-      "lyra2re": "lyra2z",
-      "lyra2rev3": "lyra2rev3",
-      "lyra2v3": "lyra2rev3",
-      "cryptonightr": "cnr"
-    },
-    "fee": {
-      "phi2": 3,
-      "lyra2z": 3,
-      "cryptonightv8": 2.5,
-      "lyra2re": 3,
-      "lyra2rev3": 2.5,
-      "lyra2v3": 2.5,
-      "cryptonightr": 2.5
-    },
-    "oc": {
-      "phi2": {
-        "dpm": "",
-        "v": "",
-        "core": "",
-        "mem": "300;750 300;750 300;750 300;750 300;750 300;750",
-        "mdpm": "",
-        "fans": ""
-      },
-      "lyra2z": {
-        "dpm": "",
-        "v": "825 825 825 825 825 825",
-        "core": "1150 1150 1150 1150 1150 1150",
-        "mem": "300;750 300;750 300;750 300;750 300;750 300;750",
-        "mdpm": "",
-        "fans": ""
-      },
-      "cryptonightv8": {
-        "dpm": "",
-        "v": "900 900 900 900 900 900",
-        "core": "1250 1250 1250 1250 1250 1250",
-        "mem": "2050;875 2125;875 2075;875 2125;875 2125;875 2125;875",
-        "mdpm": "",
-        "fans": ""
-      },
-      "lyra2re": {
-        "dpm": "",
-        "v": "825 825 825 825 825 825",
-        "core": "1150 1150 1150 1150 1150 1150",
-        "mem": "300;750 300;750 300;750 300;750 300;750 300;750",
-        "mdpm": "",
-        "fans": ""
-      },
-      "lyra2rev3": {
-        "dpm": "",
-        "v": "825 825 825 825 825 825",
-        "core": "1150 1150 1150 1150 1150 1150",
-        "mem": "300;750 300;750 300;750 300;750 300;750 300;750",
-        "mdpm": "",
-        "fans": ""
-      },
-      "lyra2v3": {
-        "dpm": "",
-        "v": "825 825 825 825 825 825",
-        "core": "1150 1150 1150 1150 1150 1150",
-        "mem": "300;750 300;750 300;750 300;750 300;750 300;750",
-        "mdpm": "",
-        "fans": ""
-      },
-      "cryptonightr": {
-        "dpm": "",
-        "v": "900 900 900 900 900 900",
-        "core": "1250 1250 1250 1250 1250 1250",
-        "mem": "2050;875 2125;875 2075;875 2125;875 2125;875 2125;875",
-        "mdpm": "",
-        "fans": ""
-      }
+    "name": "teamredminer",
+    "AMD1": {
+        "name": "AMD1",
+        "delay": "1",
+        "prestart": [
+            "export GPU_MAX_HEAP_SIZE=100",
+            "export GPU_USE_SYNC_OBJECTS=1",
+            "export GPU_SINGLE_ALLOC_PERCENT=100",
+            "export GPU_MAX_ALLOC_PERCENT=100"
+        ],
+        "commands": {
+            "phi2": "",
+            "phi2-lux": "",
+            "cryptonight-v8": "",
+            "lyra2z": "",
+            "lyra2v3": "",
+            "cryptonight-r": "",
+            "cryptonight-heavyx": "",
+            "cryptonight-saber": "",
+            "x16r" : "",
+            "x16rv2" : "",
+            "x16s" : "",
+            "x16rt" : "",
+            "veil": "",
+            "mtp": "",
+            "cuckaroo29d": "",
+            "cuckatoo31": "",
+            "chukwa512": "",
+            "ethash" : ""
+        },
+        "difficulty": {
+            "phi2": "",
+            "phi2-lux": "",
+            "cryptonight-v8": "",
+            "lyra2z": "",
+            "lyra2v3": "",
+            "cryptonight-r": "",
+            "cryptonight-heavyx": "",
+            "cryptonight-saber": "",
+            "x16r" : "",
+            "x16rv2" : "",
+            "x16s" : "",
+            "x16rt" : "",
+            "veil": "",
+            "mtp": "",
+            "cuckaroo29d": "",
+            "cuckatoo31": "",
+            "chukwa512": "",
+            "ethash": ""
+        },
+        "naming": {
+            "phi2": "phi2",
+            "phi2-lux": "phi2",
+            "cryptonight-v8": "cnv8",
+            "lyra2z": "lyra2z",
+            "lyra2v3": "lyra2rev3",
+            "cryptonight-r": "cnr",
+            "cryptonight-heavyx": "cnv8_dbl",
+            "cryptonight-saber": "cn_saber",
+            "x16r" : "x16r",
+            "x16rv2" : "x16rv2",
+            "x16s" : "x16s",
+            "x16rt" : "x16rt",
+            "veil": "x16rt",
+            "mtp": "mtp",
+            "cuckaroo29d": "cuckarood29_grin",
+            "cuckatoo31": "cuckatoo31_grin",
+            "chukwa512": "trtl_chukwa",
+            "ethash": "ethash"
+        },
+        "fee": {
+            "phi2": 3,
+            "phi2-lux": 3,
+            "cryptonight-v8": 2.5,
+            "lyra2z": 3,
+            "lyra2v3": 2.5,
+            "cryptonight-r": 2.5,
+            "cryptonight-heavyx": 2.5,
+            "cryptonight-saber": 2.5,
+            "x16r" : 2.5,
+            "x16rv2" : 2.5,
+            "x16s" : 2.5,
+            "x16rt" : 2.5,
+            "veil": 2.5,
+            "mtp": 2.5,
+            "cuckaroo29d": 2.5,
+            "cuckatoo31": 2.5,
+            "chukwa512": 2.5,
+            "ethash": 2.5
+        }
     }
-  }
 }

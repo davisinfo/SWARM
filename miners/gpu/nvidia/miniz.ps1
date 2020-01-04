@@ -1,25 +1,25 @@
-$NVIDIATypes | ForEach-Object {
+$(vars).NVIDIATypes | ForEach-Object {
     
     $ConfigType = $_; $Num = $ConfigType -replace "NVIDIA", ""
 
     ##Miner Path Information
-    if ($nvidia.miniz.$ConfigType) { $Path = "$($nvidia.miniz.$ConfigType)" }
+    if ($(vars).nvidia.miniz.$ConfigType) { $Path = "$($(vars).nvidia.miniz.$ConfigType)" }
     else { $Path = "None" }
-    if ($nvidia.miniz.uri) { $Uri = "$($nvidia.miniz.uri)" }
+    if ($(vars).nvidia.miniz.uri) { $Uri = "$($(vars).nvidia.miniz.uri)" }
     else { $Uri = "None" }
-    if ($nvidia.miniz.minername) { $MinerName = "$($nvidia.miniz.minername)" }
+    if ($(vars).nvidia.miniz.minername) { $MinerName = "$($(vars).nvidia.miniz.minername)" }
     else { $MinerName = "None" }
 
     $User = "User$Num"; $Pass = "Pass$Num"; $Name = "miniz-$Num"; $Port = "6000$Num";
 
     Switch ($Num) {
-        1 { $Get_Devices = $NVIDIADevices1 }
-        2 { $Get_Devices = $NVIDIADevices2 }
-        3 { $Get_Devices = $NVIDIADevices3 }
+        1 { $Get_Devices = $(vars).NVIDIADevices1; $Rig = $(arg).RigName1 }
+        2 { $Get_Devices = $(vars).NVIDIADevices2; $Rig = $(arg).RigName2 }
+        3 { $Get_Devices = $(vars).NVIDIADevices3; $Rig = $(arg).RigName3 }
     }
 
     ##Log Directory
-    $Log = Join-Path $dir "logs\$ConfigType.log"
+    $Log = Join-Path $($(vars).dir) "logs\$ConfigType.log"
 
     ##Parse -GPUDevices
     if ($Get_Devices -ne "none") {
@@ -30,64 +30,73 @@ $NVIDIATypes | ForEach-Object {
     else { $Devices = $Get_Devices }
 
     ##Get Configuration File
-    $GetConfig = "$dir\config\miners\miniz.json"
-    try { $Config = Get-Content $GetConfig | ConvertFrom-Json }
-    catch { Write-Log "Warning: No config found at $GetConfig" }
+    $MinerConfig = $Global:config.miners.miniz
 
     ##Export would be /path/to/[SWARMVERSION]/build/export##
-    $ExportDir = Join-Path $dir "build\export"
+    $ExportDir = Join-Path $($(vars).dir) "build\export"
+    $Miner_Dir = Join-Path ($(vars).dir) ((Split-Path $Path).replace(".",""))
 
     ##Prestart actions before miner launch
-    $BE = "/usr/lib/x86_64-linux-gnu/libcurl-compat.so.3.0.0"
     $Prestart = @()
-    $PreStart += "export LD_LIBRARY_PATH=$ExportDir"
-    $Config.$ConfigType.prestart | ForEach-Object { $Prestart += "$($_)" }
+    $PreStart += "export LD_LIBRARY_PATH=$ExportDir`:$Miner_Dir"
+    $MinerConfig.$ConfigType.prestart | ForEach-Object { $Prestart += "$($_)" }
 
-    if ($Coins -eq $true) { $Pools = $CoinPools }else { $Pools = $AlgoPools }
+    if ($(vars).Coins) { $Pools = $(vars).CoinPools } else { $Pools = $(vars).AlgoPools }
+
+    if ($(vars).Bancount -lt 1) { $(vars).Bancount = 5 }
 
     ##Build Miner Settings
-    $Config.$ConfigType.commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
+    $MinerConfig.$ConfigType.commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
 
         $MinerAlgo = $_
 
-        if ($MinerAlgo -in $Algorithm -and $Name -notin $global:Exclusions.$MinerAlgo.exclusions -and $ConfigType -notin $global:Exclusions.$MinerAlgo.exclusions -and $Name -notin $global:banhammer) {
-            $Stat = Get-Stat -Name "$($Name)_$($MinerAlgo)_hashrate"
-            $Check = $Global:Miner_HashTable | Where Miner -eq $Name | Where Algo -eq $MinerAlgo | Where Type -Eq $ConfigType
-
-            if ($Check.RAW -ne "Bad") {
-                $Pools | Where-Object Algorithm -eq $MinerAlgo | ForEach-Object {
-                    if ($Config.$ConfigType.difficulty.$($_.Algorithm)) { $Diff = ",d=$($Config.$ConfigType.difficulty.$($_.Algorithm))" }
-                    [PSCustomObject]@{
-                        MName      = $Name
-                        Coin       = $Coins
-                        Delay      = $Config.$ConfigType.delay
-                        Fees       = $Config.$ConfigType.fee.$($_.Algorithm)
-                        Symbol     = "$($_.Symbol)"
-                        MinerName  = $MinerName
-                        Prestart   = $PreStart
-                        Type       = $ConfigType
-                        Path       = $Path
-                        Devices    = $Devices
-                        DeviceCall = "miniz"
-                        Arguments  = "--telemetry 0.0.0.0:$Port --server $($_.Host) --port $($_.Port) --user $($_.$User) --pass $($_.$Pass)$($Diff) --logfile=`'$log`' $($Config.$ConfigType.commands.$($_.Algorithm))"
-                        HashRates  = [PSCustomObject]@{$($_.Algorithm) = $Stat.Day }
-                        Quote      = if ($Stat.Day) { $Stat.Day * ($_.Price) }else { 0 }
-                        PowerX     = [PSCustomObject]@{$($_.Algorithm) = if ($Watts.$($_.Algorithm)."$($ConfigType)_Watts") { $Watts.$($_.Algorithm)."$($ConfigType)_Watts" }elseif ($Watts.default."$($ConfigType)_Watts") { $Watts.default."$($ConfigType)_Watts" }else { 0 } }
-                        ocpower    = if ($Config.$ConfigType.oc.$($_.Algorithm).power) { $Config.$ConfigType.oc.$($_.Algorithm).power }else { $OC."default_$($ConfigType)".Power }
-                        occore     = if ($Config.$ConfigType.oc.$($_.Algorithm).core) { $Config.$ConfigType.oc.$($_.Algorithm).core }else { $OC."default_$($ConfigType)".core }
-                        ocmem      = if ($Config.$ConfigType.oc.$($_.Algorithm).memory) { $Config.$ConfigType.oc.$($_.Algorithm).memory }else { $OC."default_$($ConfigType)".memory }
-                        ocfans     = if ($Config.$ConfigType.oc.$($_.Algorithm).fans) { $Config.$ConfigType.oc.$($_.Algorithm).fans }else { $OC."default_$($ConfigType)".fans }
-                        MinerPool  = "$($_.Name)"
-                        FullName   = "$($_.Mining)"
-                        API        = "miniz"
-                        Port       = $Port
-                        Wallet     = "$($_.$User)"
-                        URI        = $Uri
-                        Server     = "localhost"
-                        Algo       = "$($_.Algorithm)"                         
-                        Log        = "miner_generated"
-                    }            
+        if ($MinerAlgo -in $(vars).Algorithm -and $Name -notin $global:Config.Pool_Algos.$MinerAlgo.exclusions -and $ConfigType -notin $global:Config.Pool_Algos.$MinerAlgo.exclusions -and $Name -notin $(vars).BanHammer) {
+            $StatAlgo = $MinerAlgo -replace "`_", "`-"
+            $Stat = Global:Get-Stat -Name "$($Name)_$($StatAlgo)_hashrate" 
+            if($(arg).Rej_Factor -eq "Yes" -and $Stat.Rejections -gt 0 -and $Stat.Rejection_Periods -ge 3){$HashStat = $Stat.Hour * (1 - ($Stat.Rejections * 0.01)) }
+            else{$HashStat = $Stat.Hour}
+            $Pools | Where-Object Algorithm -eq $MinerAlgo | ForEach-Object {
+                $SelAlgo = $_.Algorithm
+                switch ($SelAlgo) {
+                    "equihash_96/5" { $AddArgs = "--par=96,5 --pers auto " }
+                    "equihash_144/5" { $AddArgs = "--par=144,5 --pers auto " }
+                    "equihash_210/9" { $AddArgs = "--par=210,9 --pers auto " }
+                    "equihash_200/9" { $AddArgs = "--par=200,9 --pers auto " } 
+                    "equihash_192/7" { $AddArgs = "--par=192,7 --pers auto " }       
+                    "equihash_125/4" { $AddArgs = "--par=125,4 --pers auto " }       
+                    "equihash_150/5" { $AddArgs = "--par=150,5 --pers auto " } 
+                    "beamv2" { $AddArgs = "--par=150,5,3 --pers auto " }   
                 }
+                if ($MinerConfig.$ConfigType.difficulty.$($_.Algorithm)) { $Diff = ",d=$($MinerConfig.$ConfigType.difficulty.$($_.Algorithm))" }
+                [PSCustomObject]@{
+                    MName      = $Name
+                    Coin       = $(vars).Coins
+                    Delay      = $MinerConfig.$ConfigType.delay
+                    Fees       = $MinerConfig.$ConfigType.fee.$($_.Algorithm)
+                    Symbol     = "$($_.Symbol)"
+                    MinerName  = $MinerName
+                    Prestart   = $PreStart
+                    Type       = $ConfigType
+                    Path       = $Path
+                    Devices    = $Devices
+                    Stratum    = "$($_.Protocol)://$($_.Pool_Host):$($_.Port)" 
+                    Version    = "$($(vars).nvidia.miniz.version)"
+                    DeviceCall = "miniz"
+                    Arguments  = "--telemetry 0.0.0.0:$Port --server $($_.Pool_Host) --port $($_.Port) $AddArgs--user $($_.$User) --pass $($_.$Pass)$($Diff) --logfile=`'$log`' $($MinerConfig.$ConfigType.commands.$($_.Algorithm))"
+                    HashRates  = $Stat.Hour
+                    Quote      = if ($HashStat) { $HashStat * ($_.Price) }else { 0 }
+                    Rejections = $Stat.Rejections
+                    Power      = if ($(vars).Watts.$($_.Algorithm)."$($ConfigType)_Watts") { $(vars).Watts.$($_.Algorithm)."$($ConfigType)_Watts" }elseif ($(vars).Watts.default."$($ConfigType)_Watts") { $(vars).Watts.default."$($ConfigType)_Watts" }else { 0 } 
+                    MinerPool  = "$($_.Name)"
+                    API        = "miniz"
+                    Port       = $Port
+                    Worker     = $Rig
+                    Wallet     = "$($_.$User)"
+                    URI        = $Uri
+                    Server     = "localhost"
+                    Algo       = "$($_.Algorithm)"                         
+                    Log        = "miner_generated"
+                }            
             }
         }
     }
