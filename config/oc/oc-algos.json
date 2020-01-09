@@ -543,6 +543,40 @@
             "mem": "2100;850 2075;850 2075;850 2075;850 2125;850 2125;900"
         }
     },
+    "cryptonight-heavyx": {
+        "NVIDIA1": {
+            "Fans": "",
+            "ETHPill": "",
+            "Core": "",
+            "Memory": "",
+            "Power": "",
+            "PillDelay": ""
+        },
+        "NVIDIA2": {
+            "Fans": "",
+            "ETHPill": "",
+            "Core": "",
+            "Memory": "",
+            "Power": "",
+            "PillDelay": ""
+        },
+        "NVIDIA3": {
+            "Fans": "",
+            "ETHPill": "",
+            "Core": "",
+            "Memory": "",
+            "Power": "",
+            "PillDelay": ""
+        },
+        "AMD1": {
+            "fans": "",
+            "v": "900 900 900 900 900 900",
+            "dpm": "",
+            "core": "1225 1200 1250 1250 1250 1250",
+            "mdpm": "",
+            "mem": "2100;850 2075;850 2075;850 2075;850 2125;850 2125;900"
+        }
+    },
     "cryptonight-lite": {
         "NVIDIA1": {
             "Fans": "",
@@ -578,6 +612,40 @@
         }
     },
     "cryptonight-r": {
+        "NVIDIA1": {
+            "Fans": "",
+            "ETHPill": "",
+            "Core": "",
+            "Memory": "",
+            "Power": "",
+            "PillDelay": ""
+        },
+        "NVIDIA2": {
+            "Fans": "",
+            "ETHPill": "",
+            "Core": "",
+            "Memory": "",
+            "Power": "",
+            "PillDelay": ""
+        },
+        "NVIDIA3": {
+            "Fans": "",
+            "ETHPill": "",
+            "Core": "",
+            "Memory": "",
+            "Power": "",
+            "PillDelay": ""
+        },
+        "AMD1": {
+            "fans": "",
+            "v": "900 900 900 900 900 900",
+            "dpm": "",
+            "core": "1225 1250 1250 1250 1250 1250",
+            "mdpm": "",
+            "mem": "2100;850 2075;850 2075;850 2075;850 2125;850 2125;900"
+        }
+    },
+    "cryptonight-saber": {
         "NVIDIA1": {
             "Fans": "",
             "ETHPill": "",
@@ -1251,7 +1319,7 @@
             "fans": "",
             "v": "",
             "dpm": "",
-            "mem": "",
+            "mem": "650;750 650;750 650;750 650;750 650;750 650;750",
             "mdpm": "",
             "core": ""
         }
@@ -1526,6 +1594,40 @@
             "mem": "",
             "mdpm": "",
             "core": ""
+        }
+    },
+    "randomx": {
+        "NVIDIA1": {
+            "Fans": "",
+            "ETHPill": "",
+            "Core": "",
+            "Memory": "",
+            "Power": "",
+            "PillDelay": ""
+        },
+        "NVIDIA2": {
+            "Fans": "",
+            "ETHPill": "",
+            "Core": "",
+            "Memory": "",
+            "Power": "",
+            "PillDelay": ""
+        },
+        "NVIDIA3": {
+            "Fans": "",
+            "ETHPill": "",
+            "Core": "",
+            "Memory": "",
+            "Power": "",
+            "PillDelay": ""
+        },
+        "AMD1": {
+            "fans": "",
+            "v": "900 900 900 900 900 900",
+            "dpm": "",
+            "core": "1225 1200 1250 1250 1250 1250",
+            "mdpm": "",
+            "mem": "2100;850 2075;850 2075;850 2075;850 2125;850 2125;900"
         }
     },
     "lyra2re": {
