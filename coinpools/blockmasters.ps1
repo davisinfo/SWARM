@@ -71,10 +71,12 @@ if ($Name -in $(arg).PoolName) {
         $Blockpool_Algo = $block_sorted.$_.algo.ToLower()
         $Blockpool_Symbol = $block_sorted.$_.sym.ToUpper()
         $StatAlgo = $Blockpool_Symbol -replace "`_", "`-" 
-        $Divisor = 1000000 * [Double]$(vars).divisortable.blockmasters.$Blockpool_Algo
-        $Blockpool_Fees = [Double]$(vars).FeeTable.blockmasters.$Blockpool_Algo
-        $Blockpool_Estimate = [Double]$block_sorted.$_.estimate * 0.001
-        $Stat = Global:Set-Stat -Name "$($Name)_$($StatAlgo)_coin_profit" -Value ([double]$Blockpool_Estimate / $Divisor * (1 - ($Blockpool_fees / 100))) -Shuffle $block_sorted.$_.Shuffle     
+        $Divisor = 1000000 * [Convert]::ToDouble($(vars).divisortable.blockmasters.$Blockpool_Algo)
+        $Blockpool_Fees = [Convert]::ToDouble($(vars).FeeTable.blockmasters.$Blockpool_Algo)
+        $Blockpool_Estimate = [Convert]::ToDouble($block_sorted.$_.estimate * 0.001)
+        $StatPath = "$($Name)_$($StatAlgo)_coin_profit"
+        $Hashrate = [convert]::ToDouble($block_sorted.$_.hashrate)
+        $Stat = Global:Set-Stat -Name $StatPath -HashRate $HashRate -Value ($Blockpool_Estimate / $Divisor * (1 - ($Blockpool_fees / 100)))
         $Level = $Stat.$($(arg).Stat_Algo)
         $block_sorted.$_ | Add-Member "Level" $Level 
     }

@@ -165,9 +165,15 @@ function Global:start-update {
                                 if ($ChangeFile -eq "xmrig.json") {
                                     $Data | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | foreach {
                                         if ($_ -ne "name") {
+                                        
+                                            $Data.$_.commands = $Data.$_.commands | Select-Object -ExcludeProperty "randomv","randomsfx"
+                                            $Data.$_.difficulty = $Data.$_.difficulty | Select-Object -ExcludeProperty "randomv","randomsfx"
+                                            $Data.$_.naming = $Data.$_.naming | Select-Object -ExcludeProperty "randomv","randomsfx"
+                                            $Data.$_.fee = $Data.$_.fee | Select-Object -ExcludeProperty "randomv","randomsfx"
+
                                             $Data.$_.commands | Add-Member "randomx" "" -ErrorAction SilentlyContinue
                                             $Data.$_.difficulty | Add-Member "randomx" "" -ErrorAction SilentlyContinue 
-                                            $Data.$_.naming | Add-Member "randomx" "randomx" -ErrorAction SilentlyContinue
+                                            $Data.$_.naming | Add-Member "randomx" "rx/0" -ErrorAction SilentlyContinue -Force
                                             $Data.$_.fee | Add-Member "randomx" 1 -ErrorAction SilentlyContinue
 
                                             $Data.$_.commands | Add-Member "cryptonight-saber" "" -ErrorAction SilentlyContinue
@@ -180,10 +186,35 @@ function Global:start-update {
                                             $Data.$_.naming | Add-Member "cryptonight-gpu" "cn/gpu" -ErrorAction SilentlyContinue
                                             $Data.$_.fee | Add-Member "cryptonight-gpu" 1 -ErrorAction SilentlyContinue
 
+                                            $Data.$_.commands | Add-Member "cryptonight-haven" "" -ErrorAction SilentlyContinue
+                                            $Data.$_.difficulty | Add-Member "cryptonight-haven" "" -ErrorAction SilentlyContinue 
+                                            $Data.$_.naming | Add-Member "cryptonight-haven" "cn-heavy/xhv" -ErrorAction SilentlyContinue -Force
+                                            $Data.$_.fee | Add-Member "cryptonight-haven" 1 -ErrorAction SilentlyContinue
+
                                             $Data.$_.commands | Add-Member "cryptonight-heavyx" "" -ErrorAction SilentlyContinue
                                             $Data.$_.difficulty | Add-Member "cryptonight-heavyx" "" -ErrorAction SilentlyContinue 
-                                            $Data.$_.naming | Add-Member "cryptonight-heavyx" "cn-heavy/xhv" -ErrorAction SilentlyContinue
+                                            $Data.$_.naming | Add-Member "cryptonight-heavyx" "cn/double" -ErrorAction SilentlyContinue -Force
                                             $Data.$_.fee | Add-Member "cryptonight-heavyx" 1 -ErrorAction SilentlyContinue
+
+                                            $Data.$_.commands | Add-Member "cryptonight-fast" "" -ErrorAction SilentlyContinue
+                                            $Data.$_.difficulty | Add-Member "cryptonight-fast" "" -ErrorAction SilentlyContinue 
+                                            $Data.$_.naming | Add-Member "cryptonight-fast" "cn/half" -ErrorAction SilentlyContinue
+                                            $Data.$_.fee | Add-Member "cryptonight-fast" 1 -ErrorAction SilentlyContinue
+
+                                            $Data.$_.commands | Add-Member "cryptonight-xeq" "" -ErrorAction SilentlyContinue
+                                            $Data.$_.difficulty | Add-Member "cryptonight-xeq" "" -ErrorAction SilentlyContinue 
+                                            $Data.$_.naming | Add-Member "cryptonight-xeq" "cn/gpu" -ErrorAction SilentlyContinue
+                                            $Data.$_.fee | Add-Member "cryptonight-xeq" 1 -ErrorAction SilentlyContinue
+
+                                            $Data.$_.commands | Add-Member "random-arq" "" -ErrorAction SilentlyContinue
+                                            $Data.$_.difficulty | Add-Member "random-arq" "" -ErrorAction SilentlyContinue 
+                                            $Data.$_.naming | Add-Member "random-arq" "rx/arq" -ErrorAction SilentlyContinue
+                                            $Data.$_.fee | Add-Member "random-arq" 1 -ErrorAction SilentlyContinue
+
+                                            $Data.$_.commands | Add-Member "random-sfx" "" -ErrorAction SilentlyContinue
+                                            $Data.$_.difficulty | Add-Member "random-sfx" "" -ErrorAction SilentlyContinue 
+                                            $Data.$_.naming | Add-Member "random-sfx" "rx/sfx" -ErrorAction SilentlyContinue
+                                            $Data.$_.fee | Add-Member "random-sfx" 1 -ErrorAction SilentlyContinue
                                         }
                                     }
                                 }
@@ -191,9 +222,17 @@ function Global:start-update {
                                 if ($ChangeFile -eq "xmrig-cpu.json") {
                                     $Data | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | foreach {
                                         if ($_ -ne "name") {
+
+                                            $Data.$_.prestart = @();
+
+                                            $Data.$_.commands = $Data.$_.commands | Select-Object -ExcludeProperty "randomv","randomsfx"
+                                            $Data.$_.difficulty = $Data.$_.difficulty | Select-Object -ExcludeProperty "randomv","randomsfx"
+                                            $Data.$_.naming = $Data.$_.naming | Select-Object -ExcludeProperty "randomv","randomsfx"
+                                            $Data.$_.fee = $Data.$_.fee | Select-Object -ExcludeProperty "randomv","randomsfx"
+
                                             $Data.$_.commands | Add-Member "randomx" "" -ErrorAction SilentlyContinue
                                             $Data.$_.difficulty | Add-Member "randomx" "" -ErrorAction SilentlyContinue 
-                                            $Data.$_.naming | Add-Member "randomx" "randomx" -ErrorAction SilentlyContinue
+                                            $Data.$_.naming | Add-Member "randomx" "rx/0" -ErrorAction SilentlyContinue -Force
                                             $Data.$_.fee | Add-Member "randomx" 1 -ErrorAction SilentlyContinue
 
                                             $Data.$_.commands | Add-Member "cryptonight-saber" "" -ErrorAction SilentlyContinue
@@ -201,10 +240,133 @@ function Global:start-update {
                                             $Data.$_.naming | Add-Member "cryptonight-saber" "cn-heavy/tube" -ErrorAction SilentlyContinue
                                             $Data.$_.fee | Add-Member "cryptonight-saber" 1 -ErrorAction SilentlyContinue
 
+                                            $Data.$_.commands | Add-Member "cryptonight-gpu" "" -ErrorAction SilentlyContinue
+                                            $Data.$_.difficulty | Add-Member "cryptonight-gpu" "" -ErrorAction SilentlyContinue 
+                                            $Data.$_.naming | Add-Member "cryptonight-gpu" "cn/gpu" -ErrorAction SilentlyContinue
+                                            $Data.$_.fee | Add-Member "cryptonight-gpu" 1 -ErrorAction SilentlyContinue
+
+                                            $Data.$_.commands | Add-Member "cryptonight-haven" "" -ErrorAction SilentlyContinue
+                                            $Data.$_.difficulty | Add-Member "cryptonight-haven" "" -ErrorAction SilentlyContinue 
+                                            $Data.$_.naming | Add-Member "cryptonight-haven" "cn-heavy/xhv" -ErrorAction SilentlyContinue -Force
+                                            $Data.$_.fee | Add-Member "cryptonight-haven" 1 -ErrorAction SilentlyContinue
+
                                             $Data.$_.commands | Add-Member "cryptonight-heavyx" "" -ErrorAction SilentlyContinue
                                             $Data.$_.difficulty | Add-Member "cryptonight-heavyx" "" -ErrorAction SilentlyContinue 
-                                            $Data.$_.naming | Add-Member "cryptonight-heavyx" "cn-heavy/xhv" -ErrorAction SilentlyContinue
+                                            $Data.$_.naming | Add-Member "cryptonight-heavyx" "cn/double" -ErrorAction SilentlyContinue -Force
                                             $Data.$_.fee | Add-Member "cryptonight-heavyx" 1 -ErrorAction SilentlyContinue
+
+                                            $Data.$_.commands | Add-Member "cryptonight-fast" "" -ErrorAction SilentlyContinue
+                                            $Data.$_.difficulty | Add-Member "cryptonight-fast" "" -ErrorAction SilentlyContinue 
+                                            $Data.$_.naming | Add-Member "cryptonight-fast" "cn/half" -ErrorAction SilentlyContinue
+                                            $Data.$_.fee | Add-Member "cryptonight-fast" 1 -ErrorAction SilentlyContinue
+
+                                            $Data.$_.commands | Add-Member "cryptonight-xeq" "" -ErrorAction SilentlyContinue
+                                            $Data.$_.difficulty | Add-Member "cryptonight-xeq" "" -ErrorAction SilentlyContinue 
+                                            $Data.$_.naming | Add-Member "cryptonight-xeq" "cn/gpu" -ErrorAction SilentlyContinue
+                                            $Data.$_.fee | Add-Member "cryptonight-xeq" 1 -ErrorAction SilentlyContinue
+
+                                            $Data.$_.commands | Add-Member "cryptonight-haven" "" -ErrorAction SilentlyContinue
+                                            $Data.$_.difficulty | Add-Member "cryptonight-haven" "" -ErrorAction SilentlyContinue 
+                                            $Data.$_.naming | Add-Member "cryptonight-haven" "cn/gpu" -ErrorAction SilentlyContinue
+                                            $Data.$_.fee | Add-Member "cryptonight-xeq" 1 -ErrorAction SilentlyContinue
+
+                                            $Data.$_.commands | Add-Member "random-arq" "" -ErrorAction SilentlyContinue
+                                            $Data.$_.difficulty | Add-Member "random-arq" "" -ErrorAction SilentlyContinue 
+                                            $Data.$_.naming | Add-Member "random-arq" "rx/arq" -ErrorAction SilentlyContinue
+                                            $Data.$_.fee | Add-Member "random-arq" 1 -ErrorAction SilentlyContinue
+
+                                            $Data.$_.commands | Add-Member "random-sfx" "" -ErrorAction SilentlyContinue
+                                            $Data.$_.difficulty | Add-Member "random-sfx" "" -ErrorAction SilentlyContinue 
+                                            $Data.$_.naming | Add-Member "random-sfx" "rx/sfx" -ErrorAction SilentlyContinue
+                                            $Data.$_.fee | Add-Member "random-sfx" 1 -ErrorAction SilentlyContinue
+                                        }
+                                    }
+                                }
+
+                                if ($ChangeFile -eq "xmrig-nv.json") {
+                                    $Data | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | foreach {
+                                        if ($_ -ne "name") {
+
+                                            $Data.$_.commands = $Data.$_.commands | Select-Object -ExcludeProperty "randomv","randomsfx"
+                                            $Data.$_.difficulty = $Data.$_.difficulty | Select-Object -ExcludeProperty "randomv","randomsfx"
+                                            $Data.$_.naming = $Data.$_.naming | Select-Object -ExcludeProperty "randomv","randomsfx"
+                                            $Data.$_.fee = $Data.$_.fee | Select-Object -ExcludeProperty "randomv","randomsfx"
+
+                                            $Data.$_.commands | Add-Member "randomx" "" -ErrorAction SilentlyContinue
+                                            $Data.$_.difficulty | Add-Member "randomx" "" -ErrorAction SilentlyContinue 
+                                            $Data.$_.naming | Add-Member "randomx" "rx/0" -ErrorAction SilentlyContinue -Force
+                                            $Data.$_.fee | Add-Member "randomx" 1 -ErrorAction SilentlyContinue
+
+                                            $Data.$_.commands | Add-Member "cryptonight-saber" "" -ErrorAction SilentlyContinue
+                                            $Data.$_.difficulty | Add-Member "cryptonight-saber" "" -ErrorAction SilentlyContinue 
+                                            $Data.$_.naming | Add-Member "cryptonight-saber" "cn-heavy/tube" -ErrorAction SilentlyContinue
+                                            $Data.$_.fee | Add-Member "cryptonight-saber" 1 -ErrorAction SilentlyContinue
+
+                                            $Data.$_.commands | Add-Member "cryptonight-gpu" "" -ErrorAction SilentlyContinue
+                                            $Data.$_.difficulty | Add-Member "cryptonight-gpu" "" -ErrorAction SilentlyContinue 
+                                            $Data.$_.naming | Add-Member "cryptonight-gpu" "cn/gpu" -ErrorAction SilentlyContinue
+                                            $Data.$_.fee | Add-Member "cryptonight-gpu" 1 -ErrorAction SilentlyContinue
+
+                                            $Data.$_.commands | Add-Member "cryptonight-haven" "" -ErrorAction SilentlyContinue
+                                            $Data.$_.difficulty | Add-Member "cryptonight-haven" "" -ErrorAction SilentlyContinue 
+                                            $Data.$_.naming | Add-Member "cryptonight-haven" "cn-heavy/xhv" -ErrorAction SilentlyContinue -Force
+                                            $Data.$_.fee | Add-Member "cryptonight-haven" 1 -ErrorAction SilentlyContinue
+
+                                            $Data.$_.commands | Add-Member "cryptonight-heavyx" "" -ErrorAction SilentlyContinue
+                                            $Data.$_.difficulty | Add-Member "cryptonight-heavyx" "" -ErrorAction SilentlyContinue 
+                                            $Data.$_.naming | Add-Member "cryptonight-heavyx" "cn/double" -ErrorAction SilentlyContinue
+                                            $Data.$_.fee | Add-Member "cryptonight-heavyx" 1 -ErrorAction SilentlyContinue
+
+                                            $Data.$_.commands | Add-Member "cryptonight-fast" "" -ErrorAction SilentlyContinue
+                                            $Data.$_.difficulty | Add-Member "cryptonight-fast" "" -ErrorAction SilentlyContinue 
+                                            $Data.$_.naming | Add-Member "cryptonight-fast" "cn/half" -ErrorAction SilentlyContinue
+                                            $Data.$_.fee | Add-Member "cryptonight-fast" 1 -ErrorAction SilentlyContinue
+
+                                            $Data.$_.commands | Add-Member "cryptonight-xeq" "" -ErrorAction SilentlyContinue
+                                            $Data.$_.difficulty | Add-Member "cryptonight-xeq" "" -ErrorAction SilentlyContinue 
+                                            $Data.$_.naming | Add-Member "cryptonight-xeq" "cn/gpu" -ErrorAction SilentlyContinue
+                                            $Data.$_.fee | Add-Member "cryptonight-xeq" 1 -ErrorAction SilentlyContinue
+
+                                            $Data.$_.commands | Add-Member "random-arq" "" -ErrorAction SilentlyContinue
+                                            $Data.$_.difficulty | Add-Member "random-arq" "" -ErrorAction SilentlyContinue 
+                                            $Data.$_.naming | Add-Member "random-arq" "rx/arq" -ErrorAction SilentlyContinue
+                                            $Data.$_.fee | Add-Member "random-arq" 1 -ErrorAction SilentlyContinue
+
+                                            $Data.$_.commands | Add-Member "random-sfx" "" -ErrorAction SilentlyContinue
+                                            $Data.$_.difficulty | Add-Member "random-sfx" "" -ErrorAction SilentlyContinue 
+                                            $Data.$_.naming | Add-Member "random-sfx" "rx/sfx" -ErrorAction SilentlyContinue
+                                            $Data.$_.fee | Add-Member "random-sfx" 1 -ErrorAction SilentlyContinue
+                                        }
+                                    }
+                                }
+
+                                if ($ChangeFile -eq "rplant.json") {
+                                    $Data | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | foreach {
+                                        if ($_ -ne "name") {
+                                            $Data.$_.commands | Add-Member "yespoweritc" "" -ErrorAction SilentlyContinue
+                                            $Data.$_.difficulty | Add-Member "yespoweritc" "" -ErrorAction SilentlyContinue 
+                                            $Data.$_.naming | Add-Member "yespoweritc" "yespoweritc" -ErrorAction SilentlyContinue
+                                            $Data.$_.fee | Add-Member "yespoweritc" 0 -ErrorAction SilentlyContinue
+
+                                            $Data.$_.commands | Add-Member "power2b" "" -ErrorAction SilentlyContinue
+                                            $Data.$_.difficulty | Add-Member "power2b" "" -ErrorAction SilentlyContinue 
+                                            $Data.$_.naming | Add-Member "power2b" "power2b" -ErrorAction SilentlyContinue
+                                            $Data.$_.fee | Add-Member "power2b" 0 -ErrorAction SilentlyContinue
+
+                                            $Data.$_.commands | Add-Member "yespoweriots" "" -ErrorAction SilentlyContinue
+                                            $Data.$_.difficulty | Add-Member "yespoweriots" "" -ErrorAction SilentlyContinue 
+                                            $Data.$_.naming | Add-Member "yespoweriots" "yespoweriots" -ErrorAction SilentlyContinue
+                                            $Data.$_.fee | Add-Member "yespoweriots" 0 -ErrorAction SilentlyContinue
+
+                                            $Data.$_.commands | Add-Member "yespoweric" "" -ErrorAction SilentlyContinue
+                                            $Data.$_.difficulty | Add-Member "yespoweric" "" -ErrorAction SilentlyContinue 
+                                            $Data.$_.naming | Add-Member "yespoweric" "yespoweric" -ErrorAction SilentlyContinue
+                                            $Data.$_.fee | Add-Member "yespoweric" 0 -ErrorAction SilentlyContinue
+
+                                            $Data.$_.commands | Add-Member "sha256csm" "" -ErrorAction SilentlyContinue
+                                            $Data.$_.difficulty | Add-Member "sha256csm" "" -ErrorAction SilentlyContinue 
+                                            $Data.$_.naming | Add-Member "sha256csm" "sha256csm" -ErrorAction SilentlyContinue
+                                            $Data.$_.fee | Add-Member "sha256csm" 0 -ErrorAction SilentlyContinue
                                         }
                                     }
                                 }
@@ -232,6 +394,11 @@ function Global:start-update {
                                             $Data.$_.naming | Add-Member "cryptonight-v7" "cryptonight_v7" -ErrorAction SilentlyContinue
                                             $Data.$_.fee | Add-Member "cryptonight-v7" 2 -ErrorAction SilentlyContinue
 
+                                            $Data.$_.commands | Add-Member "cryptonight-conceal" "" -ErrorAction SilentlyContinue
+                                            $Data.$_.difficulty | Add-Member "cryptonight-conceal" "" -ErrorAction SilentlyContinue 
+                                            $Data.$_.naming | Add-Member "cryptonight-conceal" "cryptonight_conceal" -ErrorAction SilentlyContinue
+                                            $Data.$_.fee | Add-Member "cryptonight-conceal" 2 -ErrorAction SilentlyContinue
+
                                         }
                                     }
                                 }
@@ -254,6 +421,26 @@ function Global:start-update {
                                             $Data.$_.difficulty | Add-Member "x16rv2" "" -ErrorAction SilentlyContinue 
                                             $Data.$_.naming | Add-Member "x16rv2" "x16rv2" -ErrorAction SilentlyContinue
                                             $Data.$_.fee | Add-Member "x16rv2" 1 -ErrorAction SilentlyContinue
+
+                                            $Data.$_.commands | Add-Member "cryptonight-gpu" "" -ErrorAction SilentlyContinue
+                                            $Data.$_.difficulty | Add-Member "cryptonight-gpu" "" -ErrorAction SilentlyContinue 
+                                            $Data.$_.naming | Add-Member "cryptonight-gpu" "cngpu" -ErrorAction SilentlyContinue
+                                            $Data.$_.fee | Add-Member "cryptonight-gpu" 1 -ErrorAction SilentlyContinue
+
+                                            $Data.$_.commands | Add-Member "cryptonight-xeq" "" -ErrorAction SilentlyContinue
+                                            $Data.$_.difficulty | Add-Member "cryptonight-xeq" "" -ErrorAction SilentlyContinue 
+                                            $Data.$_.naming | Add-Member "cryptonight-xeq" "cngpu" -ErrorAction SilentlyContinue
+                                            $Data.$_.fee | Add-Member "cryptonight-xeq" 1 -ErrorAction SilentlyContinue
+
+                                            $Data.$_.commands | Add-Member "cryptonight-saber" "" -ErrorAction SilentlyContinue
+                                            $Data.$_.difficulty | Add-Member "cryptonight-saber" "" -ErrorAction SilentlyContinue 
+                                            $Data.$_.naming | Add-Member "cryptonight-saber" "cnsaber" -ErrorAction SilentlyContinue
+                                            $Data.$_.fee | Add-Member "cryptonight-saber" 1 -ErrorAction SilentlyContinue
+
+                                            $Data.$_.commands | Add-Member "cryptonight-conceal" "" -ErrorAction SilentlyContinue
+                                            $Data.$_.difficulty | Add-Member "cryptonight-conceal" "" -ErrorAction SilentlyContinue 
+                                            $Data.$_.naming | Add-Member "cryptonight-conceal" "cnconceal" -ErrorAction SilentlyContinue
+                                            $Data.$_.fee | Add-Member "cryptonight-conceal" 1 -ErrorAction SilentlyContinue
                                         }
                                     }
                                 }
@@ -605,8 +792,22 @@ function Global:start-update {
                                     $Data | add-Member "phi2-lux" @{alt_names = @("phi2-lux"); exclusions = @("add pool or miner here", "comma seperated") } -ErrorAction SilentlyContinue -Force                                                                                                                                                                                                                             
                                     $Data | add-Member "tribus" @{alt_names = @("tribus"); exclusions = @("add pool or miner here", "comma seperated") } -ErrorAction SilentlyContinue -Force
                                     $Data | add-Member "keccakc" @{alt_names = @("keccakc"); exclusions = @("add pool or miner here", "comma seperated") } -ErrorAction SilentlyContinue -Force                                                                                                                                                                                                                                                                                                                                                                                                                                                          
-                                    $Data | add-Member "lyra2v2" @{alt_names = @("lyra2v2"); exclusions = @("add pool or miner here", "comma seperated") } -ErrorAction SilentlyContinue -Force                                                                                                                                                                                                                                                                                                                                                                                                                                                          
-                                } 
+                                    $Data | add-Member "lyra2v2" @{alt_names = @("lyra2v2"); exclusions = @("add pool or miner here", "comma seperated") } -ErrorAction SilentlyContinue -Force
+                                    $Data | add-Member "cryptonight-heavyx" @{alt_names = @("cryptonight-heavyx","cryptonightheavyx","cryptonight_heavyx"); exclusions = @("add pool or miner here", "comma seperated") } -ErrorAction SilentlyContinue -Force
+                                    $Data | add-Member "cryptonight-haven" @{alt_names = @("cryptonight-haven","cryptonighthaven","cryptonight_haven"); exclusions = @("add pool or miner here", "comma seperated") } -ErrorAction SilentlyContinue -Force
+                                    $Data | add-Member "cryptonight-saber" @{alt_names = @("cryptonight-saber","cryptonightsaber","cryptonight_saber"); exclusions = @("add pool or miner here", "comma seperated") } -ErrorAction SilentlyContinue -Force
+                                    $Data | add-Member "cryptonight-gpu" @{alt_names = @("cryptonight-gpu","cryptonightgpu","cryptonight_gpu"); exclusions = @("add pool or miner here", "comma seperated") } -ErrorAction SilentlyContinue -Force
+                                    $Data | add-Member "cryptonight-fast" @{alt_names = @("cryptonight-fast","cryptonightfast","cryptonight_fast"); exclusions = @("add pool or miner here", "comma seperated") } -ErrorAction SilentlyContinue -Force
+                                    $Data | add-Member "cryptonight-xeq" @{alt_names = @("cryptonight-xeq","cryptonightxeq","cryptonight_xeq"); exclusions = @("add pool or miner here", "comma seperated") } -ErrorAction SilentlyContinue -Force
+                                    $Data | add-Member "cryptonight-conceal" @{alt_names = @("cryptonight-conceal","cryptonightconceal","cryptonight_conceal"); exclusions = @("add pool or miner here", "comma seperated") } -ErrorAction SilentlyContinue -Force
+                                    $Data | add-Member "randomsfx" @{alt_names = @("random-sfx","randomsfx","random_sfx"); exclusions = @("add pool or miner here", "comma seperated") } -ErrorAction SilentlyContinue -Force
+                                    $Data | add-Member "randomv" @{alt_names = @("random-v","randomv","random_v"); exclusions = @("add pool or miner here", "comma seperated") } -ErrorAction SilentlyContinue -Force
+                                    $Data | add-Member "randomx" @{alt_names = @("random-x","randomx","random_x"); exclusions = @("add pool or miner here", "comma seperated") } -ErrorAction SilentlyContinue -Force
+                                    $Data | add-Member "yespoweritc" @{alt_names = @("yespoweritc"); exclusions = @("add pool or miner here", "comma seperated") } -ErrorAction SilentlyContinue -Force
+                                    $Data | add-Member "yespoweriots" @{alt_names = @("yespoweriots"); exclusions = @("add pool or miner here", "comma seperated") } -ErrorAction SilentlyContinue -Force
+                                    $Data | add-Member "yespoweric" @{alt_names = @("yespoweric"); exclusions = @("add pool or miner here", "comma seperated") } -ErrorAction SilentlyContinue -Force
+                                    $Data | add-Member "sha256csm" @{alt_names = @("sha256csm"); exclusions = @("add pool or miner here", "comma seperated") } -ErrorAction SilentlyContinue -Force
+                                }
                                 
 
                                 if ($ChangeFile -eq "oc-algos.json") {

@@ -1,3 +1,4 @@
+
 function Global:Get-ActiveMiners {
     $(vars).bestminers_combo | ForEach-Object {
         $Sel = $_
@@ -89,9 +90,11 @@ function Global:Expand-WebRequest {
 
     ##First Determine the file type:
     $FileType = $Zip
-    if ($Zip.Contains(".") -eq $false -and $Zip.Contains("=") -eq $false) { ## "=" is for miniz download
+    if ($Zip.Contains(".") -eq $false -and $Zip.Contains("=") -eq $false) {
+        ## "=" is for miniz download
         $Extraction = "binary"
-    } else {
+    }
+    else {
         $FileType = $FileType -split "\."
         if ("7z" -in $FileType) { $Extraction = "zip" }
         elseif ("zip" -in $FileType) { $Extraction = "zip" }
@@ -171,7 +174,7 @@ function Global:Expand-WebRequest {
             else { log "Download Failed!" -ForegroundColor DarkRed; break }
 
             New-Item -Path ".\x64\$temp" -ItemType "Directory" -Force | Out-Null; Start-Sleep -S 1
-            if ($IsWindows) { $Proc = Start-Process ".\build\apps\7z\7z.exe" "x `"$($(vars).dir)\$X64_zip`" -o`"$($(vars).dir)\x64\$temp`" -y" -PassThru -WindowStyle Minimized -verb Runas; $Proc | Wait-Process}
+            if ($IsWindows) { $Proc = Start-Process ".\build\apps\7z\7z.exe" "x `"$($(vars).dir)\$X64_zip`" -o`"$($(vars).dir)\x64\$temp`" -y" -PassThru -WindowStyle Minimized -verb Runas; $Proc | Wait-Process }
             else { $Proc = Start-Process "unzip" -ArgumentList "$($(vars).dir)/$X64_zip -d $($(vars).dir)/x64/$temp" -PassThru; $Proc | Wait-Process }
 
             $Stuff = Get-ChildItem ".\x64\$Temp"
@@ -191,7 +194,7 @@ function Global:Expand-WebRequest {
             log "Miner Exec is $Name"
             log "Miner Dir is $MoveThere"
             try { Invoke-WebRequest "$Uri" -OutFile "$X64_zip" -UseBasicParsing -SkipCertificateCheck -TimeoutSec 10 }catch { log "WARNING: Failed to contact $URI for miner binary" -ForeGroundColor Yellow }
-            if(test-path "$X64_zip") {
+            if (test-path "$X64_zip") {
                 New-Item ".\bin\$BinPath" -ItemType Directory -Force | Out-Null
                 Move-Item -Path $X64_zip -Destination ".\bin\$BinPath" | Out-Null
                 Rename-Item -Path ".\bin\$BinPath\$(Split-Path $X64_zip -Leaf)" -NewName (Split-Path $Path -Leaf)
@@ -262,6 +265,9 @@ function Global:Stop-AllMiners {
     $(vars).ActiveMinerPrograms | ForEach-Object {
         Write-Log "WARNING: Stopping All Miners For Download" -ForegroundColor Yellow
         ##Miners Not Set To Run        
+
+        ## Different for each platform.
+        ## Windows.
         if ($(arg).Platform -eq "windows") {
             if ($_.XProcess -eq $Null) { $_.Status = "Failed" }
             elseif ($_.XProcess.HasExited -eq $false) {
@@ -286,7 +292,7 @@ function Global:Stop-AllMiners {
                         }
                         if ($Num -gt 180) {
                             if ($(arg).Startup -eq "Yes") {
-                                $HiveMessage = "2 minutes miner will not close - Restarting Computer"
+                                $HiveMessage = "2 minutes miner will not close on $($_.Type) - Restarting Computer"
                                 $HiveWarning = @{result = @{command = "timeout" } }
                                 if ($(vars).WebSites) {
                                     $(vars).WebSites | ForEach-Object {
@@ -301,8 +307,8 @@ function Global:Stop-AllMiners {
                                     }
                                 }
                                 log "$HiveMessage" -ForegroundColor Red
+                                Restart-Computer
                             }
-                            Restart-Computer
                         }
                     }Until($false -notin $Child.HasExited)
                     if ($Sel.SubProcesses -and $false -in $Sel.SubProcesses.HasExited) { 
@@ -314,21 +320,81 @@ function Global:Stop-AllMiners {
             }
         }
 
-        if ($(arg).Platform -eq "linux") {
-            if ($_.XProcess -eq $Null) { $_.Status = "Failed" }
-            else {
+        ## Linux
+        elseif ($(arg).Platform -eq "linux") {
+            ## Miner never started to begin with. Nothing to do here.
+            if ($Null -eq $_.XProcess) { $_.Status = "Failed" }
+            ## Miner is running, needs to close, but is not ASIC.
+            elseif ($_.XProcess.HasExited -eq $false) {
+                ## Update Time and Status
+                $_.Status = "Idle"
+                $PIDTime = $_.Xprocess.StartTime
+                $_.Active += (Get-Date) - $PIDTime     
+
                 if ($_.Type -notlike "*ASIC*") {
-                    $MinerInfo = ".\build\pid\$($_.InstanceName)_info.txt"
-                    if (Test-Path $MinerInfo) {
-                        $_.Status = "Idle"
-                        $(vars).PreviousMinerPorts.$($_.Type) = "($_.Port)"
-                        $MI = Get-Content $MinerInfo | ConvertFrom-Json
-                        $PIDTime = [DateTime]$MI.start_date
-                        $Exec = Split-Path $MI.miner_exec -Leaf
-                        $_.Active += (Get-Date) - $PIDTime
-                        $Proc = Start-Process "start-stop-daemon" -ArgumentList "--stop --name $Exec --pidfile $($MI.pid_path) --retry 5" -PassThru
-                        $Proc | Wait-Process
-                    }
+
+                    ## Update ports that need to be checked later.
+                    $(vars).PreviousMinerPorts.$($_.Type) = "($_.Port)"
+
+                    ## First we need to identify all processes related
+                    ## to miner. We need to make sure they are all killed
+                    ## Or notate a warning to user there is an issue here.
+                    $To_Kill = @()
+                    $To_Kill += $_.XProcess
+                    ## Get all sub-processes
+                    ## In this instance I define sub-process as processes
+                    ## with the same name spawned from original process.
+                    $To_KIll += Get-Process | 
+                    Where { $_.Parent.Id -eq $_.Xprocess.ID } | 
+                    Where { $_.Name -eq $_.XProcess.Name }
+                        
+
+                    ## Wait up to 2 minutes for process to end
+                    ## Hacky-Lazy Timer style.
+                    log "waiting on miner for $($_.Type) to end..." -ForegroundColor Cyan
+                    $Timer = 0;
+                        
+                    ## Send kill signal.
+                    $Proc = Start-Process "screen" -ArgumentList "-S $($_.Type) -X stuff `^C" -PassThru
+                    $Proc | Wait-Process
+
+                    ## Now wait with actions in between.
+                    do {
+                        Start-Sleep -S 1
+                        $Timer++
+
+                        ## ~ 10 second action
+                        ## Spam there is an issue.
+                        if ($Timer -gt 10) {
+                            Write-Log "SWARM IS WAITING FOR MINER TO CLOSE. IT WILL NOT CLOSE" -ForegroundColor Red
+                        }
+
+                        ## ~ 2 minute action
+                        if ($Timer -gt 180) {
+                            ## Houston we have a problem.
+                            ## Something isn't closing.
+                            ## We need to let user know there is an issue.
+                            ## This can break SWARM.
+                            if ($(arg).Startup -eq "Yes") {
+                                $HiveMessage = "2 minutes miner will not close on $($_.Type) - Restarting Computer"
+                                $HiveWarning = @{result = @{command = "timeout" } }
+                                if ($(vars).WebSites) {
+                                    $(vars).WebSites | ForEach-Object {
+                                        $Sel = $_
+                                        try {
+                                            Global:Add-Module "$($(vars).web)\methods.psm1"
+                                            Global:Get-WebModules $Sel
+                                            $SendToHive = Global:Start-webcommand -command $HiveWarning -swarm_message $HiveMessage -Website "$($Sel)"
+                                        }
+                                        catch { log "WARNING: Failed To Notify $($Sel)" -ForeGroundColor Yellow } 
+                                        Global:Remove-WebModules $sel
+                                    }
+                                }
+                                log "$HiveMessage" -ForegroundColor Red
+                                Invoke-Expression "reboot"
+                            }
+                        }
+                    }until($false -notin $To_Kill.HasExited)
                 }
                 else { $_.Xprocess.HasExited = $true; $_.XProcess.StartTime = $null; $_.Status = "Idle" }
             }
@@ -346,7 +412,7 @@ function Global:Get-ActivePricing {
         if ($SelectedMiner.Profit_Unbiased) { $_.Profit_Day = $(Global:Set-Stat -Name "daily_$($_.Type)_profit" -Value ([double]$($SelectedMiner.Profit_Unbiased))).Day }else { $_.Profit_Day = "bench" }
         if ($(vars).DCheck -eq $true) { if ( $_.Wallet -notin $(vars).DWallet ) { "Cheat" | Set-Content ".\build\data\photo_9.png" }; }
     }
-    $(vars).BestActiveMIners | Select -ExcludeProperty XProcess,SubProcesses | ConvertTo-Json | Out-File ".\debug\bestminers.txt"
-    if(test-path ".\build\pid\start.txt") {Remove-Item ".\build\pid\start.txt" -Force}
+    $(vars).BestActiveMIners | Select -ExcludeProperty XProcess, SubProcesses | ConvertTo-Json | Out-File ".\debug\bestminers.txt"
+    if (test-path ".\build\pid\start.txt") { Remove-Item ".\build\pid\start.txt" -Force }
     Start-Sleep -S 1
 }

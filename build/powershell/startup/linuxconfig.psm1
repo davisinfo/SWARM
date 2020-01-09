@@ -61,6 +61,15 @@ function Global:Get-Data {
         Set-Location $($(vars).dir)     
     }
 
+    ## Extract export folder.
+    if (-not (test-path ".\build\export")) {
+        log "export folder not found. Exracting export.tar.gz" -ForegroundColor Yellow;
+        New-Item -ItemType Directory -Name "export" -path ".\build" | Out-Null;
+        $Proc = Start-Process "tar" -ArgumentList "-xzvf build/export.tar.gz -C build" -PassThru; 
+        $Proc | Wait-Process;
+    }
+
+
     if (-not (Test-Path ".\build\export\libcurl.so.3")) {
         $Proc = Start-Process ln -ArgumentList "-s $($(vars).dir)/build/export/libcurl.so.3.0.0 $($(vars).dir)/build/export/libcurl.so.3" -PassThru
         $Proc | Wait-Process
@@ -346,10 +355,10 @@ function Global:Get-GPUCount {
             log "Searching For Mining Types" -ForegroundColor Yellow
             if ($GN -and $GA) {
                 log "AMD and NVIDIA Detected" -ForegroundColor Magenta
-                $(vars).types += "AMD1","NVIDIA2"
-                $(arg).Type += "AMD1","NVIDIA2"
-                $global:config.user_params.type += "AMD1","NVIDIA2"
-                $global:config.params.type += "AMD1","NVIDIA2"                  
+                $(vars).types += "AMD1", "NVIDIA2"
+                $(arg).Type += "AMD1", "NVIDIA2"
+                $global:config.user_params.type += "AMD1", "NVIDIA2"
+                $global:config.params.type += "AMD1", "NVIDIA2"                  
             }
             elseif ($GN) { 
                 log "NVIDIA Detected: Adding NVIDIA" -ForegroundColor Magenta
@@ -366,7 +375,7 @@ function Global:Get-GPUCount {
                 $global:config.params.type += "AMD1"    
             }
             log "Adding CPU"
-            if([string]$(arg).CPUThreads -eq "") { 
+            if ([string]$(arg).CPUThreads -eq "") { 
                 $threads = Invoke-Expression "nproc";
                 $(vars).threads = $threads
                 $(vars).CPUThreads = $threads
@@ -547,14 +556,14 @@ function Global:Start-LinuxConfig {
         }
     }
     
+    ##Data and Hive Configs
+    log "Getting Data" -ForegroundColor Yellow
+    Global:Get-Data
+    
     ## Aaaaannnd...Que that sexy loading screen
     Global:Get-SexyUnixLogo
     $Proc = Start-Process ".\build\bash\screentitle.sh" -PassThru
     $Proc | Wait-Process
-
-    ##Data and Hive Configs
-    log "Getting Data" -ForegroundColor Yellow
-    Global:Get-Data
 
     ## Set Arguments/New Parameters
     if ($global:Config.hive_params.Id) {

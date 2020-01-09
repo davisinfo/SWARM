@@ -1569,3 +1569,163 @@ Updates
 * cc-verus updated
 * gminer updated
 * lolminer updated (linux version is newer)
+
+############################################
+############################################
+
+# SWARM 2.8.7
+
+## What's New?
+ * Issue #260
+   * New algos for cryptonight added.
+ * Issue #261
+   * Future cpu algorithms added.
+
+## Improvements
+ * Issue #262
+  * Swarm will notify on main screen when
+    stats and active data had been refreshed for
+    commands.
+ * Issue #265
+  * Latest HiveOS broke 'hello' for Windows.
+  * Fixed hello connection, and ensured it
+    won't happen again.
+
+## Updates
+ * gminer updated
+ * xmrig updated
+ * jayddee updated
+ * rplant updated
+
+
+############################################
+############################################
+
+# SWARM 2.8.8
+
+## What's New?
+ * Issue #266
+   Fixed xmrig issue in NVIDIA (linux)
+   new lib added to exports folder.
+
+ * Issue #267
+   Added algorithms back to cryptodredge.
+   Added cryptonight_conceal.
+
+## Improvements
+ * Issue #268
+   * Improved xmrig/xmr-stak api
+     for HiveOS
+
+## Updates
+ * xmrig update
+ * xmr-stak-rx update
+
+############################################
+############################################
+
+# SWARM 2.8.9
+
+## Note
+Pay attention to pool hashrate for
+cryptonight algorithms and miner hashrate-
+They may not be the same.
+
+You can manually adjust the stat in the
+.\stats folder, and then set 'locked'
+to true in order to prevent SWARM from
+changing it- It is in simple .json format.
+
+## Improvements
+  * Issue #266
+    * Correct link for xmrig windows for CUDA
+  * Issue #269
+    * Fixed ``version`` command for Windows.
+  * Issue #247
+    * export folder is packaged as tar.gz,
+      is extracted on first run.
+
+## Updates
+ * Jayddee updated
+ * gminer updated
+
+############################################
+############################################
+
+# SWARM 2.9.0
+
+## Note
+There is some large beta changes in linux
+contained in this release, which could be
+greatly beneficial to how SWARM operates.
+Be advised they are potentially beneficial,
+but beta in design.
+
+## Improvements
+* Issue #270
+   * Process control improvements in linux.
+   * Process Parent is used to track/identify
+     actual core processes of miners within
+     terminal emulators (screen).
+   * Since definitive miner core processes can
+     be identified, a new system to
+     reboot computer on errors was written
+     if the process fails to close (if argument
+     ``startup`` is set to default "Yes").
+   * Users will be notified through HiveOS
+     if a process or one of its subprocesses
+     is a zombie process if using HiveOS
+     now in both Windows or Linux.
+
+## Fixes
+* Issue #271
+  * Last release there was a change implemented
+    for HiveOS hello in Windows. There was a
+    typo that was corrected.
+
+## Updates
+* None - This is a release to test linux
+  improvements.
+
+############################################
+############################################
+
+# SWARM 2.9.1
+
+## NOTE - You cannot update this version in
+   Windows with a link. But next version, and
+   all versions after you should be able to
+   insert new download link for SWARM in
+   'custom url' link of HiveOS, and it should
+   start the update process. ``get update``
+   still works as well.
+
+## Improvements
+* Issue 196
+  * Autofan for Windows updated.
+    * Has default parameters set.
+    * Introduced some new changes
+      taken from HiveOS's linux autofan.
+    * Codebased cleaned up.
+
+* Issue 227
+  * Custom URL in Windows.
+    * custom URL in flight sheet in Windows
+      should work now following this version.
+
+* Issue 228
+  * Added Random-arq
+    * changed Randomsfx to 'Random-sfx' to match
+      HiveOS oc profiles. Your previous settings
+      will not transfer because of this.
+    * removed 'Randomv'
+
+## Fixes
+  * Issue 277
+    * Fixed small typo in SWARM recognizing wallet
+      information from HiveOS in Windows.
+  * GPU list at startup in Windows will show even
+    if list has changed.
+
+## Updates
+* miniZ updated

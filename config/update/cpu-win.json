@@ -14,18 +14,18 @@
     "type": "cpu",
     "CPU": ".\\bin\\rplant-1\\cpuminer-avx2.exe",
     "minername": "cpuminer-avx2.exe",
-    "version": "4.0.27",
+    "version": "4.0.29",
     "optional": "No",
-    "uri": "https://github.com/rplant8/cpuminer-opt-rplant/releases/download/4.0.27/cpuminer-opt-win.zip"
+    "uri": "https://github.com/rplant8/cpuminer-opt-rplant/releases/download/4.0.29/cpuminer-opt-win.zip"
   },
   "xmrig-cpu": {
     "name": "xmrig-cpu",
     "type": "cpu",
     "CPU": ".\\bin\\xmrig-cpu-1\\xmrig.exe",
     "minername": "xmrig.exe",
-    "version": "5.1.0",
+    "version": "5.5.0",
     "optional": "No",
-    "uri": "https://github.com/xmrig/xmrig/releases/download/v5.1.0/xmrig-5.1.0-msvc-win64.zip"
+    "uri": "https://github.com/xmrig/xmrig/releases/download/v5.5.0/xmrig-5.5.0-msvc-win64.zip"
   },
   "sugarchain": {
     "name": "sugarchain",
@@ -41,9 +41,9 @@
     "type": "cpu",
     "CPU": ".\\bin\\jayddee-1\\cpuminer-avx2.exe",
     "minername": "cpuminer-avx2.exe",
-    "version": "3.9.9.1",
+    "version": "3.10.7",
     "optional": "No",
-    "uri": "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.9.9.1/cpuminer-opt-3.9.9.1-windows.zip"
+    "uri": "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.10.7/cpuminer-opt-3.10.7-windows.zip"
   },
   "cpupower": {
     "name": "cpupower",

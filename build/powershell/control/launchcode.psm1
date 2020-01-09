@@ -11,6 +11,47 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #>
 
+<# 
+
+There is an issue that happens in linux. It requires
+a complex solution. The beautiful challenges of .NET core
+in linux...
+
+1.) All processes MUST be spawned in a emulated terminal, which screen
+    is used. Each new miner is placed in a new screen. This means SWARM
+    cannot -passthrough the process to get the original process ID. However,
+    it DOES mean we can track a process based on the id of the parent screen
+    process it is launched in. It makes it complicated, but possible.
+
+2.) Some processes will often spawn processes that are
+    not the original process. Therefor tracking a process
+    by its id may cause spawned processes to go unnoticed. Their
+    is many an occassion when a spawned process will not be closed
+    Or SWARM tracks the spawned process rather than the original.
+
+3.) System.Diagnostic.Process.Path may not always be the path to the 
+    executable. In some cases it is the libs they are using. This makes
+    it further difficult...
+
+5.) We do not need to track subprocess when started, but we need to identify
+    them when we kill the process to ensure they have closed. This is because
+    buggy miners or users experiencing 'soft crashes' may have issues with
+    zobmie sub-processes. Not relevant here, but noted for those trying to
+    understand the difficulties.
+
+    The solution is a three prong attack:
+
+    1.) Keep all processes in separate screen emulations, so that each
+        can be referenced to the terminal emulator they are using.
+    
+    2.) Track processes indirectly through the emulator it is being
+        ran in
+    
+    3.) Identify sub-process using the information gleaned through
+        the above.
+
+#>
+
 function Global:Remove-ASICPools {
     param (
         [Parameter(Mandatory = $true, Position = 0)]
@@ -213,7 +254,7 @@ function Global:Start-LaunchCode($MinerCurrent, $AIP) {
                 $Algo = ($MinerCurrent.Algo).Replace("`/", "_")
                 $minerbat = @()
                 ## pwsh to launch powershell window to fully emulate SWARM launching
-                $minerbat += "pwsh -ExecutionPolicy Bypass -command `"Start-Process pwsh -ArgumentList `"`"-noexit -executionpolicy Bypass -Command `"`"`"`".\swarm_start_$($Algo).ps1`"`"`"`"`"`""
+                $minerbat += "pwsh -ExecutionPolicy Bypass -command `"Start-Process pwsh -verb runas -ArgumentList `"`"-noexit -executionpolicy Bypass -Command `"`"`"`".\swarm_start_$($Algo).ps1`"`"`"`"`"`""
                 $miner_bat = Join-Path $WorkingDirectory "swarm_start_$($Algo).bat"
                 $minerbat | Set-Content $miner_bat
 
@@ -229,10 +270,17 @@ function Global:Start-LaunchCode($MinerCurrent, $AIP) {
                 ##Build Start Script
                 if ($MinerCurrent.Prestart) {
                     $Prestart = @()
+                    $Prestart +=  "`#`# Environment Targets"
+                    $Prestart += "`$Target = [EnvironmentVariableTarget]::Process;"
                     $MinerCurrent.Prestart | ForEach-Object {
-                        if ($_ -notlike "*export LD_LIBRARY_PATH=*") {
-                            $setx = $_ -replace "export ", "`$env:"
-                            $Prestart += "$setx`n"
+                        if ($_ -like "*export*" -and $_ -notlike "*export LD_LIBRARY_PATH=*") {
+                            $Total = $_.replace("export ", "");
+                            $Variable = $Total.Split("=")[0];
+                            $Value = $Total.Split("=")[1];
+                            $Prestart += "[environment]::SetEnvironmentVariable(`"$Variable`",$Value,`$Target);"
+                        } 
+                        elseif ($_ -notlike "*export LD_LIBRARY_PATH=*") {
+                            $Prestart += $_
                         }
                     }
                 }
@@ -276,21 +324,25 @@ function Global:Start-LaunchCode($MinerCurrent, $AIP) {
                 }
                 else { $start += "Invoke-Expression "".\$($MinerCurrent.MinerName) $MinerArguments""" }
 
-                $script = 
-
+                $script = @()
+                $script +=
                 "
 `#`# Window Title
 `$host.ui.RawUI.WindowTitle = `'$($MinerCurrent.Name) - $($MinerCurrent.Algo)`';
+
 `#`# set encoding for logging
 `$OutputEncoding = [System.Text.Encoding]::ASCII
 `#`# Has to be powershell 5.0 to set icon
  `$proc = Start-Process `"powershell`" -ArgumentList `"Set-Location ``'$($(vars).dir)``'; .\build\powershell\scripts\icon.ps1 ``'$($(vars).dir)\build\apps\icons\miner.ico``'`" -NoNewWindow -Passthru
  `$proc | Wait-Process
  remove-variable `$proc -ErrorAction Ignore
-`#`# Start Miner - Logging if needed.
-$Prestart
-$start
+
 "
+foreach ($line in $Prestart) { $script += $line }
+$script += 
+"
+`#`# Start Miner - Logging if needed."
+$script += $start
 
                 $script | Out-File "$WorkingDirectory\swarm_start_$($Algo).ps1"
                 Start-Sleep -S .5
@@ -336,28 +388,13 @@ $start
             $MinerEXE = Join-Path $($(vars).dir) $MinerCurrent.Path
             $MinerEXE = $(Resolve-Path $MinerExe).Path
             $StartDate = Get-Date
-
-            ##PID Tracking Path & Date
-            $PIDPath = Join-Path $($(vars).dir) "build\pid\$($MinerCurrent.InstanceName)_pid.txt"
-            $PIDInfoPath = Join-Path $($(vars).dir) "build\pid\$($MinerCurrent.InstanceName)_info.txt"
-            $PIDInfo = @{miner_exec = "$MinerEXE"; start_date = "$StartDate"; pid_path = "$PIDPath"; }
-            $PIDInfo | ConvertTo-Json | Set-Content $PIDInfoPath
-
-            ##Clear Old PID information
-            if (Test-Path $PIDPath) { Remove-Item $PIDPath -Force }
-            if (Test-Path $PIDInfo) { Remove-Item $PIDInfo -Force }
-
-            ##Get Full Path Of Miner Executable and its dir
-        
+                    
             ##Add Logging To Arguments if needed
             if ($MinerCurrent.Log -ne "miner_generated") { $MinerArgs = "$MinerArguments 2>&1 | tee `'$($MinerCurrent.Log)`'" }
             else { $MinerArgs = "$MinerArguments" }
 
-            ##Build Daemon
-            $Daemon = "start-stop-daemon --start --make-pidfile --chdir $MinerDir --pidfile $PIDPath --exec $MinerEXE -- $MinerArgs"
-
             ##Actual Config - config.sh has already +x chmod from git.
-            $Daemon | Set-Content ".\build\bash\config.sh" -Force
+            $LaunchScript | Set-Content ".\build\bash\config.sh" -Force
 
             ##Classic Logo For Linux
             log "
@@ -419,6 +456,10 @@ $start
                 } 
                 elseif ($Warn -eq 10) { log "Port Was Cleared" -ForegroundColor Cyan }
             }
+
+            ## Stop killcx.sh script
+            if ($proc.HasExited -eq $false) { Stop-Process $proc }
+            
             ##Notification To User That Miner Is Attempting To start
             log "Starting $($MinerCurrent.Name) Mining $($MinerCurrent.Symbol) on $($MinerCurrent.Type)" -ForegroundColor Cyan
 
@@ -455,8 +496,8 @@ $start
             $Script += "screen -S $($MinerCurrent.Type) -X stuff $`"cd $MinerDir\n`"", "sleep .1"
 
             ##This launches the previous generated configs.
-            $Script += "screen -S $($MinerCurrent.Type) -X stuff $`"`$(< $($(vars).dir)/build/bash/config.sh)\n`""
-            $TestScript += $Daemon
+            $Script += "screen -S $($MinerCurrent.Type) -X stuff $`"$MinerEXE $MinerArgs\n`""
+            $TestScript += "$MinerEXE $MinerArgs"
 
             ##Write Both Scripts
             $Script | Set-Content ".\build\bash\startup.sh"
@@ -468,10 +509,10 @@ $start
             Start-Sleep -S .5
 
             ## Run HiveOS hugepages commmand if algo is randomx
-            if(
+            if (
                 $MinerCurrent.algo -eq "randomx" -and
                 $(arg).HiveOS -eq "Yes"
-              ) {
+            ) {
                 log "Setting HiveOS hugepages for RandomX" -ForegroundColor Cyan
                 Invoke-Expression "hugepages -rx"
             }
@@ -491,25 +532,58 @@ $start
             $Proc = Start-Process ".\build\bash\startup.sh" -PassThru
             $Proc | Wait-Process
 
-            ##Miner Should have started, PID will be written to specified file.
-            ##For up to 10 seconds, we want to check for the specified PID, and
-            ##Confirm the miner is running
+            ## A screen should have started that is titled the name of the Type
+            ## of the device. We must identify the process id. We so this with
+            ## a simple parsing of screen list.
+            ## I use bash to parse, becuase for some reason I can't get whitespace 
+            ## removed with pwsh from screen list using String.replace
+            [int]$Screen_ID = invoke-expression "screen -ls | grep $($MinerCurrent.Type) | cut -f1 -d'.' | sed 's/\W//g'"
+            
+            ## Now that we have a list of all Process with the name of the exectuable.
+            ## We used bash to launch the miner, so the parent of the core process
+            ## should be 'bash'.
+            ## That bash process should have a parent process of the screen ID.
+            ## This means we are looking for the parent ID of the parent process should
+            ## match the screen Screen_ID.
+            ## Since SWARM did not launch this process, there may be a delay in launch.
+            ## So we need to check for a set time.
             $MinerTimer.Restart()
+
             Do {
-                #Sleep for 1 every second
+
                 Start-Sleep -S 1
                 #Write We Are getting ID
                 log "Getting Process ID for $($MinerCurrent.MinerName)"
-                if (Test-Path $PIDPath) { $MinerPID = Get-Content $PIDPath | Select-Object -First 1 }
-                ##Powershell Get Process Instance
-                if ($MinerPID) { $MinerProcess = Get-Process | Where id -eq $MinerPid }
-            }until($MinerProcess -ne $null -or ($MinerTimer.Elapsed.TotalSeconds) -ge 10)  
+                ## Now we get all plausible process id's based on miner name
+                $Miner_IDs = Get-Process | Where Name -eq  (Split-Path $MinerEXE -Leaf)
+                ## We search the parent process's parent ID.
+                $MinerProcess = $Miner_IDs | Where { $($_.Parent).Parent.Id -eq $Screen_ID }
+
+            }until($null -ne $MinerProcess -or ($MinerTimer.Elapsed.TotalSeconds) -ge 10)  
             ##Stop Timer
             $MinerTimer.Stop()
+
+            ## New Ubuntu Miners may not close if the Emulation window closes.
+            ## So on exit- We have to find and close these miners (background agent does that)
+            if ($MinerProcess) {
+                ##PID Tracking Path & Date
+                $PIDInfoPath = Join-Path $($(vars).dir) "build\pid\$($MinerCurrent.InstanceName)_info.txt"
+                $PIDInfo = @{miner_exec = "$MinerEXE"; start_date = "$StartDate"; pid = "$($MinerProcess.Id)"; }
+            
+                $PIDInfo | ConvertTo-Json | Set-Content $PIDInfoPath
+            }
+
             $MinerProcess
         }
     }
     else {
+        ## ASIC is not a process. So we create an artifical tracking system based on
+        ## the data gleaned through TCP. We run switchpool api command, and confirm
+        ## That the pool has changed. If it has, we change the start-date to are artifical.
+        ## Tracking system, which is how we confirm that it has changed.
+        ## Essentially the date-stamp is our ID.
+        ## The fact that TCP responds in our nofication that the ASIC is running (HasExited)
+
         $clear = Global:Remove-ASICPools $AIP $MinerCurrent.Port $MinerCurrent.API
         $Commands = "addpool|$($MinerCurrent.Arguments)"
         log "Adding New Pool"

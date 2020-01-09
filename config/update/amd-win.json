@@ -51,9 +51,9 @@
     "AMD2": ".\\bin\\gminer-amd-2\\miner.exe",
     "AMD3": ".\\bin\\gminer-amd-3\\miner.exe",
     "minername": "miner.exe",
-    "version": "1.83",
+    "version": "1.92",
     "optional": "No",
-    "uri": "https://github.com/develsoftware/GMinerRelease/releases/download/1.83/gminer_1_83_windows64.zip"
+    "uri": "https://github.com/develsoftware/GMinerRelease/releases/download/1.92/gminer_1_92_windows64.zip"
   },
   "phoenix-amd": {
     "name": "phoenix-amd",
@@ -62,7 +62,7 @@
     "AMD2": ".\\bin\\phoenix-amd-2\\PhoenixMiner.exe",
     "AMD3": ".\\bin\\phoenix-amd-3\\PhoenixMiner.exe",
     "minername": "PhoenixMiner.exe",
-    "version": "4.8b",
+    "version": "4.8c",
     "optional": "No",
     "uri": "https://github.com/MaynardMiner/MM.Compiled-Miners/releases/download/v9.0/phoenix-miner-windows.zip"
   },
@@ -128,9 +128,9 @@
     "AMD2": ".\\bin\\xmrstak-rx-2\\xmr-stak-rx.exe",
     "AMD3": ".\\bin\\xmrstak-rx-3\\xmr-stak-rx.exe",
     "minername": "xmr-stak-rx.exe",
-    "version": "1.0.2",
+    "version": "1.0.4",
     "optional": "No",
-    "uri": "https://github.com/fireice-uk/xmr-stak/releases/download/1.0.2-rx/xmr-stak-rx-win64-1.0.2.zip"
+    "uri": "https://github.com/fireice-uk/xmr-stak/releases/download/1.0.4-rx/xmr-stak-rx-win64-1.0.4.zip"
   },
   "wildrig": {
     "name": "wildrig",
@@ -161,9 +161,9 @@
     "AMD2": ".\\bin\\xmrig-amd-2\\xmrig.exe",
     "AMD3": ".\\bin\\xmrig-amd-3\\xmrig.exe",
     "minername": "xmrig.exe",
-    "version": "5.1.1",
+    "version": "5.5.0",
     "optional": "No",
-    "uri": "https://github.com/xmrig/xmrig/releases/download/v5.1.1/xmrig-5.1.1-msvc-win64.zip"
+    "uri": "https://github.com/xmrig/xmrig/releases/download/v5.5.0/xmrig-5.5.0-msvc-win64.zip"
   },
   "srbminer": {
     "name": "srbminer",

@@ -14,18 +14,18 @@
     "type": "cpu",
     "CPU": ".\\bin\\rplant-1\\cpuminer-avx2",
     "minername": "cpuminer-avx2",
-    "version": "4.0.27",
+    "version": "4.0.29",
     "optional": "No",
-    "uri": "https://github.com/rplant8/cpuminer-opt-rplant/releases/download/4.0.27/cpuminer-opt-linux.tar.gz"
+    "uri": "https://github.com/rplant8/cpuminer-opt-rplant/releases/download/4.0.29/cpuminer-opt-linux.tar.gz"
   },
   "xmrig-cpu": {
     "name": "xmrig-cpu",
     "type": "cpu",
     "CPU": ".\\bin\\xmrig-cpu-1\\xmrig",
     "minername": "xmrig",
-    "version": "5.1.0",
+    "version": "5.5.0",
     "optional": "No",
-    "uri": "https://github.com/MaynardMiner/MM.Compiled-Miners/releases/download/v8.0/xmrig-linux.tar.gz"
+    "uri": "https://github.com/xmrig/xmrig/releases/download/v5.5.0/xmrig-5.5.0-xenial-x64.tar.gz"
   },
   "sugarchain": {
     "name": "sugarchain",
@@ -41,7 +41,7 @@
     "type": "cpu",
     "CPU": ".\\bin\\jayddee-1\\cpuminer",
     "minername": "cpuminer",
-    "version": "3.9.9.1",
+    "version": "3.10.7",
     "optional": "No",
     "uri": "https://github.com/MaynardMiner/MM.Compiled-Miners/releases/download/v8.0/jayddee-linux.tar.gz"
   },

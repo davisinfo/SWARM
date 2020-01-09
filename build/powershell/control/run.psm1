@@ -56,29 +56,95 @@ function Global:Stop-ActiveMiners {
                 }
             }
 
-            if ($(arg).Platform -eq "linux") {
-                if ($null -eq $_.XProcess -and $_.Status -ne "Idle") { $_.Status = "Failed" }
-                else {
+            ## Linux
+            elseif ($(arg).Platform -eq "linux") {
+                ## Miner never started to begin with. Nothing to do here.
+                if ($Null -eq $_.XProcess) { $_.Status = "Failed" }
+                ## Miner is running, needs to close, but is not ASIC.
+                elseif ($_.XProcess.HasExited -eq $false) {
+                    ## Update Time and Status
+                    $_.Status = "Idle"
+                    $PIDTime = $_.Xprocess.StartTime
+                    $_.Active += (Get-Date) - $PIDTime     
+
                     if ($_.Type -notlike "*ASIC*") {
-                        $MinerInfo = ".\build\pid\$($_.InstanceName)_info.txt"
-                        if (Test-Path $MinerInfo) {
-                            $_.Status = "Idle"
-                           $(vars).PreviousMinerPorts.$($_.Type) = "($_.Port)"
-                            $MI = Get-Content $MinerInfo | ConvertFrom-Json
-                            $PIDTime = [DateTime]$MI.start_date
-                            $Exec = Split-Path $MI.miner_exec -Leaf
-                            $_.Active += (Get-Date) - $PIDTime
-                            $Proc = Start-Process "start-stop-daemon" -ArgumentList "--stop --name $Exec --pidfile $($MI.pid_path) --retry 5" -PassThru
-                            $Proc | Wait-Process
-                        }
+
+                        ## Update ports that need to be checked later.
+                        $(vars).PreviousMinerPorts.$($_.Type) = "($_.Port)"
+
+                        ## First we need to identify all processes related
+                        ## to miner. We need to make sure they are all killed
+                        ## Or notate a warning to user there is an issue here.
+                        $To_Kill = @()
+                        $To_Kill += $_.XProcess
+
+                        ## Get the bash process miner is launched in.
+                        [int]$Screen_ID = invoke-expression "screen -ls | grep $($_.Type) | cut -f1 -d'.' | sed 's/\W//g'"
+                        $Bash_ID = Get-Process | Where { $_.Parent.Id -eq $Screen_Id }
+
+                        ## Get all sub-processes
+                        ## In this instance I define sub-process as processes
+                        ## with the same name spawned from original process.
+                        $To_KIll += Get-Process | 
+                        Where { $_.Parent.Id -eq $_.Xprocess.ID } | 
+                        Where { $_.Name -eq $_.XProcess.Name }
+
+                        ## Get the bash process miner is launch in.
+                        
+                        ## Wait up to 2 minutes for process to end
+                        ## Hacky-Lazy Timer style.
+                        log "waiting on miner for $($_.Type) to end..." -ForegroundColor Cyan
+                        $Timer = 0;
+                    
+                        ## Send kill signal.
+                        $Proc = Start-Process "screen" -ArgumentList "-S $($_.Type) -X stuff `^C" -PassThru
+                        $Proc | Wait-Process
+
+                        ## Now wait with actions in between.
+                        do {
+                            Start-Sleep -S 1
+                            $Timer++
+
+                            ## ~ 10 second action
+                            ## Spam there is an issue.
+                            if ($Timer -gt 10) {
+                                Write-Log "SWARM IS WAITING FOR MINER TO CLOSE. IT WILL NOT CLOSE" -ForegroundColor Red
+                            }
+
+                            ## ~ 2 minute action
+                            if ($Timer -gt 180) {
+                                ## Houston we have a problem.
+                                ## Something isn't closing.
+                                ## We need to let user know there is an issue.
+                                ## This can break SWARM.
+                                if ($(arg).Startup -eq "Yes") {
+                                    $HiveMessage = "2 minutes miner will not close on $($_.Type) - Restarting Computer"
+                                    $HiveWarning = @{result = @{command = "timeout" } }
+                                    if ($(vars).WebSites) {
+                                        $(vars).WebSites | ForEach-Object {
+                                            $Sel = $_
+                                            try {
+                                                Global:Add-Module "$($(vars).web)\methods.psm1"
+                                                Global:Get-WebModules $Sel
+                                                $SendToHive = Global:Start-webcommand -command $HiveWarning -swarm_message $HiveMessage -Website "$($Sel)"
+                                            }
+                                            catch { log "WARNING: Failed To Notify $($Sel)" -ForeGroundColor Yellow } 
+                                            Global:Remove-WebModules $sel
+                                        }
+                                    }
+                                    log "$HiveMessage" -ForegroundColor Red
+                                    Invoke-Expression "reboot"
+                                }
+                            }
+                        }until($false -notin $To_Kill.HasExited)
                     }
                     else { $_.Xprocess.HasExited = $true; $_.XProcess.StartTime = $null; $_.Status = "Idle" }
                 }
             }
+
         }
     }
 }
-
 function Global:Start-NewMiners {
     param (
         [Parameter(Mandatory = $true)]
@@ -93,7 +159,7 @@ function Global:Start-NewMiners {
 
         if ($null -eq $Miner.XProcess -or $Miner.XProcess.HasExited -and $(arg).Lite -eq "No") {
 
-            if($New_OC_File -eq $false -and $Miner.Type -notlike "*ASIC*" -and $Miner.Type -ne "CPU"){
+            if ($New_OC_File -eq $false -and $Miner.Type -notlike "*ASIC*" -and $Miner.Type -ne "CPU") {
                 "Current OC Settings:" | Set-Content ".\debug\oc-settings.txt"; $New_OC_File = $true
             }
 
@@ -207,7 +273,7 @@ function Global:Start-NewMiners {
                         }Until($false -notin $Child.HasExited)
                     }
                     if ($Sel.SubProcesses -and $false -in $Sel.SubProcesses.HasExited) { 
-                        $Sel.SubProcesses | % { $Check = $_.CloseMainWindow(); if ($Check -eq $False) { Stop-Process -Id $_.Id -ErrorAction Ignore} }
+                        $Sel.SubProcesses | % { $Check = $_.CloseMainWindow(); if ($Check -eq $False) { Stop-Process -Id $_.Id -ErrorAction Ignore } }
                     }
                 }
             }
@@ -237,14 +303,14 @@ function Global:Start-NewMiners {
             ##Confirm They are Running
             if ($Miner.XProcess -eq $null -or $Miner.Xprocess.HasExited -eq $true) {
                 $Miner.Status = "Failed"
-               $(vars).NoMiners = $true
+                $(vars).NoMiners = $true
                 log "$($Miner.MinerName) Failed To Launch" -ForegroundColor Darkred
             }
             else {
                 $Miner.Status = "Running"
-                if ($Miner.Type -notlike "*ASIC*") { log "Process Id is $($Miner.XProcess.ID)" }
-                if($Miner.Type -notlike "*ASIC*"){ log "$($Miner.MinerName) Is Running!" -ForegroundColor Green}
-                else{log "$($Miner.Name) has successfully switched pools!" -ForeGroundColor Green}
+                if ($Miner.Type -notlike "*ASIC*") { log "Process is $(Split-Path $Miner.Path -Leaf)[$($Miner.XProcess.ID)]" }
+                if ($Miner.Type -notlike "*ASIC*") { log "$($Miner.MinerName) Is Running!" -ForegroundColor Green }
+                else { log "$($Miner.Name) has successfully switched pools!" -ForeGroundColor Green }
                 $(vars).current_procs += $Miner.Xprocess.ID
             }
         }

@@ -149,11 +149,34 @@
       "comma seperated"
     ]
   },
+  "cryptonight-conceal": {
+    "alt_names": [
+      "cryptonight-conceal",
+      "crptonight_conceal",
+      "crptonightconceal",
+      "aeon"
+    ],
+    "exclusions": [
+      "add pool or miner here",
+      "comma seperated"
+    ]
+  },
   "cryptonight-lite": {
     "alt_names": [
       "cryptonight-lite",
       "crptonight_lite",
       "aeon"
+    ],
+    "exclusions": [
+      "add pool or miner here",
+      "comma seperated"
+    ]
+  },
+  "cryptonight-fast": {
+    "alt_names": [
+      "cryptonight-fast",
+      "cryptonight_fast",
+      "cnfastv2"
     ],
     "exclusions": [
       "add pool or miner here",
@@ -187,6 +210,28 @@
       "cryptonight-gpu",
       "cryptonightgpu",
       "cryptonight_gpu"
+    ],
+    "exclusions": [
+      "add pool or miner here",
+      "comma seperated"
+    ]
+  },
+  "cryptonight-xeq": {
+    "alt_names": [
+      "cryptonight-xeq",
+      "cryptonightxeq",
+      "cryptonight_xeq"
+    ],
+    "exclusions": [
+      "add pool or miner here",
+      "comma seperated"
+    ]
+  },
+  "cryptonight-haven": {
+    "alt_names": [
+      "cryptonight-haven",
+      "cryptonighthaven",
+      "cryptonight_haven"
     ],
     "exclusions": [
       "add pool or miner here",
@@ -651,6 +696,28 @@
       "comma seperated"
     ]
   },
+  "random-arq": {
+    "alt_names": [
+      "random-arq",
+      "random_arq",
+      "randomarq"
+    ],
+    "exclusions": [
+      "add pool or miner here",
+      "comma seperated"
+    ]
+  },
+  "random-sfx": {
+    "alt_names": [
+      "random-sfx",
+      "random_sfx",
+      "randomsfx"
+    ],
+    "exclusions": [
+      "add pool or miner here",
+      "comma seperated"
+    ]
+  },
   "randomx": {
     "alt_names": [
       "randomxmonero",
@@ -673,6 +740,15 @@
   "rainforestv2": {
     "alt_names": [
       "rfv2"
+    ],
+    "exclusions": [
+      "add pool or miner here",
+      "comma seperated"
+    ]
+  },
+  "sha256csm": {
+    "alt_names": [
+      "sha256csm"
     ],
     "exclusions": [
       "add pool or miner here",
@@ -934,6 +1010,39 @@
   "yespower": {
     "alt_names": [
       "yespower"
+    ],
+    "exclusions": [
+      "add pool or miner here",
+      "comma seperated"
+    ]
+  },
+  "yespoweriots": {
+    "alt_names": [
+      "yespoweriots",
+      "yespower-iots",
+      "yespower_iots"
+    ],
+    "exclusions": [
+      "add pool or miner here",
+      "comma seperated"
+    ]
+  },
+  "yespoweritc": {
+    "alt_names": [
+      "yespoweritc",
+      "yespower-itc",
+      "yespower_itc"
+    ],
+    "exclusions": [
+      "add pool or miner here",
+      "comma seperated"
+    ]
+  },
+  "yespoweric": {
+    "alt_names": [
+      "yespoweric",
+      "yespower-ic",
+      "yespower_ic"
     ],
     "exclusions": [
       "add pool or miner here",
