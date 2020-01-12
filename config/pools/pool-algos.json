@@ -91,6 +91,15 @@
       "comma seperated"
     ]
   },
+  "eaglesong": {
+    "alt_names": [
+      "eaglesong"
+    ],
+    "exclusions": [
+      "add pool or miner here",
+      "comma seperated"
+    ]
+  },
   "equihash_125/4": {
     "alt_names": [
       "zelcash",
@@ -308,6 +317,20 @@
       "cryptonight-saber",
       "cryptonightsaber",
       "cryptonight_saber"
+    ],
+    "exclusions": [
+      "add pool or miner here",
+      "comma seperated"
+    ]
+  },
+  "cryptonight-upx2": {
+    "alt_names": [
+      "cryptonight-upx",
+      "cryptonightupx",
+      "cryptonight_upx",
+      "cryptonight-upx2",
+      "cryptonightupx2",
+      "cryptonight_upx2"
     ],
     "exclusions": [
       "add pool or miner here",

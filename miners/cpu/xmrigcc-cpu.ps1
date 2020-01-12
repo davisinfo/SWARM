@@ -1,7 +1,7 @@
 $(vars).CPUTypes | ForEach-Object {
     
     $ConfigType = $_;
-    $CName = "xmrig-cpu"
+    $CName = "xmrigcc-cpu"
 
     ##Miner Path Information
     if ($(vars).cpu.$CName.$ConfigType) { $Path = "$($(vars).cpu.$CName.$ConfigType)" }
