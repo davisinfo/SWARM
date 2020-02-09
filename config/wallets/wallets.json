@@ -1,8 +1,5 @@
 {
-
     "Note": "Parameters (arguments) have a higher precedence, and may override configs below.",
-
-
     "Active Exchange Wallets": {
         "Note": "these will replicated -Altwallet Parameter, however here you can specify which pools to use. These are for Auto-Exchange, will be used instead of -Wallet Parameters if possible on pool.",
         "AltWallets": {
@@ -65,9 +62,6 @@
             }
         }
     },
-
-
-
     "Passive Alternative Wallets": {
         "note": "These are passive wallets, used with -Auto_Coin. When switching to these coins- You can specify extra actions to occur, if pool can perform. You can continue adding as many coins as you desire.",
         "coin list": {
@@ -83,16 +77,10 @@
             }
         }
     },
-
-
-
     "Admin Wallet": {
         "note": "If you wish to manage SWARM for someone else, you can add an admin fee for a daily %, and mine to your wallet.",
         "admin fee percentage": 0,
         "admin address": "1FpuMha1QPaWS4PTPZpU1zGRzKMevnDpwg",
         "admin address symbol": "BTC"
     }
-
-
-
 }
