@@ -66,15 +66,23 @@ Function Global:Get-Bus {
 
     $NewCount = @()
     $info = [System.Diagnostics.ProcessStartInfo]::new();
-    $info.FileName = ".\build\apps\pci\lspci.exe";
+    $info.FileName = ".\build\cmd\lspci.bat";
     $info.UseShellExecute = $false;
     $info.RedirectStandardOutput = $true;
     $info.Verb = "runas";
     $Proc = [System.Diagnostics.Process]::New();
-    $proc.StartInfo = $Info;
-    $proc.Start() | Out-Null;
-    $proc.WaitForExit();
-    if ($proc.HasExited) { while (-not $proc.StandardOutput.EndOfStream) { $NewCount += $Proc.StandardOutput.ReadLine(); } }
+    $proc.StartInfo = $Info
+    $ttimer = [System.Diagnostics.Stopwatch]::New()
+    $ttimer.Restart();
+    $proc.Start() | Out-Null
+    while (-not $Proc.StandardOutput.EndOfStream) {
+        $NewCount += $Proc.StandardOutput.ReadLine();
+        if ($ttimer.Elapsed.Seconds -gt 15) {
+            $proc.kill() | Out-Null;
+            break;
+        }
+    }
+    $Proc.Dispose();            
     $NewCount = $NewCount | Where { $_ -like "*VGA*" -or $_ -like "*3D controller*" }
 
     if ([string]$OldCount -ne [string]$NewCount) {
@@ -204,43 +212,37 @@ function Global:Get-GPUCount {
     }
 
     if ([string]$(arg).type -eq "") {
-        $global:Config.user_params.type = @()
-        $global:Config.params.type = @()
+        $M_Types = @()
         log "Searching For Mining Types" -ForegroundColor Yellow
         if ($GN -and $GA) {
             log "AMD and NVIDIA Detected" -ForegroundColor Magenta
-            $(vars).types += "AMD1", "NVIDIA2"
-            $(arg).Type += "AMD1", "NVIDIA2"
-            $global:config.user_params.type += "AMD1", "NVIDIA2"
-            $global:config.params.type += "AMD1", "NVIDIA2"                  
+            $M_Types += "AMD1", "NVIDIA2"
         }
         elseif ($GN) {
             log "NVIDIA Detected: Adding NVIDIA" -ForegroundColor Magenta
-            $(vars).types += "NVIDIA1" 
-            $(arg).Type += "NVIDIA1"
-            $global:config.user_params.type += "NVIDIA1" 
-            $global:config.params.type += "NVIDIA1"        
+            $M_Types += "NVIDIA1" 
         }
         elseif ($GA) {
             log "AMD Detected: Adding AMD" -ForegroundColor Magenta
-            $(vars).types += "AMD1" 
-            $(arg).Type += "AMD1"
-            $global:config.user_params.type += "AMD1" 
-            $global:config.params.type += "AMD1"    
+            $M_Types += "AMD1" 
         }
         log "Adding CPU"
         if ([string]$(arg).CPUThreads -eq "") { 
             $threads = $(Get-CimInstance -ClassName 'Win32_Processor' | Select-Object -Property 'NumberOfCores').NumberOfCores; 
-            $(vars).threads = $threads
-            $(arg).CPUThreads = $threads
-            $global:config.user_params.CPUThreads = $threads
-            $global:config.params.CPUThreads = $threads
         }
-        log "Using $($(arg).CPUThreads) cores for mining"
-        $(vars).types += "CPU"
-        $(arg).Type += "CPU"
-        $global:config.user_params.type += "CPU"
-        $global:config.params.type += "CPU"
+        else {
+            $threads = $(arg).CPUThreads;
+        }
+        $M_Types += "CPU"
+        $(vars).types = $M_Types
+        $(arg).Type = $M_Types
+        $global:config.user_params.type = $M_Types
+        $global:config.params.type = $M_types
+        $(vars).threads = $threads
+        $(arg).CPUThreads = $threads
+        $global:config.user_params.CPUThreads = $threads
+        $global:config.params.CPUThreads = $threads
+        log "Using $threads cores for mining"
     }
     
     if ($(arg).Type -like "*CPU*") { for ($i = 0; $i -lt $(arg).CPUThreads; $i++) { $DeviceList.CPU.Add("$($i)", $i) } }
@@ -276,8 +278,8 @@ function Global:Start-WindowsConfig {
     
     ##Create a CMD.exe shortcut for SWARM on desktop
     ## Create Shortcut
-    $Exec_Shortcut = [IO.Path]::Combine($HOME, "Desktop\SWARM.lnk")
-    $Term_Shortcut = [IO.Path]::Combine($HOME, "Desktop\SWARM terminal.lnk")
+    $Exec_Shortcut = [IO.Path]::Combine([Environment]::GetFolderPath("Desktop"), "SWARM.lnk")
+    $Term_Shortcut = [IO.Path]::Combine([Environment]::GetFolderPath("Desktop"), "SWARM terminal.lnk")
 
     if (test-Path $Exec_Shortcut) { Remove-Item $Exec_Shortcut -Force | Out-Null }
     if (test-Path $Term_Shortcut) { Remove-Item $Term_Shortcut -Force | Out-Null }
@@ -289,7 +291,7 @@ function Global:Start-WindowsConfig {
     $Shortcut.WorkingDirectory = $(vars).dir
     $Shortcut.IconLocation = Join-Path $(vars).dir "build\apps\icons\SWARM.ico"
     $Shortcut.Description = "Shortcut For SWARM.bat. You can right-click -> edit this shortcut"
-    $Shortcut.Save()        
+    $Shortcut.Save()
 
     $Shortcut = $WshShell.CreateShortcut($Term_Shortcut)
     $Shortcut.TargetPath = join-path $(vars).dir "SWARM Terminal.bat"

@@ -13,6 +13,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 function Global:Get-Data {
 
+    if(-not (test-path "/etc/profile.d/SWARM.sh")) {
+        "export SWARM_DIR=$($(vars).dir)" | Set-Content "/etc/profile.d/SWARM.sh"
+        $Target = [System.EnvironmentVariableTarget]::Process
+        [System.Environment]::SetEnvironmentVariable('SWARM_DIR', "$($(vars).dir)", $Target)
+    }
+
     $Execs = @()
     $Execs += "stats"
     $Execs += "swarm_batch"
@@ -137,7 +143,7 @@ function Global:Get-GPUCount {
         $amdmeminfo = [string]$amdmeminfo
         $amdmeminfo = $amdmeminfo.split("-----------------------------------;")
         $memarray = @()
-        for ($i = 0; $i -lt $amdmeminfo.count; $i++) { $item = $amdmeminfo[$i].split(";"); $data = $item | ConvertFrom-StringData; $memarray += [PSCustomObject]@{"busid" = $data."PCI"; "mem_type" = $data."Memory Type"; "mem_model" = $data."Memory Model"; } }
+        for ($i = 0; $i -lt $amdmeminfo.count; $i++) { $item = $amdmeminfo[$i].split(";"); $data = $item | ConvertFrom-StringData; $memarray += [PSCustomObject]@{"busid" = $data."PCI"; "mem_type" = $data."Memory Model"; "bios" = $data."BIOS Version" } }
         $amdmeminfo = $memarray
     }
 
@@ -155,14 +161,16 @@ function Global:Get-GPUCount {
                 $name = ($_.line.Split("[AMD/ATI] ")[1]).split(" (")[0]
                 $SMI = $ROCMSMI | Where { $_."PCI Bus" -eq $busid }
                 $meminfo = $amdmeminfo | Where busid -eq $busid
+                ## Mem size
+                $mem = Invoke-Expression "dmesg | grep -oE `"amdgpu 0000`:${busid}`: VRAM:`\s.*`" | sed -n `'s`/.*VRAM:`\s`\([0-9MG]`\+`\).*`/`\1`/p'"
                 $(vars).BusData += [PSCustomObject]@{
                     busid     = $busid
                     name      = $name
                     brand     = "amd"
                     subvendor = $SMI."Card vendor"
-                    mem       = $meminfo."mem_model"
-                    vbios     = $SMI."VBIOS version"
-                    mem_type  = $meminfo."mem_type"
+                    mem       = $mem
+                    vbios     = $meminfo.bios
+                    mem_type  = $meminfo.mem_type
                 }
             }
             elseif ($_ -like "*NVIDIA*") {
@@ -206,46 +214,46 @@ function Global:Get-GPUCount {
     if ([string]$(arg).type -eq "") {
         log "Searching For Mining Types" -ForegroundColor Yellow
         log "Adding CPU"
-        $(arg).type = @()
-        $(vars).Type = @()
-        $global:Config.user_params.type = @()
-        $global:Config.params.type = @()
-        $(arg).type += "CPU"
-        $(vars).Type += "CPU"
-        $global:Config.user_params.type += "CPU"
-        $global:Config.params.type += "CPU"
-        $threads = Invoke-Expression "nproc";
-        $(vars).threads = $threads
-        $(vars).CPUThreads = $threads
-        $(arg).CPUThreads = $Threads
-        $global:config.user_params.CPUThreads = $threads
-        $global:config.params.CPUThreads = $threads    
+        $M_Types = @()
+        $M_Types += "CPU"
         if ($(vars).BusData | Where brand -eq "amd") {
             log "AMD Detected: Adding AMD" -ForegroundColor Magenta
             $(arg).type += "AMD1"
             $(vars).Type += "AMD1"
-            $global:Config.user_params.type += "AMD1"
-            $global:Config.params.type += "AMD1"
+            $M_Types += "AMD1"
         }
         if ($(vars).BusData | Where brand -eq "NVIDIA") {
             if ("AMD1" -in $(arg).type) {
                 log "NVIDIA Detected: Adding NVIDIA" -ForegroundColor Magenta
                 $(arg).type += "NVIDIA2"
                 $(vars).Type += "NVIDIA2"
-                $global:Config.user_params.type += "NVIDIA2"
-                $global:Config.params.type += "NVIDIA2"
+                $M_Types += "NVIDIA2"
             }
             else {
                 log "NVIDIA Detected: Adding NVIDIA" -ForegroundColor Magenta
                 $(arg).type += "NVIDIA1"
                 $(vars).Type += "NVIDIA1"
-                $global:Config.user_params.type += "NVIDIA1"
-                $global:Config.params.type += "NVIDIA1"
+                $M_Types += "NVIDIA1"
             }
         }
+        if ([string]$(arg).CPUThreads -eq "") { 
+            $threads = Invoke-Expression "nproc";
+        } else {
+            $threads = $(arg).CPUThreads;
+        }
+        $(vars).types = $M_Types
+        $(arg).Type = $M_Types
+        $global:config.user_params.type = $M_Types
+        $global:config.params.type = $M_types
+        $(vars).threads = $threads
+        $(arg).CPUThreads = $threads
+        $global:config.user_params.CPUThreads = $threads
+        $global:config.params.CPUThreads = $threads
+        log "Using $threads cores for mining"
     }
 
     $(vars).BusData = $(vars).BusData | Sort-Object busid
+    $(vars).BusData | ConvertTo-Json -Depth 5 | Set-Content ".\debug\busdata.txt"
 
     $(vars).BusData | ForEach-Object {
         if ($_.brand -eq "amd") {
