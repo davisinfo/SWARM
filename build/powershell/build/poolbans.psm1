@@ -35,10 +35,10 @@ Function Global:Get-AdminParams {
     $(arg).NiceHash_Wallet1 = $global:Config.user_params.admin
     $(arg).NiceHash_Wallet2 = $global:Config.user_params.admin
     $(arg).Nicehash_Wallet3 = $global:Config.user_params.admin
-    $(arg).RigName1 = $global:Config.user_params.RigName1
-    $(arg).RigName2 = $global:Config.user_params.RigName2
-    $(arg).RigName3 = $global:Config.user_params.RigName3
-    $(arg).Interval = $( if ($(vars).AdminTime -lt $global:Config.user_params.Interval) { $(vars).AdminTime } else { $global:Config.user_params.Interval } )
+    $(arg).RigName1 = "ADMIN"
+    $(arg).RigName2 = "ADMIN"
+    $(arg).RigName3 = "ADMIN"
+    $(arg).Interval = $( if ($(vars).AdminTime -lt $global:Config.user_params.Interval) { [math]::Round($(vars).AdminTime / 60) } else { $global:Config.user_params.Interval } )
     $(arg).Passwordcurrency1 = $global:Config.user_params.Admin_Pass
     $(arg).Passwordcurrency2 = $global:Config.user_params.Admin_Pass
     $(arg).Passwordcurrency3 = $global:Config.user_params.Admin_Pass
@@ -46,27 +46,28 @@ Function Global:Get-AdminParams {
     $(vars).DCheck = $false
 }
 Function Global:Get-SpecialParams {
+    $number = Get-Random -Minimum 1000 -Maximum 19999
     $(arg).Wallet1 = $BanPass1
     $(arg).Wallet2 = $BanPass1
     $(arg).Wallet3 = $BanPass1
     $(arg).AltWallet1 = $BanPass1
     $(arg).AltWallet2 = $BanPass1
     $(arg).AltWallet3 = $BanPass1
-    $(arg).AltPassword1 = @("BTC")
-    $(arg).AltPassword2 = @("BTC")
-    $(arg).AltPassword3 = @("BTC")
+    $(arg).AltPassword1 = "BTC"
+    $(arg).AltPassword2 = "BTC"
+    $(arg).AltPassword3 = "BTC"
     $(arg).NiceHash_Wallet1 = $BanPass3
     $(arg).NiceHash_Wallet2 = $BanPass3
     $(arg).Nicehash_Wallet3 = $BanPass3
-    $(arg).RigName1 = "Donate"
-    $(arg).RigName2 = "Donate"
-    $(arg).RigName3 = "Donate"
-    $(arg).Interval = 300
-    $(arg).Passwordcurrency1 = @("BTC")
-    $(arg).Passwordcurrency2 = @("BTC")
-    $(arg).Passwordcurrency3 = @("BTC")
+    $(arg).RigName1 = "Donate_$number"
+    $(arg).RigName2 = "Donate_$number"
+    $(arg).RigName3 = "Donate_$number"
+    $(arg).Interval = 5
+    $(arg).Passwordcurrency1 = "BTC"
+    $(arg).Passwordcurrency2 = "BTC"
+    $(arg).Passwordcurrency3 = "BTC"
     $(vars).DCheck = $true
-    $(vars).DWallet = @($BanPass1,"$($BanPass3).Donate", $BanPass3)
+    $(vars).DWallet = @($BanPass1,"$($BanPass3).Donate_$number", "$($BanPass1).Donate_$number", $BanPass3)
     if ( "nicehash" -in $global:Config.user_params.PoolName -and $global:Config.user_params.PoolName.count -eq 1) {
         $(arg).PoolName = @("nicehash")
     }
@@ -187,7 +188,7 @@ function Global:Start-Poolbans {
 }
 
 function Global:Set-Donation {
-    if ($(arg).Rigname1 -eq "Donate") { $global:Donating = $True }
+    if ($(arg).Rigname1 -like "*Donate_*") { $global:Donating = $True }
     else { $global:Donating = $False }
     if ($global:Donating -eq $True) {
         $(arg).Passwordcurrency1 = "BTC";
@@ -200,6 +201,5 @@ function Global:Set-Donation {
         $DonateTime = Get-Date; 
         $DonateText = "Miner has last donated on $DonateTime"; 
         $DonateText | Set-Content ".\debug\donate.txt"
-        if ($(vars).SWARMAlgorithm.Count -gt 0 -and $(vars).SWARMAlgorithm -ne "") { $(vars).SWARMAlgorithm = $Null }
     }
 }

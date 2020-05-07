@@ -1,36 +1,33 @@
-$(vars).AMDTypes | ForEach-Object {
+$(vars).CPUTypes | ForEach-Object {
     
-    $ConfigType = $_; $Num = $ConfigType -replace "AMD", ""
+    $ConfigType = $_;
 
     ##Miner Path Information
-    if ($(vars).amd.srbminer.$ConfigType) { $Path = "$($(vars).amd.srbminer.$ConfigType)" }
+    if ($(vars).cpu.verium_miner.$ConfigType) { $Path = "$($(vars).cpu.verium_miner.$ConfigType)" }
     else { $Path = "None" }
-    if ($(vars).amd.srbminer.uri) { $Uri = "$($(vars).amd.srbminer.uri)" }
+    if ($(vars).cpu.verium_miner.uri) { $Uri = "$($(vars).cpu.verium_miner.uri)" }
     else { $Uri = "None" }
-    if ($(vars).amd.srbminer.minername) { $MinerName = "$($(vars).amd.srbminer.minername)" }
+    if ($(vars).cpu.verium_miner.minername) { $MinerName = "$($(vars).cpu.verium_miner.minername)" }
     else { $MinerName = "None" }
 
-    $User = "User$Num"; $Pass = "Pass$Num"; $Name = "srbminer-$Num"; $Port = "3400$Num"
-
-    Switch ($Num) {
-        1 { $Get_Devices = $(vars).AMDDevices1; $Rig = $(arg).Rigname1 }
-    }
+    $Name = "verium_miner";
 
     ##Log Directory
     $Log = Join-Path $($(vars).dir) "logs\$ConfigType.log"
 
-    ##Parse -GPUDevices
-    if ($Get_Devices -ne "none") { $Devices = $Get_Devices }
-    else { $Devices = $Get_Devices }
+    ##Parse -CPUThreads
+    if ($(arg).CPUThreads -ne '') { $Devices = $(arg).CPUThreads }
 
     ##Get Configuration File
-    $MinerConfig = $Global:config.miners.srbminer
+    ##This is located in config\miners
+    $MinerConfig = $Global:config.miners.verium_miner
 
     ##Export would be /path/to/[SWARMVERSION]/build/export##
     $ExportDir = Join-Path $($(vars).dir) "build\export"
     $Miner_Dir = Join-Path ($(vars).dir) ((Split-Path $Path).replace(".", ""))
 
     ##Prestart actions before miner launch
+    ##This can be edit in miner.json
     $Prestart = @()
     if ($IsLinux) { $Prestart += "export LD_PRELOAD=$(Join-Path $(vars).Dir "build\export\libcurl.so.3")" }    
     $PreStart += "export LD_LIBRARY_PATH=$ExportDir`:$Miner_Dir"
@@ -41,7 +38,6 @@ $(vars).AMDTypes | ForEach-Object {
 
     if ($(vars).Bancount -lt 1) { $(vars).Bancount = 5 }
 
-    ##Build Miner Settings
     $MinerConfig.$ConfigType.commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
 
         $MinerAlgo = $_
@@ -70,23 +66,23 @@ $(vars).AMDTypes | ForEach-Object {
                     Path       = $Path
                     Devices    = $Devices
                     Stratum    = "$($_.Protocol)://$($_.Pool_Host):$($_.Port)" 
-                    Version    = "$($(vars).amd.srbminer.version)"
-                    DeviceCall = "srbminer"
-                    Arguments  = "--adldisable --ccryptonighttype $($MinerConfig.$ConfigType.naming.$($_.Algorithm)) -cgpuid $Devices --cnicehash true --cpool $($_.Pool_Host):$($_.Port) --cwallet $($_.$User) --cpassword $($_.$Pass) --apienable --logfile `'$Log`' --apiport $Port $($MinerConfig.$ConfigType.commands.$($_.Algorithm))"
+                    Version    = "$($(vars).cpu.verium_miner.version)"
+                    DeviceCall = "cpuminer-opt"
+                    Arguments  = "--cpu-affinity AAAA -q -o stratum+tcp://$($_.Pool_Host):$($_.Port) -b 0.0.0.0:10001 -u $($_.User1) -p $($_.Pass1)$($Diff) $($MinerConfig.$ConfigType.commands.$($_.Algorithm))"
                     HashRates  = $Stat.Hour
-                    Quote      = if ($HashStat) { $HashStat * ($_.Price) }else { 0 }
+                    Worker     = $(arg).Rigname1
+                    Quote      = if ($HashStat) { [Convert]::ToDecimal($HashStat * $_.Price) }else { 0 }
                     Rejections = $Stat.Rejections
                     Power      = if ($(vars).Watts.$($_.Algorithm)."$($ConfigType)_Watts") { $(vars).Watts.$($_.Algorithm)."$($ConfigType)_Watts" }elseif ($(vars).Watts.default."$($ConfigType)_Watts") { $(vars).Watts.default."$($ConfigType)_Watts" }else { 0 } 
                     MinerPool  = "$($_.Name)"
-                    Port       = $Port
-                    Worker     = $Rig 
-                    API        = "srbminer"
-                    Wallet     = "$($_.$User)"
+                    Port       = 10001
+                    API        = "cpuminer"
+                    Wallet     = "$($_.User1)"
                     URI        = $Uri
                     Server     = "localhost"
-                    Algo       = "$($_.Algorithm)"                         
-                    Log        = "miner_generated"
-                }
+                    Algo       = "$($_.Algorithm)"
+                    Log        = $Log 
+                }            
             }
         }
     }

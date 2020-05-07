@@ -26,6 +26,7 @@ $(vars).AMDTypes | ForEach-Object {
     else { $Devices = $Get_Devices }
 
     ##Get Configuration File
+    ##This is located in config\miners
     $MinerConfig = $Global:config.miners.$CName
 
     ##Export would be /path/to/[SWARMVERSION]/build/export##
@@ -33,6 +34,7 @@ $(vars).AMDTypes | ForEach-Object {
     $Miner_Dir = Join-Path ($(vars).dir) ((Split-Path $Path).replace(".", ""))
 
     ##Prestart actions before miner launch
+    ##This can be edit in miner.json
     $Prestart = @()
     $PreStart += "export LD_LIBRARY_PATH=$ExportDir`:$Miner_Dir"
     $MinerConfig.$ConfigType.prestart | ForEach-Object { $Prestart += "$($_)" }
@@ -74,7 +76,7 @@ $(vars).AMDTypes | ForEach-Object {
                     DeviceCall = "kbminer"
                     Arguments  = "--algorithm $($MinerConfig.$ConfigType.naming.$($_.Algorithm)) --enableapi --apiaddr $Port --pool $($_.Pool_Host):$($_.Port) --user $($_.$User) --pass $($_.$Pass)$($Diff) $($MinerConfig.$ConfigType.commands.$($_.Algorithm))"
                     HashRates  = $Stat.Hour
-                    Quote      = if ($HashStat) { $HashStat * ($_.Price) }else { 0 }
+                    Quote      = if ($HashStat) { [Convert]::ToDecimal($HashStat * $_.Price) }else { 0 }
                     Rejections = $Stat.Rejections
                     Power      = if ($(vars).Watts.$($_.Algorithm)."$($ConfigType)_Watts") { $(vars).Watts.$($_.Algorithm)."$($ConfigType)_Watts" }elseif ($(vars).Watts.default."$($ConfigType)_Watts") { $(vars).Watts.default."$($ConfigType)_Watts" }else { 0 } 
                     MinerPool  = "$($_.Name)"

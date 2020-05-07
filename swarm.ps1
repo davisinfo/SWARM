@@ -15,6 +15,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #######                      Startup                                    ######
 ##############################################################################
 
+## any windows version below 10 invoke full screen mode.
+if ($isWindows) {
+    $os_string = "$([System.Environment]::OSVersion.Version)".split(".") | Select -First 1
+    if ([int]$os_string -lt 10) {
+        invoke-expression "mode 800"
+    }
+}
+
 ## Set Current Path
 $Global:config = [hashtable]::Synchronized(@{ })
 [cultureinfo]::CurrentCulture = 'en-US'
@@ -25,40 +33,73 @@ $Global:Config.vars.dir = $Global:Config.vars.dir -replace "/var/tmp", "/root"
 Set-Location $Global:Config.vars.dir
 if (-not (test-path ".\debug")) { New-Item -Path "debug" -ItemType Directory | Out-Null }
 
+if($GLobal:Config.vars.dir -like "* *") {
+    Write-Host "Warning: Detected File Path To Be $($Global:Config.vars.dir)" -ForegroundColor Red
+    Write-Host "Because there is a space within a parent directory," -ForegroundColor Red
+    Write-Host "This will cause certain logs and miners to not start." -ForegroundColor Red
+    Write-Host "Due to SWARM attempting to set logging arguments in miners." -ForegroundColor Red
+    Write-Host "If you would like to use all features of SWARM, do not place" -ForegroundColor Red
+    Write-Host "SWARM folder in a parent directory that contains spaces." -ForegroundColor Red
+    Write-Host "Miner anti-debugging and poor miner argument parsing/development make this a problem." -ForegroundColor Red
+    Start-Sleep -S 10
+}
+
 if ($IsWindows) {
-    Write-Host "Please Wait- Setting Environment Variables..." -ForegroundColor Green
+    ## Warn User about path
+    Write-Host "Stopping Any Previous SWARM Instances..."
+    $ID = ".\build\pid\miner_pid.txt"
+    if (Test-Path $ID) { 
+        $Get_SWARM = Get-Content $ID 
+        if ($Get_SWARM) { 
+            $SWARMID = Get-Process | Where id -eq $Agent 
+            if ($SWARMID) {
+                $SWARMID.Kill()
+            }
+        }
+    }
     ## Fix weird PATH issues for commands
+    $restart = $false
     $Target1 = [System.EnvironmentVariableTarget]::Machine
     $Target2 = [System.EnvironmentVariableTarget]::Process
     $Path = [System.Environment]::GetEnvironmentVariable('Path', $Target1)
     $Path_List = $Path.Split(';')
     
     ## Remove all old SWARM Paths and add current
-    $Path_List = $Path_List | Where { $_ -notlike "*SWARM*" }
-    $Path_List += "$($Global:Config.vars.dir)\build\cmd"
-    $New_PATH = $Path_List -join (';')
+    if ("$($Global:Config.vars.dir)\build\cmd" -notin $Path_List) {
+        Write-Host "Please Wait- Setting Environment Variables..." -ForegroundColor Green
+        $Path_List = $Path_List | Where { $_ -notlike "*SWARM*" }
+        $Path_List += "$($Global:Config.vars.dir)\build\cmd"
+        $New_PATH = $Path_List -join (';')    
+        [System.Environment]::SetEnvironmentVariable('Path', $New_PATH, $Target1)
+        [System.Environment]::SetEnvironmentVariable('Path', $New_PATH, $Target2)
+        $restart = $true
+    }
 
     ## Set Path
-    [System.Environment]::SetEnvironmentVariable('Path', $New_PATH, $Target1)
-    [System.Environment]::SetEnvironmentVariable('SWARM_DIR', "$($Global:Config.vars.dir)", $Target1)
+    if ($Env:SWARM_DIR -ne $Global:Config.vars.dir) {
+        $restart = $true
+        [System.Environment]::SetEnvironmentVariable('SWARM_DIR', "$($Global:Config.vars.dir)", $Target1)
+        [System.Environment]::SetEnvironmentVariable('SWARM_DIR', "$($Global:Config.vars.dir)", $Target2)
+    }
     ## By stopping explorer, it restarts retroactively with path refreshed
     ## for commands.
     ## Now set env variables for process- Just in case.
-    [System.Environment]::SetEnvironmentVariable('Path', $New_PATH, $Target2)
-    [System.Environment]::SetEnvironmentVariable('SWARM_DIR', "$($Global:Config.vars.dir)", $Target2)
+    if ($restart -eq $true) {
+        Stop-Process -ProcessName explorer
+    }
 }
 
 ## Check Powershell version. Output warning.
-if ($PSVersionTable.PSVersion -ne "6.2.4") {
+if ($PSVersionTable.PSVersion -ne "7.0.0") {
     Write-Host "WARNING: Powershell Core Version is $($PSVersionTable.PSVersion)" -ForegroundColor Red
-    Write-Host "Currently supported version for SWARM is 6.2.4" -ForegroundColor Red
+    Write-Host "Currently supported version for SWARM is 7.0.0" -ForegroundColor Red
     Write-Host "SWARM will continue anyways- It may cause issues." -ForegroundColor Red
-    Write-Host "Links for Powershell:" -ForegroundColor Red
-    Write-Host "https://github.com/PowerShell/PowerShell/releases/tag/v6.2.4" -ForegroundColor Red
-
     Write-Host ""
-    Write-Host "Windows: Microsoft Visual C++ Redistributable for Visual Studio 2015, 2017 and 2019" -ForegroundColor Red
-    Write-Host "Is Requried As Well:" -ForegroundColor Red
+    Write-Host "Link for Powershell:" -ForegroundColor Red
+    Write-Host "https://github.com/PowerShell/PowerShell/releases/tag/v7.0.0" -ForegroundColor Red
+    Write-Host ""
+    Write-Host "Windows: Microsoft Visual C++ Redistributable for Visual Studio (2012) (2013) (2015,2017 and 2019)" -ForegroundColor Red
+    Write-Host "Link For download:" -ForegroundColor Red
     Write-Host "https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads" -ForegroundColor Red
 
     ## Create a pause in case window is scrolling too fast.
@@ -103,7 +144,7 @@ if ($IsWindows) {
     Add-Type -Path ".\build\apps\launchcode.dll"
 }
 
-## Debug Mode- Allow you to run with last known arguments or arguments.json.
+## Debug Mode- Allow you to run with last known arguments or commandline.json.
 $(vars).Add("debug", $false)
 if ($global:config.vars.debug -eq $True) {
     Start-Transcript ".\logs\debug.log"
@@ -293,6 +334,23 @@ Global:Remove-Modules
 
 $(vars).Remove("BusData")
 $(vars).Remove("GPU_Count")
+$(vars).Add("Check_Interval",(Get-Date).ToUniversalTime());
+$(vars).Add("switch",$true);
+$(vars).Add("ETH_exchange",0);
+$(vars).Add("Load_Timer",(Get-Date).ToUniversalTime());
+$(vars).Add("Hashtable",@{});
+[GC]::Collect()
+[GC]::WaitForPendingFinalizers()
+[GC]::Collect()    
+
+if($(arg).Throttle -eq 0) {
+    $(arg).Throttle = ([Environment]::ProcessorCount + 1)
+}
+
+## Make stats folder if it doesn't exist
+if(-not (test-path ".\stats")) {
+    new-item "stats" -ItemType Directory | Out-Null
+}
 
 ##############################################################################
 #######                      End Startup                                ######
@@ -317,13 +375,22 @@ While ($true) {
         ##  This allows the abililty to remove/add variables to both, as well as clear them all with a single command.
         ##  These are all global values- It can be used with user-created modules.
 
+        if(
+            $(vars).switch -ne $true -and 
+            [math]::Round(((Get-Date).ToUniversalTime() - $(vars).Check_Interval).TotalSeconds) -ge $(($(arg).Interval) * 60)
+        ) {
+           $(vars).switch = $true
+           $(vars).Check_Interval = (Get-Date).ToUniversalTime()
+        }
+        $(vars).Load_Timer = (Get-Date).ToUniversalTime()
+
         create Algorithm @()
         create BanHammer @()
         create ASICTypes @()
         create ASICS @{ }
         create All_AltWalltes $null
-        create SWARMAlgorithm $(arg).Algorithm
-
+        $(vars).ETH_exchange = 0;
+        
         ##Insert Build Single Modules Here
 
         ##Insert Build Looping Modules Here
@@ -384,6 +451,9 @@ While ($true) {
         Remove-Variable -Name BanJson -ErrorAction Ignore
         Remove-Variable -Name Action -ErrorAction Ignore
         Global:Remove-Modules
+        [GC]::Collect()
+        [GC]::WaitForPendingFinalizers()
+        [GC]::Collect()    
 
         ##############################################################################
         #######                         END PHASE 1                             ######
@@ -423,7 +493,13 @@ While ($true) {
         ##Get Algorithm Pools
         Global:Add-Module "$($(vars).pool)\gather.psm1"
         Global:Get-AlgoPools
+        [GC]::Collect()
+        [GC]::WaitForPendingFinalizers()
+        [GC]::Collect()    
         Global:Get-CoinPools
+        [GC]::Collect()
+        [GC]::WaitForPendingFinalizers()
+        [GC]::Collect()    
         Global:Remove-Modules
 
         ## Phase Clean up
@@ -452,7 +528,13 @@ While ($true) {
         ##Load The Miners
         Global:Add-Module "$($(vars).miner)\gather.psm1"
         Global:Get-AlgoMiners
+        [GC]::Collect()
+        [GC]::WaitForPendingFinalizers()
+        [GC]::Collect()    
         Global:Get-CoinMiners
+        [GC]::Collect()
+        [GC]::WaitForPendingFinalizers()
+        [GC]::Collect()    
 
         ##Send error if no miners found
         if ($(vars).Miners.Count -eq 0) {
@@ -476,7 +558,8 @@ While ($true) {
             Remove-Variable -Name Sel -ErrorAction Ignore
 
             ## Go to sleep for interval
-            start-sleep $(arg).Interval;
+            start-sleep -S ([math]::Round(((Get-Date).ToUniversalTime() - $(vars).Load_Timer).TotalSeconds))
+            $(vars).switch = $true;
 
             ## Check How many times it occurred.
             ## If it occurred more than 10 times-
@@ -513,7 +596,6 @@ While ($true) {
         $(vars).Watts = $null
         remove CoinPools 
         remove AlgoPools 
-        remove SWARMAlgorithm
         remove BanHammer
         remove ASICTypes
         remove Algorithm
@@ -521,6 +603,9 @@ While ($true) {
         remove SingleMode
         remove Miners_Combo
         remove Pool_HashRates
+        [GC]::Collect()
+        [GC]::WaitForPendingFinalizers()
+        [GC]::Collect()    
 
         ##############################################################################
         #######                        End Phase 3                             ######
@@ -587,6 +672,9 @@ While ($true) {
         remove PreviousMinerPorts
         remove Restart
         remove NoMiners
+        [GC]::Collect()
+        [GC]::WaitForPendingFinalizers()
+        [GC]::Collect()    
 
         ##############################################################################
         #######                        End Phase 4                              ######
@@ -623,7 +711,16 @@ While ($true) {
 
         ##Start SWARM Loop
         Global:Add-Module "$($(vars).run)\loop.psm1"
+        [GC]::Collect()
+        [GC]::WaitForPendingFinalizers()
+        [GC]::Collect() 
+        
+        ## Before starting miner loop- build data table for
+        ## Hashrates and Power sampling.
+        Global:Build-Hashtable
         Global:Start-MinerLoop
+
+        $(vars).Add_Time = 0;
 
         ## Phase Clean up
         Global:Remove-Modules
@@ -633,6 +730,9 @@ While ($true) {
         remove ASICS
         remove Share_Table
         remove ModeCheck
+        [GC]::Collect()
+        [GC]::WaitForPendingFinalizers()
+        [GC]::Collect()    
 
         ##############################################################################
         #######                        End Phase 5                              ######
@@ -653,6 +753,9 @@ While ($true) {
 
         ##Try To Benchmark
         Global:Start-Benchmark
+        [GC]::Collect()
+        [GC]::WaitForPendingFinalizers()
+        [GC]::Collect()    
 
         ##############################################################################
         #######                       End Phase 6                               ######

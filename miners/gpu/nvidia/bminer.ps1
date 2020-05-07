@@ -23,6 +23,7 @@ $(vars).NVIDIATypes | ForEach-Object {
     else { $Devices = $Get_Devices }
 
     ##Get Configuration File
+    ##This is located in config\miners
     $MinerConfig = $Global:config.miners.bminer
 
     ##Export would be /path/to/[SWARMVERSION]/build/export##
@@ -30,6 +31,7 @@ $(vars).NVIDIATypes | ForEach-Object {
     $Miner_Dir = Join-Path ($(vars).dir) ((Split-Path $Path).replace(".", ""))
 
     ##Prestart actions before miner launch
+    ##This can be edit in miner.json
     $Prestart = @()
     $PreStart += "export LD_LIBRARY_PATH=$ExportDir`:$Miner_Dir"
     if ($IsLinux) { $Prestart += "export DISPLAY=:0" }
@@ -69,6 +71,17 @@ $(vars).NVIDIATypes | ForEach-Object {
                             "eaglesong" { $Pass = ""; $Naming = "eaglesong"; $AddArgs = "" }
                         }
                     }
+                    "zergpool" {
+                        switch ($Sel) {
+                            "ethash" { $Pass = ""; $Naming = "ethproxy"; $AddArgs = "" }
+                            "cuckaroom" { $Pass = ""; $Naming = "cuckaroo29m"; $AddArgs = "-pers auto " }
+                            "cuckatoo31" { $Pass = ""; $Naming = "cuckatoo31"; $AddArgs = "-pers auto " }
+                            "equihash_150/5" { $Pass = ""; $Naming = "beam"; $AddArgs = "" }
+                            "equihash_144/5" { $Pass = ""; $Naming = "zhash"; $AddArgs = "" }
+                            "beamv2" { $Pass = ""; $Naming = "beamhash2"; $AddArgs = "" }
+                            "eaglesong" { $Pass = ""; $Naming = "eaglesong"; $AddArgs = "" }
+                        }
+                    }
                     "whalesburg" {
                         switch ($Sel) {
                             "ethash" { $Pass = ""; $Naming = "ethproxy+ssl"; $AddArgs = "" }
@@ -98,7 +111,7 @@ $(vars).NVIDIATypes | ForEach-Object {
                     DeviceCall = "bminer"
                     Arguments  = "-uri $($Naming)://$($_.$User)$Pass$Diff@$($_.Pool_Host):$($_.Port) $AddArgs-logfile `'$Log`' -api 127.0.0.1:$Port $($MinerConfig.$ConfigType.commands.$($_.Algorithm))"
                     HashRates  = $Stat.Hour
-                    Quote      = if ($HashStat) { $HashStat * ($_.Price) }else { 0 }
+                    Quote      = if ($HashStat) { [Convert]::ToDecimal($HashStat * $_.Price) }else { 0 }
                     Rejections = $Stat.Rejections
                     Power      = if ($(vars).Watts.$($_.Algorithm)."$($ConfigType)_Watts") { $(vars).Watts.$($_.Algorithm)."$($ConfigType)_Watts" }elseif ($(vars).Watts.default."$($ConfigType)_Watts") { $(vars).Watts.default."$($ConfigType)_Watts" }else { 0 } 
                     MinerPool  = "$($_.Name)"

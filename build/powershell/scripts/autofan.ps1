@@ -398,7 +398,7 @@ class RIG {
             if ($Config.NO_AMD -ne 1) {
                 $_.Set_Speed($this.Config); 
                 if ($_.New_Speed -ne $_.FanSpeed) {
-                    $FanArgs = "-ac$($_.OC_Number) Fan_P0=80;$($_.New_Speed) Fan_P1=80;$($_.New_Speed) Fan_P2=80;$($_.New_Speed) Fan_P3=80;$($_.New_Speed) Fan_P4=80;$($_.New_Speed)"
+                    $FanArgs = "-ac$($_.OC_Number) Fan_P0=25;$($_.New_Speed) Fan_P1=25;$($_.New_Speed) Fan_P2=25;$($_.New_Speed) Fan_P3=25;$($_.New_Speed) Fan_P4=25;$($_.New_Speed)"
                     $Path = [IO.Path]::Join($Global:Dir, "build\apps\overdriventool\OverdriveNTool.exe")
                     $Proc = Start-Process $Path -ArgumentList $FanArgs -PassThru -NoNewWindow
                     $Proc | Wait-Process
@@ -529,6 +529,13 @@ class Message {
 
 ## Gather Script Variables
 $host.ui.RawUI.WindowTitle = "Autofan"
+## any windows version below 10 invoke full screen mode.
+if ($isWindows) {
+    $os_string = "$([System.Environment]::OSVersion.Version)".split(".") | Select -First 1
+    if ([int]$os_string -lt 10) {
+        invoke-expression "mode 800"
+    }
+}
 $Global:DIR = (Split-Path(Split-Path(Split-Path(Split-Path($script:MyInvocation.MyCommand.Path)))))
 $Config_Path = [IO.Path]::Join($Global:Dir, "config\parameters\autofan.json")
 Set-Location $GLobal:Dir

@@ -11,26 +11,26 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #>
 
-Param (
-    [Parameter(mandatory = $false)]
-    [string]$WorkingDir
-)
-
 [cultureinfo]::CurrentCulture = 'en-US'
-if ($IsWIndows) { $host.ui.RawUI.WindowTitle = "Background Agent" }
+if ($IsWIndows) { $host.ui.RawUI.WindowTitle = "Background Agent: Keep Open!" }
+## any windows version below 10 invoke full screen mode.
+if ($isWindows) {
+    $os_string = "$([System.Environment]::OSVersion.Version)".split(".") | Select -First 1
+    if ([int]$os_string -lt 10) {
+        invoke-expression "mode 800"
+    }
+}
 #$WorkingDir = "C:\Users\Mayna\Documents\GitHub\SWARM"
 #$WorkingDir = "/root/hive/miners/custom/SWARM"
-Set-Location $WorkingDir
+Set-Location $env:SWARM_DIR
 $UtcTime = Get-Date -Date "1970-01-01 00:00:00Z"
 $UTCTime = $UtcTime.ToUniversalTime()
-$StartTime = [Math]::Round(((Get-Date) - $UtcTime).TotalSeconds)
+$Global:StartTime = [Math]::Round(((Get-Date) - $UtcTime).TotalSeconds)
 $Global:config = [hashtable]::Synchronized(@{ })
 $global:config.Add("vars", @{ })
 . .\build\powershell\global\modules.ps1
-$(vars).Add("dir", $WorkingDir)
-$env:Path += ";$($(vars).dir)\build\cmd"
-$Target = [System.EnvironmentVariableTarget]::Process
-[System.Environment]::SetEnvironmentVariable('SWARM_DIR', $WorkingDir, $Target)
+$(vars).Add("dir", $env:SWARM_DIR)
+if($isWindows){$env:Path += ";$($(vars).dir)\build\cmd"}
 
 try { if ((Get-MpPreference).ExclusionPath -notcontains (Convert-Path .)) { Start-Process "powershell" -Verb runAs -ArgumentList "Add-MpPreference -ExclusionPath `'$WorkingDir`'" -WindowStyle Minimized } }catch { }
 try { $Net = Get-NetFireWallRule } catch { }
@@ -468,6 +468,14 @@ While ($True) {
                     }
                     catch { Global:Get-OhNo } 
                 }
+                'srbmulti' {
+                    try { 
+                        Global:Add-Module "$($(vars).miners)\srbmulti.psm1"; 
+                        Global:Get-StatsSrbmulti;
+                        Remove-Module -name "srbmulti"
+                    }
+                    catch { Global:Get-OhNo } 
+                }
                 'sgminer-gm' { 
                     try { 
                         Global:Add-Module "$($(vars).miners)\sgminer.psm1"; 
@@ -622,7 +630,7 @@ While ($True) {
 
     if ($global:DoNVIDIA) {
         for ($global:i = 0; $global:i -lt $(vars).GCount.NVIDIA.PSObject.Properties.Value.Count; $global:i++) {
-            $global:GPUHashTable[$($(vars).GCount.NVIDIA.$global:i)] = "{0:f4}" -f $($global:GPUHashrates.$($(vars).GCount.NVIDIA.$global:i))
+            $global:GPUHashTable[$($(vars).GCount.NVIDIA.$global:i)] = "{0:f6}" -f $($global:GPUHashrates.$($(vars).GCount.NVIDIA.$global:i))
             $global:GPUFanTable[$($(vars).GCount.NVIDIA.$global:i)] = "$($global:GPUFans.$($(vars).GCount.NVIDIA.$global:i))"
             $global:GPUTempTable[$($(vars).GCount.NVIDIA.$global:i)] = "$($global:GPUTemps.$($(vars).GCount.NVIDIA.$global:i))"
             $global:GPUPowerTable[$($(vars).GCount.NVIDIA.$global:i)] = "$($global:GPUPower.$($(vars).GCount.NVIDIA.$global:i))"
@@ -630,7 +638,7 @@ While ($True) {
     }
     if ($global:DoAMD) {
         for ($global:i = 0; $global:i -lt $(vars).GCount.AMD.PSObject.Properties.Value.Count; $global:i++) {
-            $global:GPUHashTable[$($(vars).GCount.AMD.$global:i)] = "{0:f4}" -f $($global:GPUHashrates.$($(vars).GCount.AMD.$global:i))
+            $global:GPUHashTable[$($(vars).GCount.AMD.$global:i)] = "{0:f6}" -f $($global:GPUHashrates.$($(vars).GCount.AMD.$global:i))
             $global:GPUFanTable[$($(vars).GCount.AMD.$global:i)] = "$($global:GPUFans.$($(vars).GCount.AMD.$global:i))"
             $global:GPUTempTable[$($(vars).GCount.AMD.$global:i)] = "$($global:GPUTemps.$($(vars).GCount.AMD.$global:i))"
             $global:GPUPowerTable[$($(vars).GCount.AMD.$global:i)] = "$($global:GPUPower.$($(vars).GCount.AMD.$global:i))"
@@ -639,13 +647,13 @@ While ($True) {
 
     if ($global:DoCPU) {
         for ($global:i = 0; $global:i -lt $(vars).GCount.CPU.PSObject.Properties.Value.Count; $global:i++) {
-            $global:CPUHashTable[$($(vars).GCount.CPU.$global:i)] = "{0:f4}" -f $($global:CPUHashrates.$($(vars).GCount.CPU.$global:i))
+            $global:CPUHashTable[$($(vars).GCount.CPU.$global:i)] = "{0:f6}" -f $($global:CPUHashrates.$($(vars).GCount.CPU.$global:i))
         }
     }
 
     if ($global:DoASIC) {
         for ($global:i = 0; $global:i -lt $numbers; $global:i++) { 
-            $global:ASICHashTable[$global:i] = "{0:f4}" -f $($global:ASICHashrates.$($global:i)) 
+            $global:ASICHashTable[$global:i] = "{0:f6}" -f $($global:ASICHashrates.$($global:i)) 
         } 
         Remove-Variable numbers -ErrorAction Ignore
     }
@@ -681,9 +689,9 @@ While ($True) {
 
     Remove-Variable DeviceTable -ErrorAction Ignore
 
-    if ($global:DoAMD -or $global:DoNVIDIA) { $global:GPUKHS = [Math]::Round($global:GPUKHS, 4) }
-    if ($global:DoCPU) { $global:CPUKHS = [Math]::Round($global:CPUKHS, 4) }
-    if ($global:DoASIC) { $global:ASICKHS = [Math]::Round($global:ASICKHS, 4) }
+    if ($global:DoAMD -or $global:DoNVIDIA) { $global:GPUKHS = [Math]::Round($global:GPUKHS, 6) }
+    if ($global:DoCPU) { $global:CPUKHS = [Math]::Round($global:CPUKHS, 6) }
+    if ($global:DoASIC) { $global:ASICKHS = [Math]::Round($global:ASICKHS, 6) }
     $global:UPTIME = [math]::Round(((Get-Date) - $Global:StartTime).TotalSeconds)
 
     ##Modify Stats to show something For Online
@@ -710,9 +718,9 @@ While ($True) {
         power      = @($global:GPUPowerTable);
         accepted   = $global:AllACC;
         rejected   = $global:AllREJ;
-        stratum    = $Global:StatStratum
-        start_time = $StartTime
-        workername = $Global:StatWorker
+        stratum    = $Global:StatStratum;
+        start_time = $Global:StartTime;
+        workername = $Global:StatWorker;
     }
     $global:Config.params = $(arg)
 
@@ -732,9 +740,7 @@ While ($True) {
         Write-Host " ALGO: $Global:StatAlgo" -ForegroundColor White -NoNewline; Write-Host " `|" -NoNewline
         Write-Host " UPTIME: $global:UPTIME" -ForegroundColor Yellow
         Write-Host "STRATUM: $global:StatStratum" -ForegroundColor Cyan
-        $origin = New-Object -Type DateTime -ArgumentList 1970, 1, 1, 0, 0, 0, 0
-        $SysTime = $origin.AddSeconds([Double]$StartTime)
-        Write-Host "START_TIME: $SysTime" -ForegroundColor Magenta -NoNewline; Write-Host " `|" -NoNewline
+        Write-Host "START_TIME: $Global:StartTime" -ForegroundColor Magenta -NoNewline; Write-Host " `|" -NoNewline
         Write-Host " WORKER: $global:StatWorker
 " -ForegroundColor Yellow
     }

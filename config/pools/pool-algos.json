@@ -368,6 +368,15 @@
       "comma seperated"
     ]
   },
+  "cuckarood29v": {
+    "alt_names": [
+      "GrinCuckarood29"
+    ],
+    "exclusions": [
+      "add pool or miner here",
+      "comma seperated"
+    ]
+  },
   "cuckatoo31": {
     "alt_names": [
       "cuckatoo31",
@@ -470,6 +479,16 @@
       "comma seperated"
     ]
   },
+  "handshake": {
+    "alt_names": [
+      "handshake",
+      "hns"
+    ],
+    "exclusions": [
+      "add pool or miner here",
+      "comma seperated"
+    ]
+  },
   "hex": {
     "alt_names": [
       "hex"
@@ -527,6 +546,27 @@
   "jeonghash": {
     "alt_names": [
       "jeonghash"
+    ],
+    "exclusions": [
+      "add pool or miner here",
+      "comma seperated"
+    ]
+  },
+  "kangaroo12": {
+    "alt_names": [
+      "kangaroo12",
+      "k12"
+    ],
+    "exclusions": [
+      "add pool or miner here",
+      "comma seperated"
+    ]
+  },
+  "kawpow": {
+    "alt_names": [
+      "kapow",
+      "kaapow",
+      "kawpow"
     ],
     "exclusions": [
       "add pool or miner here",
@@ -777,6 +817,15 @@
       "comma seperated"
     ]
   },
+  "scryptn2": {
+    "alt_names": [
+      "scryptn2"
+    ],
+    "exclusions": [
+      "add pool or miner here",
+      "comma seperated"
+    ]
+  },
   "sha3d": {
     "alt_names": [
       "sha3d"
@@ -951,6 +1000,15 @@
   "x17": {
     "alt_names": [
       "x17"
+    ],
+    "exclusions": [
+      "add pool or miner here",
+      "comma seperated"
+    ]
+  },
+  "x17r": {
+    "alt_names": [
+      "x17r"
     ],
     "exclusions": [
       "add pool or miner here",

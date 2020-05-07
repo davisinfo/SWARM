@@ -1094,7 +1094,7 @@ OR NEWER- UPDATE IMMEDIATELY.
 
 ## Fixes
 * Powershell changed slightly how syncronized hashtables
-  worked in 6.2.3 (or maybe I found bug). This can a potential 
+  worked in 7.0.0-rc.3 (or maybe I found bug). This can a potential 
   issue with donation parameters vs user parameters! I have 
   created a workaround to update from the new change.
 
@@ -1914,3 +1914,321 @@ but beta in design.
   * Removed -i 12.5 for yescryptr32,
     using default. Will crash lower
     grade cards.
+
+############################################
+############################################
+
+# SWARM 2.9.9
+
+## What's new?
+* Swapped pciutils for powershell-pciutils
+  * self-made, if you have issues let me know.
+* New Miner - verium_miner
+
+## Improvements
+* Windows: Fixed icon issues on desktop.
+* Windows: ``lscpi`` can be ran from command prompt.
+ * only current argument is ``-vmms [busid]``
+* Linux: Created Global Variable: $SWARM_DIR.
+  * /etc/profile.d/SWARM.sh
+  * bash commands now source $SWARM_DIR.
+* Windows: Will output at start if powershell
+  version is incorrect, but will attempt to continue.
+  (Will notify user about Microsoft C++)
+* Updated comments in .bat files (though if updating
+  they won't change).
+* HiveOS: Auto-Update to powershell 7.0.0-rc.3.
+  * Others: ``install_linux`` will update it.
+* Various small fixes in comments.
+* External process execution handled differently
+  * Users were having issues with ``Process.StandardOutput.Readall()``
+    .Net method.
+
+## Updates
+* lolminer updated
+* xmrig updated
+* bminer updated
+
+############################################
+############################################
+
+# SWARM 3.0.0
+
+## What's New?
+* New Argument: ``-Min_Blocks``
+  * https://github.com/MaynardMiner/SWARM/blob/master/help/SWARM_help.txt#L230
+  * Sets a maximum block find amount for coins, based on pool block finds.
+
+## Improvements
+* Only run env changes when needed
+* Set miner env to process not machine
+* Set mode 800 for Windows 7 machines
+  * Allows fullscreen.
+  * Note: Windows 7 some commands may require
+    to be ran in a command prompt that supports
+    ASCII color text like linux does.
+    * Windows 10 supports by default.
+
+## Fixes
+* Fix path assertion for background agent.
+  * Updated to use env variables.
+
+## UPDATES
+* Updated Cryptodredge
+  * Added crptonight_upx2
+
+############################################
+############################################
+
+# SWARM 3.0.1
+
+## Improvements
+* (Windows) SWARM will close previous running
+  SWARM if you restart.
+* Found rocm-smi.py was in some instances not working
+  correctly- Prevented error generation and workaround
+  in case it does not.
+* Added new expiremental parameter ``-Hidden``
+  For Windows- If set to Yes, will run SWARM in
+  hidden mode. This is expiremental, and still
+  work in progress. Default is No. (Disabled)
+
+## Fixes
+* Fixed Path environment resolution when
+  updating
+* Close previous SWARM exec if user initiated
+  a new one (Windows)
+* Fix path resolution for commands in background
+  agent (You may have to run ``get update`` to update
+  this version if link fails in HiveOS)
+
+## Updates
+* xmrig updated
+* bminer updated
+* nbminer updated
+
+############################################
+############################################
+
+# SWARM 3.0.2
+
+## Updates
+* gminer updated
+  * cuckatoo32 added
+* jayddee (cpuminer) updated
+* rplant (cpuminer) updated
+
+############################################
+############################################
+
+# SWARM 3.0.3
+
+## What's New?
+* Added 'weekly' to stat files. 
+  * This is test implementation.
+  * Requires running clear_profits
+    after update if you wish to see working.
+  * Currently has no affect in any calculations,
+    this design is for proof of concept/testing.
+
+## Improvements
+ * Added support for ethash on zergpool.
+   * There were a fair amount of changes required
+     in each miner that does ethash to set correct
+     arguments, if you have issues- Report and I
+     will investigate
+
+## Fixes
+* Fixed potential "SWARM exited reason 1" issues
+
+############################################
+############################################
+
+# SWARM 3.0.4
+
+## Improvements.
+* Fixed another potential "SWARM exited reason 1" issue.
+* Removed rounding of estimates which have very small
+  values.
+* SWARM will output a notice if user has SWARM in
+  a parent directory/path with spaces in it. This
+  causes an issues with miners parsing their '-log'
+  arguments. (Not SWARM issue).
+
+
+############################################
+############################################
+
+# SWARM 3.0.5
+
+## NOTE
+* Powershell version 7.0 or higher is required in this
+  release for those not using HiveOS. The exec name of
+  powershell should be 'pwsh'. ``install_linux``
+  should install it.
+
+Due to the amount of changes in release- A wiki article
+was written to detail the various changes/fixes.
+
+https://github.com/MaynardMiner/SWARM/wiki/beta2-changes
+
+Please see changes, there is a good change your arguments
+as is will not work correctly.
+
+############################################
+############################################
+
+# SWARM 3.0.6
+
+## What's new?
+* Includes beta release updates. See
+  beta release and beta2 wiki on changes
+  as arguments may have changed.
+
+## Improvements
+* Windows: Fix issues with mb and bus_id
+* updated odvii.
+* Fix ordering of .json in agent screen to
+  read easier.
+* SWARM_help.txt updated to reflect changes
+  with beta2 release.
+* ``swarm_help`` updated to reflect changes
+  with beta2 release.
+
+## Updates
+* Gminer updated
+* Nbminer updated
+
+############################################
+############################################
+
+# SWARM 3.0.7
+
+## Improvments-
+* Prevent erroneous error output when first loading
+  SWARM (no stats folder).
+* Prevent erroneous error output when using ``install_linux``
+
+## Updates
+* Gminer updated.
+
+############################################
+############################################
+
+# SWARM 3.0.8 (Includes 3.0.7)
+
+## What's New?
+* Added x17r to Wildrig miner, in case pools add.
+
+## Improvments-
+* Prevent erroneous error output when first loading
+  SWARM (no stats folder).
+* Prevent erroneous error output when using ``install_linux``
+
+## Fixes
+* Powershell PCIUtils fix - Return Device title in case
+  sub device title code does not match pci.ids list
+  (Prevents error generation).
+
+## Updates
+* Gminer updated.
+* Wildrig updated
+
+############################################
+############################################
+
+# SWARM 3.0.9
+
+## What's New?
+ * Windows version now supports AMD Navi GPU
+   (Stats and overclocking in HiveOS).
+   * Note: Some miners may not support Navi GPUs
+
+## Improvments-
+ * Fixed setting default P_States (Windows) if no OC.
+ * Optimized OC for Navi GPU.
+   * DPM and MDPM stats are ignored.
+ * added grincuckarood back to lolminer.
+ * Windows: Mem type and Mem vendor for AMD cards on HiveOS.
+ * Windows: Force Pstate2 is turned off in each GPU.
+ * Windows: teamredminer is now optional ``-Optional teamredminer``
+   * Windows only. Teamredminer works fine in linux, but does not
+     support NAVI gpu.
+
+## Fixes
+ * Fixed eaglesong for AMD in gminer.
+ * Fixed Altwallet settings in wallet.json
+
+## Updates
+* lolminer updated
+* gminer updated
+* NBminer updated
+
+############################################
+############################################
+
+# SWARM 3.1.0
+
+## What's New?
+ * Added handshake support for nicehash.
+   * Note: Also known as 'HNS'
+
+## Updates
+ * Gminer updated
+ * Nbminer updated
+ * Bminer updated
+
+############################################
+############################################
+
+# SWARM 3.1.1
+
+## What's New?
+* srbmulti (k12) added for AMD.
+* Hashrate/Watt sampling for benchmarking,
+  rather than 1 time sample. 
+  * Sampling is based on 15 second average.
+  * Sampling begins when miner starts to hash.
+
+## Improvements
+* "Locked" parameter works for pool stat files
+  * You can set a locked price for a particular
+    algorithm within the stat file, by setting
+    "Locked": True,
+* Fixed minor issues with wallets.json
+* Fixed download links for wildrig & miniz.
+
+## Updates
+* SRBMulti added (does not do Navi cards).
+* Wildrig udpated.
+* Miniz updated.
+
+############################################
+############################################
+
+# SWARM 3.1.2
+
+## What's new?
+* Kawpow updates- All current miners that can
+  do kawpow has been added.
+  * note- Stability/Rejection issues are present
+    after testing. Not SWARM at cause. Especially
+    on nicehash.
+
+## Improvements
+  * see prior releases that were not announced.
+  * improvments on running screen data, and
+    hashrate sampling.
+
+## Fixes
+  * Fixed kawpow naming schema
+  * Fixed cuda error on version update.
+  * Fixed blank algorithm data issue on nicehash,
+    which could cause endless looping of benchmarking.
+
+## updates
+  * z-enemy updated
+  * g-miner updated
+  * nbminer updated
+  * t-rex updated
+  * nanominer updated

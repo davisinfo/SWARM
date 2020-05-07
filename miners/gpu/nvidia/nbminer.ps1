@@ -26,6 +26,7 @@ $(vars).NVIDIATypes | ForEach-Object {
     else { $Devices = $Get_Devices }
 
     ##Get Configuration File
+    ##This is located in config\miners
     $MinerConfig = $Global:config.miners.nbminer
 
     ##Export would be /path/to/[SWARMVERSION]/build/export##
@@ -33,6 +34,7 @@ $(vars).NVIDIATypes | ForEach-Object {
     $Miner_Dir = Join-Path ($(vars).dir) ((Split-Path $Path).replace(".", ""))
 
     ##Prestart actions before miner launch
+    ##This can be edit in miner.json
     $Prestart = @()
     $PreStart += "export LD_LIBRARY_PATH=$ExportDir`:$Miner_Dir"
     if ($IsLinux) { $Prestart += "export DISPLAY=:0" }
@@ -63,12 +65,15 @@ $(vars).NVIDIATypes | ForEach-Object {
                     "ethash" {
                         Switch ($SelName) {
                             "nicehash" { $Stratum = "nicehash+tcp://"; $A = "ethash" }
+                            "zergpool" { $Stratum = "stratum+tcp://"; $A = "ethash" }
                             "whalesburg" { $Stratum = "stratum+ssl://"; $A = "ethash" }
                         }
                     }
                     "cuckaroo29" { $Stratum = "nicehash+tcp://"; $A = "cuckarood" }
                     "cuckaroo29d" { $Stratum = "nicehash+tcp://"; $A = "cuckarood" }
                     "cuckatoo31" { $Stratum = "nicehash+tcp://"; $A = "cuckatoo" }
+                    "handshake" { $Stratum = "stratum+tcp://"; $A = "hns" }
+                    "kawpow" { $Stratum = "stratum+tcp://"; $A = "kawpow" }
                     default { $Stratum = "stratum+tcp://"; $A = "$($MinerConfig.$ConfigType.naming.$MinerAlgo)" }
                 }        
                 if ($MinerConfig.$ConfigType.difficulty.$($_.Algorithm)) { $Diff = ",d=$($MinerConfig.$ConfigType.difficulty.$($_.Algorithm))" }
@@ -86,9 +91,9 @@ $(vars).NVIDIATypes | ForEach-Object {
                     Stratum    = "$($_.Protocol)://$($_.Pool_Host):$($_.Port)" 
                     Version    = "$($(vars).nvidia.nbminer.version)"
                     DeviceCall = "ccminer"
-                    Arguments  = "-a $A --api 0.0.0.0:$Port --no-nvml --log-file `'$log`' --url $Stratum$($_.Pool_Host):$($_.Port) --user $($_.$User) $($MinerConfig.$ConfigType.commands.$($_.Algorithm))"
+                    Arguments  = "-a $A --api 0.0.0.0:$Port --no-nvml --platform 1 --log-file `'$log`' --url $Stratum$($_.Pool_Host):$($_.Port) --user $($_.$User) $($MinerConfig.$ConfigType.commands.$($_.Algorithm))"
                     HashRates  = $Stat.Hour
-                    Quote      = if ($HashStat) { $HashStat * ($_.Price) }else { 0 }
+                    Quote      = if ($HashStat) { [Convert]::ToDecimal($HashStat * $_.Price) }else { 0 }
                     Rejections = $Stat.Rejections
                     Power      = if ($(vars).Watts.$($_.Algorithm)."$($ConfigType)_Watts") { $(vars).Watts.$($_.Algorithm)."$($ConfigType)_Watts" }elseif ($(vars).Watts.default."$($ConfigType)_Watts") { $(vars).Watts.default."$($ConfigType)_Watts" }else { 0 } 
                     MinerPool  = "$($_.Name)"

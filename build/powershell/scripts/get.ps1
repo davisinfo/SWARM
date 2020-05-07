@@ -631,6 +631,8 @@ https://github.com/MaynardMiner/SWARM/wiki/HiveOS-management
         $MSFile = ".\debug\minerstats.txt"
         if (test-Path ".\debug\minerstats.txt") { $Get += Get-Content ".\debug\minerstats.txt" }
         Remove-Module "hashrates"
+        $Get += ""
+        $Get += "If you would like to have this to continue to refresh every 30 seconds- Use 'nview get stats -n 30'"
     }
     "charts" { if (Test-Path ".\debug\charts.txt") { $Get += Get-Content ".\debug\charts.txt" } }
     "active" {
@@ -639,7 +641,7 @@ https://github.com/MaynardMiner/SWARM/wiki/HiveOS-management
     }
     "parameters" {
         if (Test-Path ".\config\parameters\newarguments.json") { $FilePath = ".\config\parameters\newarguments.json" }
-        else { $FilePath = ".\config\parameters\arguments.json" }
+        else { $FilePath = ".\config\parameters\commandline.json" }
         if (Test-Path $FilePath) {
             $SwarmParameters = @()
             $MinerArgs = Get-Content $FilePath | ConvertFrom-Json
@@ -901,6 +903,7 @@ https://github.com/MaynardMiner/SWARM/wiki/HiveOS-management
                         $Get += "Appending old bat file."
                         $Bat_file[1] = "cd `/D `%`~dp0"
                     }
+                    $Bat_file.replace("pwsh-preview -executionpolicy Bypass","pwsh -executionpolicy Bypass")
                 }
                 $Bat_file | Set-Content "$Dir\SWARM.bat"
 
@@ -922,7 +925,7 @@ https://github.com/MaynardMiner/SWARM/wiki/HiveOS-management
                 ## Move parameters into extracted path
                 $Params = Join-Path $Final_Extract_Path "config\parameters"
                 if (Test-Path ".\config\parameters\newarguments.json") { $New_Params = ".\config\parameters\newarguments.json" }
-                else { $New_Params = ".\config\parameters\arguments.json" }
+                else { $New_Params = ".\config\parameters\commandline.json" }
         
                 Copy-Item $New_Params -Destination $Params -Force
                 $Get += "Copied $New_Params to new SWARM version"

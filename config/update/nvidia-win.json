@@ -18,9 +18,9 @@
     "NVIDIA2": ".\\bin\\nbminer-2\\nbminer.exe",
     "NVIDIA3": ".\\bin\\nbminer-3\\nbminer.exe",
     "minername": "nbminer.exe",
-    "version": "26.2",
+    "version": "30.2",
     "optional": "No",
-    "uri": "https://github.com/NebuTech/NBMiner/releases/download/v26.2/NBMiner_26.2_Win.zip"
+    "uri": "https://github.com/NebuTech/NBMiner/releases/download/v30.2/NBMiner_30.2_Win.zip"
   },
   "cc-sha3d": {
     "name": "cc-sha3d",
@@ -84,9 +84,9 @@
     "NVIDIA2": ".\\bin\\bminer-2\\bminer.exe",
     "NVIDIA3": ".\\bin\\bminer-3\\bminer.exe",
     "minername": "bminer.exe",
-    "version": "16.0.2",
+    "version": "16.1.0",
     "optional": "No",
-    "uri": "https://www.bminercontent.com/releases/bminer-lite-v16.0.1-bd5656b-amd64.zip"
+    "uri": "https://www.bminercontent.com/releases/bminer-lite-v16.1.0-f55fff0-amd64.zip"
   },
   "ehssand": {
     "name": "ehssand",
@@ -106,9 +106,9 @@
     "NVIDIA2": ".\\bin\\gminer-2\\miner.exe",
     "NVIDIA3": ".\\bin\\gminer-3\\miner.exe",
     "minername": "miner.exe",
-    "version": "1.96",
+    "version": "2.09",
     "optional": "No",
-    "uri": "https://github.com/develsoftware/GMinerRelease/releases/download/1.96/gminer_1_96_windows64.zip"
+    "uri": "https://github.com/develsoftware/GMinerRelease/releases/download/2.09/gminer_2_09_windows64.zip"
   },
   "claymore": {
     "name": "claymore",
@@ -128,9 +128,9 @@
     "NVIDIA2": ".\\bin\\cryptodredge-2\\CryptoDredge.exe",
     "NVIDIA3": ".\\bin\\cryptodredge-3\\CryptoDredge.exe",
     "minername": "CryptoDredge.exe",
-    "version": "0.22.0",
+    "version": "0.23.0",
     "optional": "No",
-    "uri": "https://github.com/technobyl/CryptoDredge/releases/download/v0.22.0/CryptoDredge_0.22.0_cuda_10.1_windows.zip"
+    "uri": "https://github.com/technobyl/CryptoDredge/releases/download/v0.23.0/CryptoDredge_0.23.0_cuda_10.1_windows.zip"
   },
   "dstm": {
     "name": "dstm",
@@ -150,9 +150,9 @@
     "NVIDIA2": ".\\bin\\z-enemy-2\\z-enemy.exe",
     "NVIDIA3": ".\\bin\\z-enemy-3\\z-enemy.exe",
     "minername": "z-enemy.exe",
-    "version": "2.4",
+    "version": "2.5",
     "optional": "No",
-    "uri": "https://github.com/z-enemy/z-enemy/releases/download/ver-2.3/z-enemy-2.3-win-cuda10.1.zip"
+    "uri": "https://github.com/MaynardMiner/MM.Compiled-Miners/releases/download/v.3.0/z-enemy-windows.zip"
   },
   "ewbf": {
     "name": "ewbf",
@@ -183,9 +183,9 @@
     "NVIDIA2": ".\\bin\\miniz-2\\miniZ.exe",
     "NVIDIA3": ".\\bin\\miniz-3\\miniZ.exe",
     "minername": "miniZ.exe",
-    "version": "v1.5t",
+    "version": "v1.5t2",
     "optional": "No",
-    "uri": "https://miniz.ch/?smd_process_download=1&download_id=3369"
+    "uri": "https://github.com/MaynardMiner/MM.Compiled-Miners/releases/download/v.3.0/miniz-windows.zip"
   },
   "phoenix": {
     "name": "phoenix",
@@ -238,9 +238,9 @@
     "NVIDIA2": ".\\bin\\trex-2\\t-rex.exe",
     "NVIDIA3": ".\\bin\\trex-3\\t-rex.exe",
     "minername": "t-rex.exe",
-    "version": "0.14.6",
+    "version": "0.15.3",
     "optional": "No",
-    "uri": "https://github.com/trexminer/T-Rex/releases/download/0.14.6/t-rex-0.14.6-win-cuda10.0.zip"
+    "uri": "https://github.com/trexminer/T-Rex/releases/download/0.15.3/t-rex-0.15.3-win-cuda10.0.zip"
   },
   "zjazz": {
     "name": "zjazz",
@@ -260,7 +260,7 @@
     "NVIDIA2": ".\\bin\\tt-miner-2\\TT-Miner.exe",
     "NVIDIA3": ".\\bin\\tt-miner-3\\TT-Miner.exe",
     "minername": "TT-Miner.exe",
-    "version": "3.2.2",
+    "version": "5.0.0",
     "optional": "No",
     "uri": "https://tradeproject.de/download/Miner/TT-Miner.zip"
   },
@@ -271,9 +271,9 @@
     "NVIDIA2": ".\\bin\\xmrig-nv-2\\xmrig.exe",
     "NVIDIA3": ".\\bin\\xmrig-nv-3\\xmrig.exe",
     "minername": "xmrig.exe",
-    "version": "5.5.0a",
+    "version": "5.6.0",
     "optional": "No",
-    "uri": "https://github.com/xmrig/xmrig/releases/download/v5.5.0/xmrig-5.5.0-msvc-cuda10_1-win64.zip"
+    "uri": "https://github.com/xmrig/xmrig/releases/download/v5.6.0/xmrig-5.6.0-msvc-cuda10_1-win64.zip"
   },
   "nv-lolminer": {
     "name": "nv-lolminer",

@@ -31,7 +31,7 @@ function Global:Start-Hello($RigData) {
             net_interfaces   = ""
             openvpn          = "0"
             lan_config       = ""
-            gpu              = @($RigData.gpu)
+            gpu              = if($RigData.gpu){@($RigData.gpu)}else{""}
             gpu_count_amd    = "$($RigData.gpu_count_amd)"
             gpu_count_nvidia = "$($RigData.gpu_count_nvidia)"
             worker_name      = "$($global:Config.hive_params.Worker)" 
@@ -171,10 +171,6 @@ function Global:Start-WebStartup($response, $Site) {
                                         "Asic_Algo" { $NewParamArray = @(); $argjson.$_ -split "," | Foreach { $NewParamArray += $_ }; $Params.$_ = $NewParamArray }
                                         "Type" { $NewParamArray = @(); $argjson.$_ -split "," | Foreach { $NewParamArray += $_ }; $Params.$_ = $NewParamArray }
                                         "Poolname" { $NewParamArray = @(); $argjson.$_ -split "," | Foreach { $NewParamArray += $_ }; $Params.$_ = $NewParamArray }
-                                        "Currency" { $NewParamArray = @(); $argjson.$_ -split "," | Foreach { $NewParamArray += $_ }; $Params.$_ = $NewParamArray }
-                                        "PasswordCurrency1" { $NewParamArray = @(); $argjson.$_ -split "," | Foreach { $NewParamArray += $_ }; $Params.$_ = $NewParamArray }
-                                        "PasswordCurrency2" { $NewParamArray = @(); $argjson.$_ -split "," | Foreach { $NewParamArray += $_ }; $Params.$_ = $NewParamArray }
-                                        "PasswordCurrency3" { $NewParamArray = @(); $argjson.$_ -split "," | Foreach { $NewParamArray += $_ }; $Params.$_ = $NewParamArray }
                                     }
                                 }
                             }

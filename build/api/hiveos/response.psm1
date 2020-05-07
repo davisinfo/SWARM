@@ -57,12 +57,13 @@ function Global:Set-Stats($Site) {
         $HGPUPowerTable =$global:GPUPowerTable
     }
 
-    $Stats = @{
+    $Stats = [ordered]@{
         method  = "stats"
         rig_id  = $global:Config.$Params.Id
         jsonrpc = "2.0"
         id      = "0"
         params  = @{
+            v         = 1
             rig_id    = $global:Config.$Params.Id
             passwd    = $global:Config.$Params.Password
             miner     = "custom"
@@ -107,7 +108,7 @@ function Global:Set-Response {
         "SWARM" { $Params = "Swarm_Params" }
     }
     
-    $myresponse = @{
+    $myresponse = [ordered]@{
         method  = $method
         rig_id  = $global:Config.$Params.Id
         jsonrpc = "2.0"

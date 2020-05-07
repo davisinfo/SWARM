@@ -44,7 +44,7 @@ function Global:Set-Stat {
 
     ## Define Set Interval for load average
     if ($name -eq "load-average") { $Interval = 10 }
-    else { $Interval = $(arg).Interval }
+    else { $Interval = 300 }
 
     ## Define total # of values for each time frame
     $Calcs = @{
@@ -110,7 +110,10 @@ function Global:Set-Stat {
 
         $Hour_4 = [Double]$GetStat.Hour_4
         $Day = [Double]$GetStat.Day
+        $Week = [Double]$GetStat.Week
         $Custom = [Double]$GetStat.Custom
+        $End_Of_Day = [Double]$GetStat.End_Of_Day
+        $Week_Periods = [Double]$GetStat.Week_Periods
         $S_Hash = [Double]$GetStat.Hashrate
         $S_Hash_Count = $GetStat.Hashrate_Periods
         $Deviation = $GetStat.Deviation
@@ -124,11 +127,17 @@ function Global:Set-Stat {
         if ($Check) {
             $Stat | Add-Member "Hour_4" $Hour_4
             $Stat | Add-Member "Day" $Day
+            $Stat | Add-Member "Week" $Week
+            $Stat | Add-Member "Week_Periods" $Week_Periods
+            $Stat | Add-Member "End_Of_Day" $End_Of_Day
             $Stat | Add-Member "Custom" $Custom
         }
         else {
             $Stat | Add-Member "Hour_4" $Value
             $Stat | Add-Member "Day" $Value
+            $Stat | Add-Member "Week" $Value
+            $Stat | Add-Member "End_Of_Day" 0
+            $Stat | Add-Member "Week_Periods" 1
             $Stat | Add-Member "Custom" $Value
         }
 
@@ -191,7 +200,17 @@ function Global:Set-Stat {
             $Alpha = [Double](Global:Get-Alpha($Theta.Count))
             $Zeta = [Double]$Theta.Sum / $Theta.Count
             $Stat.$_ = [Math]::Max( ( $Zeta * $Alpha + $($Stat.$_) * (1 - $Alpha) ) , $SmallestValue )
-            $Stat.$_ = [Math]::Round( $Stat.$_, 15 )
+            $Stat.$_ = $Stat.$_
+        }
+        
+        if(-not $AsHashrate) {
+            $Stat.End_Of_Day++
+            if($Stat.End_Of_Day -gt (86400 / $Interval)) {
+                $Stat.End_Of_Day = 1
+                $Stat.Week = [Math]::Round( ( ($Stat.Week * $Stat.Week_Periods) + $Stat.Day ) / ($Stat.Week_Periods + 1), 0 )
+                $stat.Week_Periods++
+                if($stat.Week_Periods -gt 7) {$stat.Week_Periods = 7}
+            }
         }
 
         ## Calculate simple rolling moving average for each pool hashrate / deviation / Rejects
@@ -214,6 +233,7 @@ function Global:Set-Stat {
     $Stat.Hour = [Decimal]$Stat.Hour
     if ($Stat.Hour_4) { $Stat.Hour_4 = [Decimal]$Stat.Hour_4 }
     if ($Stat.Day) { $Stat.Day = [Decimal]$Stat.Day }
+    if ($Stat.Week) { $Stat.Week = [Decimal]$Stat.Week }
     if ($Stat.Custom) { $Stat.Custom = [Decimal]$Stat.Custom }
     if ($Stat.Hashrate) { $Stat.Hashrate = [Decimal]$Stat.Hashrate }
     if ($Stat.Rejections -and $AsHashrate) { $Stat.Rejections = [Decimal]$Stat.Rejections }

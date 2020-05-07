@@ -1,40 +1,48 @@
 {
- "name": "bubasik",
   "bubasik": {
     "name": "bubasik",
     "type": "cpu",
-    "CPU": ".\\bin\\bubasik\\cpuminer-sse2.exe",
-    "minername": "cpuminer-sse2.exe",
+    "CPU": ".\\bin\\bubasik\\cpuminer-avx2.exe",
+    "minername": "cpuminer-avx2.exe",
     "version": "3.9.3.1",
     "optional": "No",
     "uri": "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.9.3.1/cpuminer-opt-3.9.3.1-windows.zip"
+  },
+  "verium_miner": {
+    "name": "verium_miner",
+    "type": "cpu",
+    "CPU": ".\\bin\\verium_miner\\cpuminer.exe",
+    "minername": "cpuminer.exe",
+    "version": "1.4",
+    "optional": "No",
+    "uri": "https://github.com/fireworm71/veriumMiner/releases/download/v1.4/cpuminer_1.4_windows_x64_O2_GCC7.zip"
   },
   "rplant": {
     "name": "rplant",
     "type": "cpu",
     "CPU": ".\\bin\\rplant-1\\cpuminer-avx2.exe",
     "minername": "cpuminer-avx2.exe",
-    "version": "4.0.29",
+    "version": "4.5.5",
     "optional": "No",
-    "uri": "https://github.com/rplant8/cpuminer-opt-rplant/releases/download/4.0.29/cpuminer-opt-win.zip"
+    "uri": "https://github.com/rplant8/cpuminer-opt-rplant/releases/download/4.5.5/cpuminer-opt-win.zip"
   },
   "xmrig-cpu": {
     "name": "xmrig-cpu",
     "type": "cpu",
     "CPU": ".\\bin\\xmrig-cpu-1\\xmrig.exe",
     "minername": "xmrig.exe",
-    "version": "5.5.0",
+    "version": "5.6.0",
     "optional": "No",
-    "uri": "https://github.com/xmrig/xmrig/releases/download/v5.5.0/xmrig-5.5.0-msvc-win64.zip"
+    "uri": "https://github.com/xmrig/xmrig/releases/download/v5.6.0/xmrig-5.6.0-msvc-win64.zip"
   },
   "xmrigcc-cpu": {
     "name": "xmrigcc-cpu",
     "type": "cpu",
     "CPU": ".\\bin\\xmrigcc-cpu-1\\xmrigDaemon.exe",
     "minername": "xmrigDaemon.exe",
-    "version": "2.5.0",
+    "version": "2.6.2",
     "optional": "No",
-    "uri": "https://github.com/Bendr0id/xmrigCC/releases/download/2.5.0/xmrigCC-2.5.0-with_tls_and_gzip-mvc-win64.zip"
+    "uri": "https://github.com/Bendr0id/xmrigCC/releases/download/2.6.2/xmrigCC-2.6.2-with_tls_and_gzip-mvc-win64.zip"
   },
   "sugarchain": {
     "name": "sugarchain",
@@ -50,9 +58,9 @@
     "type": "cpu",
     "CPU": ".\\bin\\jayddee-1\\cpuminer-avx2.exe",
     "minername": "cpuminer-avx2.exe",
-    "version": "3.10.7",
+    "version": "3.12.3.1",
     "optional": "No",
-    "uri": "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.10.7/cpuminer-opt-3.10.7-windows.zip"
+    "uri": "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.12.3.1/cpuminer-opt-3.12.3.1-windows.zip"
   },
   "cpupower": {
     "name": "cpupower",

@@ -42,6 +42,7 @@ $(vars).AMDTypes | ForEach-Object {
     else { $(vars).GCount.AMD.PSObject.Properties.Name | ForEach-Object { $ArgDevices += "$($(vars).GCount.AMD.$_) " }; $ArgDevices = $ArgDevices.Substring(0, $ArgDevices.Length - 1) }
 
     ##Get Configuration File
+    ##This is located in config\miners
     $MinerConfig = $Global:config.miners.$CName
 
     ##Export would be /path/to/[SWARMVERSION]/build/export##
@@ -49,6 +50,7 @@ $(vars).AMDTypes | ForEach-Object {
     $Miner_Dir = Join-Path ($(vars).dir) ((Split-Path $Path).replace(".", ""))
 
     ##Prestart actions before miner launch
+    ##This can be edit in miner.json
     $Prestart = @()
     $PreStart += "export LD_LIBRARY_PATH=$ExportDir`:$Miner_Dir"
     if ($IsLinux) { $Prestart += "export DISPLAY=:0" }
@@ -86,7 +88,14 @@ $(vars).AMDTypes | ForEach-Object {
                     "equihash_144/5" { $AddArgs = "--algo 144_5 --pers auto " }
                     "equihash_210/9" { $AddArgs = "--algo 210_9 --pers auto " }
                     "equihash_200/9" { $AddArgs = "--algo 200_9 --pers auto " }
-                    "ethash" { $AddArgs = "--algo ethash --proto stratum " }            
+                    "eaglesong" { $AddArgs = "--algo eaglesong " }
+                    "ethash" { 
+                        switch ($SelName) {
+                            "nicehash" { $AddArgs = "--algo ethash --proto stratum " }
+                            "zergpool" { $AddArgs = "--algo ethash "}
+                            default { $AddArgs = "--algo ethash --proto stratum"}
+                        }
+                    }
                 }
                 if ($MinerConfig.$ConfigType.difficulty.$($_.Algorithm)) { $Diff = ",d=$($MinerConfig.$ConfigType.difficulty.$($_.Algorithm))" }
                 [PSCustomObject]@{
@@ -106,7 +115,7 @@ $(vars).AMDTypes | ForEach-Object {
                     DeviceCall = "gminer"
                     Arguments  = "--api $Port --server $($_.Pool_Host) --port $($_.Port) $AddArgs--user $($_.$User) --logfile `'$Log`' --pass $($_.$Pass)$Diff $($MinerConfig.$ConfigType.commands.$($_.Algorithm))"
                     HashRates  = $Stat.Hour
-                    Quote      = if ($HashStat) { $HashStat * ($_.Price) }else { 0 }
+                    Quote      = if ($HashStat) { [Convert]::ToDecimal($HashStat * $_.Price) }else { 0 }
                     Rejections = $Stat.Rejections
                     Power      = if ($(vars).Watts.$($_.Algorithm)."$($ConfigType)_Watts") { $(vars).Watts.$($_.Algorithm)."$($ConfigType)_Watts" }elseif ($(vars).Watts.default."$($ConfigType)_Watts") { $(vars).Watts.default."$($ConfigType)_Watts" }else { 0 } 
                     MinerPool  = "$($_.Name)"

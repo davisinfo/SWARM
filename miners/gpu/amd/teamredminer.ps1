@@ -3,11 +3,26 @@ $(vars).AMDTypes | ForEach-Object {
     $ConfigType = $_; $Num = $ConfigType -replace "AMD", ""
 
     ##Miner Path Information
-    if ($(vars).amd.teamredminer.$ConfigType) { $Path = "$($(vars).amd.teamredminer.$ConfigType)" }
+    if ($(vars).amd.teamredminer.$ConfigType) { 
+        $Path = "$($(vars).amd.teamredminer.$ConfigType)" 
+        if($IsWindows -and "teamredminer" -notin $(arg).optional) {
+            $Path = "None"
+        }
+    }
     else { $Path = "None" }
-    if ($(vars).amd.teamredminer.uri) { $Uri = "$($(vars).amd.teamredminer.uri)" }
+    if ($(vars).amd.teamredminer.uri) { 
+        $Uri = "$($(vars).amd.teamredminer.uri)" 
+        if($IsWindows -and "teamredminer" -notin $(arg).optional) {
+            $Uri = "None"
+        }
+    }
     else { $Uri = "None" }
-    if ($(vars).amd.teamredminer.minername) { $MinerName = "$($(vars).amd.teamredminer.minername)" }
+    if ($(vars).amd.teamredminer.minername) { 
+        $MinerName = "$($(vars).amd.teamredminer.minername)" 
+        if($IsWindows -and "teamredminer" -notin $(arg).optional) {
+            $MinerName = "None"
+        }
+    }
     else { $MinerName = "None" }
 
     $User = "User$Num"; $Pass = "Pass$Num"; $Name = "teamredminer-$Num"; $Port = "2800$Num"
@@ -24,6 +39,7 @@ $(vars).AMDTypes | ForEach-Object {
     else { $Devices = $Get_Devices }
 
     ##Get Configuration File
+    ##This is located in config\miners
     $MinerConfig = $Global:config.miners.teamredminer
 
     ##Export would be /path/to/[SWARMVERSION]/build/export##
@@ -31,6 +47,7 @@ $(vars).AMDTypes | ForEach-Object {
     $Miner_Dir = Join-Path ($(vars).dir) ((Split-Path $Path).replace(".", ""))
 
     ##Prestart actions before miner launch
+    ##This can be edit in miner.json
     $Prestart = @()
     $PreStart += "export LD_LIBRARY_PATH=$ExportDir`:$Miner_Dir"
     if ($IsLinux) { $Prestart += "export DISPLAY=:0" }
@@ -74,7 +91,7 @@ $(vars).AMDTypes | ForEach-Object {
                     DeviceCall = "tdxminer"
                     Arguments  = "--platform $($(vars).AMDPlatform) -a $($MinerConfig.$ConfigType.naming.$($_.Algorithm)) --no_gpu_monitor --api_listen=0.0.0.0:$Port -o stratum+tcp://$($_.Pool_Host):$($_.Port) -u $($_.$User) --log_file `'$Log`' --bus_reorder -p $($_.$Pass)$($DIff) $($MinerConfig.$ConfigType.commands.$($_.Algorithm))"
                     HashRates  = $Stat.Hour
-                    Quote      = if ($HashStat) { $HashStat * ($_.Price) }else { 0 }
+                    Quote      = if ($HashStat) { [Convert]::ToDecimal($HashStat * $_.Price) }else { 0 }
                     Rejections = $Stat.Rejections
                     Power      = if ($(vars).Watts.$($_.Algorithm)."$($ConfigType)_Watts") { $(vars).Watts.$($_.Algorithm)."$($ConfigType)_Watts" }elseif ($(vars).Watts.default."$($ConfigType)_Watts") { $(vars).Watts.default."$($ConfigType)_Watts" }else { 0 } 
                     MinerPool  = "$($_.Name)"

@@ -1,0 +1,28 @@
+{
+    "AMD1": {
+        "name": "AMD1",
+        "delay": "1",
+        "prestart": [],
+        "commands": {
+            "eaglesong": "",
+            "handshake": "",
+            "kawpow": ""
+        },
+        "difficulty": {
+            "eaglesong": "",
+            "handshake": "",
+            "kawpow": ""
+        },
+        "naming": {
+            "eaglesong": "eaglesong",
+            "handshake": "hns",
+            "kawpow": "kawpow"
+        },
+        "fee": {
+            "eaglesong": 2,
+            "handshake": 2,
+            "kawpow": 2
+        }
+    },
+    "name": "nbminer-amd"
+}

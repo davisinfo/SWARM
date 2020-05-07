@@ -1,4 +1,16 @@
 {
+  "name": "srbmulti",
+  "srbmulti": {
+    "name": "srbmulti",
+    "type": "amd",
+    "AMD1": ".\\bin\\srbmulti-1\\SRBMiner-MULTI",
+    "AMD2": ".\\bin\\srbmulti-2\\SRBMiner-MULTI",
+    "AMD3": ".\\bin\\srbmulti-3\\SRBMiner-MULTI",
+    "minername": "SRBMiner-MULTI",
+    "version": "0.4.3",
+    "optional": "No",
+    "uri": "https://github.com/doktor83/SRBMiner-Multi/releases/download/0.4.3/SRBMiner-Multi-0-4-3-Linux.tar.xz"
+  },
   "name": "amd-linux",
   "claymore-amd": {
     "name": "claymore-amd",
@@ -18,8 +30,8 @@
     "AMD2": ".\\bin\\gminer-amd-2\\miner",
     "AMD3": ".\\bin\\gminer-amd-3\\miner",
     "minername": "miner",
-    "version": "1.96",
-    "uri": "https://github.com/develsoftware/GMinerRelease/releases/download/1.96/gminer_1_96_linux64.tar.xz"
+    "version": "2.09",
+    "uri": "https://github.com/develsoftware/GMinerRelease/releases/download/2.09/gminer_2_09_linux64.tar.xz"
   },
   "kbminer-amd": {
     "name": "kbminer-amd",
@@ -94,9 +106,9 @@
     "AMD2": ".\\bin\\lolMiner-AMD-2\\lolMiner",
     "AMD3": ".\\bin\\lolMiner-AMD-3\\lolMiner",
     "minername": "lolMiner",
-    "version": "0.96",
+    "version": "0.98",
     "optional": "No",
-    "uri": "https://github.com/Lolliedieb/lolMiner-releases/releases/download/0.96/lolMiner_v0961_Lin64.tar.gz"
+    "uri": "https://github.com/Lolliedieb/lolMiner-releases/releases/download/0.98/lolMiner_v0981_Lin64.tar.gz"
   },
   "avermore": {
     "name": "avermore",
@@ -182,9 +194,9 @@
     "AMD2": ".\\bin\\wildrig-2\\wildrig-multi",
     "AMD3": ".\\bin\\wildrig-3\\wildrig-multi",
     "minername": "wildrig-multi",
-    "version": "0.20.1",
+    "version": "0.20.5.3",
     "optional": "No",
-    "uri": "https://github.com/andru-kun/wildrig-multi/releases/download/0.20.1/wildrig-multi-linux-0.20.1.tar.gz"
+    "uri": "https://github.com/andru-kun/wildrig-multi/releases/download/0.20.5b/wildrig-multi-linux-0.20.5.3.tar.gz"
   },
   "fancyix": {
     "name": "fancyix",
@@ -204,9 +216,9 @@
     "AMD2": ".\\bin\\xmrig-amd-2\\xmrig",
     "AMD3": ".\\bin\\xmrig-amd-3\\xmrig",
     "minername": "xmrig",
-    "version": "5.5.0",
+    "version": "5.6.0",
     "optional": "No",
-    "uri": "https://github.com/xmrig/xmrig/releases/download/v5.5.0/xmrig-5.5.0-xenial-x64.tar.gz"
+    "uri": "https://github.com/xmrig/xmrig/releases/download/v5.6.0/xmrig-5.6.0-xenial-x64.tar.gz"
   },
   "xmrigcc-amd": {
     "name": "xmrigcc-amd",
@@ -248,8 +260,19 @@
     "AMD2": ".\\bin\\nanominer-2\\nanominer",
     "AMD3": ".\\bin\\nanominer-3\\nanominer",
     "minername": "nanominer",
-    "version": "1.6.2",
+    "version": "1.9.1",
     "optional": "No",
-    "uri": "https://github.com/nanopool/nanominer/releases/download/v1.6.2/nanominer-linux-1.6.2.tar.gz"
+    "uri": "https://github.com/nanopool/nanominer/releases/download/v1.9.1/nanominer-linux-1.9.1.tar.gz"
+  },
+  "nbminer-amd": {
+    "name": "nbminer-amd",
+    "type": "amd",
+    "AMD1": ".\\bin\\nbminer-amd-1\\nbminer",
+    "AMD2": ".\\bin\\nbminer-amd-2\\nbminer",
+    "AMD3": ".\\bin\\nbminer-amd-3\\nbminer",
+    "minername": "nbminer",
+    "version": "30.2",
+    "optional": "No",
+    "uri": "https://github.com/NebuTech/NBMiner/releases/download/v30.2/NBMiner_30.2_Linux.tgz"
   }
 }
