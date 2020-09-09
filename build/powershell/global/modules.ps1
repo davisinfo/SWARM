@@ -4,7 +4,7 @@ function Global:Add-LogErrors {
         $errormesage = "[$TimeStamp]: SWARM Generated The Following Warnings/Errors-"
         $errormesage | Add-Content $global:log_params.logname
         $Message = @()
-        $error | foreach { $Message += "$($_.InvocationInfo.InvocationName)`: $($_.Exception.Message)"; $Message += $_.InvocationINfo.PositionMessage; $Message += $_.InvocationInfo.Line; $Message += $_.InvocationINfo.Scriptname; $MEssage += "" }
+        $error | ForEach-Object { $Message += "$($_.InvocationInfo.InvocationName)`: $($_.Exception.Message)"; $Message += $_.InvocationINfo.PositionMessage; $Message += $_.InvocationInfo.Line; $Message += $_.InvocationINfo.Scriptname; $MEssage += "" }
         $Message | Add-Content $global:log_params.logname
         $error.clear()
     }
@@ -20,43 +20,59 @@ function Global:Get-ChildItemContent {
 
     if ($Items) { $Child = $Items }
     else { $Child = Get-ChildItem $Path }
-
-    $ChildItems = $Child | ForEach-Object {
+    $ChildItems = @();
+    $Child | ForEach-Object {
         $Name = $_.BaseName
         $FullName = $_.FullName
-        $Content = @()
         if ($_.Extension -eq ".ps1") {
-            $Content = &$_.FullName
+            $Runspace = [runspacefactory]::CreateRunspace();
+            $Runspace.Open();
+            $PowerShell = [powershell]::Create()
+            $PowerShell.runspace = $Runspace
+            $Script_Content = [IO.File]::ReadAllText($_.FullName);
+            $script = [Scriptblock]::Create($Script_Content);
+            $Runspace.SessionStateProxy.SetVariable("Wallets", $Global:Wallets);
+            $Runspace.SessionStateProxy.SetVariable("Config", $Global:Config);
+            $Runspace.SessionStateProxy.SetVariable("Name", $Name)
+            $Runspace.SessionStateProxy.Path.SetLocation($($(vars).dir)) | Out-Null;
+            $handle = $PowerShell.AddScript($script).BeginInvoke();
+            While (!$handle.IsCompleted) {
+                Start-Sleep -Milliseconds 200
+            }
+            $Content = $PowerShell.EndInvoke($handle);
+            if ($Powershell.Streams.Error) {
+                foreach ($e in $PowerShell.Streams.Error) {
+                    log "
+$($e.Exception.Message)
+$($e.InvocationInfo.PositionMessage)
+    | Category: $($e.CategoryInfo.Category)     | Activity: $($e.CategoryInfo.Activity)
+    | Reason: $($e.CategoryInfo.Reason)     | Runspace: $FullName
+    | Target Name: $($e.CategoryInfo.TargetName)    | Target Type: $($e.CategoryInfo.TargetType)
+" -ForeGround Red; 
+                }
+            }
+            $PowerShell.Dispose();
+            $Runspace.Close();
+            $Runspace.Dispose();
+            if ($Content.Count -gt 0) {
+                if ($Content[0].GetType() -eq [string]) {
+                    foreach($item in $Content) {
+                        log $item -ForeGroundColor Yellow;
+                    }
+                    $Content.Clear();
+                }
+            }
         }
         else {
             try { $Content = $_ | Get-Content | ConvertFrom-Json }catch { log "WARNING: Could Not Identify $FullName, It Is Corrupt- Remove File To Stop." -ForegroundColor Red }
         }
         $Content | ForEach-Object {
-            [PSCustomObject]@{Name = $Name; Content = $_ }
-        }
-    }
-
-    $ChildItems | ForEach-Object {
-        $Item = $_
-        $ItemKeys = $Item.Content.PSObject.Properties.Name.Clone()
-        $ItemKeys | ForEach-Object {
-            if ($Item.Content.$_ -is [String]) {
-                $Item.Content.$_ = Invoke-Expression "`"$($Item.Content.$_)`""
-            }
-            elseif ($Item.Content.$_ -is [PSCustomObject]) {
-                $Property = $Item.Content.$_
-                $PropertyKeys = $Property.PSObject.Properties.Name
-                $PropertyKeys | ForEach-Object {
-                    if ($Property.$_ -is [String]) {
-                        $Property.$_ = Invoke-Expression "`"$($Property.$_)`""
-                    }
-                }
-            }
+            $ChildItems += [PSCustomObject]@{Name = $Name; Content = $_ }
         }
     }
 
     $AllContent = New-Object System.Collections.ArrayList
-    $ChildItems | % { $AllContent.Add($_) | Out-Null }
+    $ChildItems | ForEach-Object { $AllContent.Add($_) | Out-Null }
     $AllContent
 }
 
@@ -65,12 +81,12 @@ function Global:start-killscript {
     ## Get Processes That Could Be Running:
     $To_Kill = @()
     if (test-path ".\build\pid") {
-        $Miner_PIDs = Get-ChildItem ".\build\pid" | Where BaseName -like "*info*"
+        $Miner_PIDs = Get-ChildItem ".\build\pid" | Where-Object BaseName -like "*info*"
         if ($Miner_PIDs) {
-            $Miner_PIDs | % {
+            $Miner_PIDs | ForEach-Object {
                 $Content = Get-Content $_ | ConvertFrom-Json
                 $Name = Split-Path $Content.miner_exec -Leaf
-                $To_Kill += Get-Process | Where Id -eq $Content.pid | Where Name -eq $Name
+                $To_Kill += Get-Process | Where-Object Id -eq $Content.pid | Where-Object Name -eq $Name
             }
         }
     }
@@ -97,7 +113,7 @@ function Global:start-killscript {
     $OpenedScreens = @()
     $GetScreens = (invoke-expression "screen -ls" | Select-String $OpenScreens).Line
     foreach ($screen in $OpenScreens) { 
-        $GetScreens | % { 
+        $GetScreens | ForEach-Object { 
             if ($_ -like "*$screen*") { 
                 $OpenedScreens += $screen 
             }
@@ -123,7 +139,7 @@ function Global:start-killscript {
     $OpenedScreens = @()
     $GetScreens = (invoke-expression "screen -ls" | Select-String $OpenScreens).Line
     foreach ($screen in $OpenScreens) { 
-        $GetScreens | % { 
+        $GetScreens | ForEach-Object { 
             if ($_ -like "*$screen*") { 
                 $OpenedScreens += $screen 
             }
@@ -148,7 +164,7 @@ function Global:start-killscript {
 
 function Global:Add-Module($Path) {
     $name = $(Get-Item $Path).BaseName
-    $A = Get-Module | Where Name -eq $name
+    $A = Get-Module | Where-Object Name -eq $name
     if (-not $A) { Import-Module -Name $Path -Scope Global }
     if ($name -notin $global:config.vars.modules) {
         $DoNotAdd = @("")
@@ -168,7 +184,7 @@ function Global:Remove-Modules {
         $name = $(Get-Item $Path).BaseName
         if ($Name -in $mods) {
             Remove-Module -Name $name
-            $global:config.vars.modules = $global:config.vars.modules | where { $_ -ne $name }
+            $global:config.vars.modules = $global:config.vars.modules | Where-Object { $_ -ne $name }
         }
     }
     else {
@@ -278,3 +294,27 @@ function Global:Remove-Vars([string]$X) {
 Set-Alias -Name remove -Value Global:Remove-Vars -Scope Global
 Set-Alias -Name check -Value Global:Confirm-Vars -Scope Global
 Set-Alias -Name log -Value Global:Write-Log -Scope Global
+
+Class Expression {
+    static [string] Invoke([string]$command, [string]$arguments) {
+        $output = [string]::Empty;
+        $Proc = [System.Diagnostics.Process]::New();
+        $Proc.StartInfo.FileName = $command;
+        $Proc.StartInfo.Arguments = "$arguments";
+        $Proc.StartInfo.CreateNoWindow = $true;
+        $Proc.StartInfo.UseShellExecute = $false;
+        $Proc.StartInfo.RedirectStandardOutput = $true;
+        $Proc.StartInfo.RedirectStandardError = $true;
+        $Proc.Start() | Out-Null;
+        while (-not $Proc.StandardOutput.EndOfStream -or -not $Proc.StandardError.EndOfStream) {
+            if ($Proc.StandardOutput.Peek() -gt -1) {
+                $output += "$($Proc.StandardOutput.ReadLine())`n";
+            }
+            if ($Proc.StandardError.Peek() -gt -1) {
+                $output += "$($Proc.StandardError.ReadLine())`n";
+            }
+        }    
+        $Proc.WaitForExit();
+        return $output;
+    }
+}

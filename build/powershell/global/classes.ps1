@@ -103,9 +103,9 @@ class STAT_METHODS {
          $new.Daily_Actual_Values += $Actual
          $new.Daily_Hashrate_Values += $old.Avg_Hashrate
          if ($new.Daily_Values.Count -gt 7) {
-            $new.Daily_Values = $new.Daily_Values | Select -Last 7
-            $new.Daily_Actual_Values = $new.Daily_Actual_Values | Select -Last 7
-            $new.Daily_Hashrate_Values = $new.Daily_Hashrate_Values | Select -Last 7
+            $new.Daily_Values = $new.Daily_Values | Select-Object -Last 7
+            $new.Daily_Actual_Values = $new.Daily_Actual_Values | Select-Object -Last 7
+            $new.Daily_Hashrate_Values = $new.Daily_Hashrate_Values | Select-Object -Last 7
          }
          $new.Start_Of_Day = (Get-Date).ToUniversalTime().ToString("o")
       }
@@ -208,12 +208,12 @@ class STAT_METHODS {
       $SmallestValue = 1E-20
       $Calcs.keys | ForEach-Object {
          ## Price
-         $Price = $old_stat.Live_Values | Select -Last 1
-         ## Select Only Values For Moving Period
+         $Price = $old_stat.Live_Values | Select-Object -Last 1
+         ## Select-Object Only Values For Moving Period
          $theta = [STAT_METHODS]::Theta($Calcs.$_, $old_stat.Live_Values)
          ## Smoothing For Period
          $alpha = [Double][STAT_METHODS]::Alpha($theta.Count)
-         ## Simple Moving Average For The Select Periods
+         ## Simple Moving Average For The Select-Object Periods
          $zeta = [Convert]::ToDecimal($Theta.Sum / $Theta.Count)
          ## Add MA
          $New_Stat."$($_)_MA" = $zeta

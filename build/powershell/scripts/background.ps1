@@ -11,17 +11,26 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #>
 
+param(
+    # Parameter help description
+    [Parameter(mandatory=$false)]
+    [string]$WorkingDir
+)
+
 [cultureinfo]::CurrentCulture = 'en-US'
 if ($IsWIndows) { $host.ui.RawUI.WindowTitle = "Background Agent: Keep Open!" }
 ## any windows version below 10 invoke full screen mode.
 if ($isWindows) {
-    $os_string = "$([System.Environment]::OSVersion.Version)".split(".") | Select -First 1
+    $os_string = "$([System.Environment]::OSVersion.Version)".split(".") | Select-Object -First 1
     if ([int]$os_string -lt 10) {
         invoke-expression "mode 800"
     }
 }
 #$WorkingDir = "C:\Users\Mayna\Documents\GitHub\SWARM"
-#$WorkingDir = "/root/hive/miners/custom/SWARM"
+#$WorkingDir = "/SWARM"
+if($IsLinux){
+    $env:SWARM_DIR = $WorkingDir;
+}
 Set-Location $env:SWARM_DIR
 $UtcTime = Get-Date -Date "1970-01-01 00:00:00Z"
 $UTCTime = $UtcTime.ToUniversalTime()
@@ -35,7 +44,7 @@ if($isWindows){$env:Path += ";$($(vars).dir)\build\cmd"}
 try { if ((Get-MpPreference).ExclusionPath -notcontains (Convert-Path .)) { Start-Process "powershell" -Verb runAs -ArgumentList "Add-MpPreference -ExclusionPath `'$WorkingDir`'" -WindowStyle Minimized } }catch { }
 try { $Net = Get-NetFireWallRule } catch { }
 if ($Net) {
-    try { if ( -not ( $Net | Where { $_.DisplayName -like "*background.ps1*" } ) ) { New-NetFirewallRule -DisplayName 'background.ps1' -Direction Inbound -Program "$workingdir\build\powershell\scripts\background.ps1" -Action Allow | Out-Null } } catch { }
+    try { if ( -not ( $Net | Where-Object { $_.DisplayName -like "*background.ps1*" } ) ) { New-NetFirewallRule -DisplayName 'background.ps1' -Direction Inbound -Program "$workingdir\build\powershell\scripts\background.ps1" -Action Allow | Out-Null } } catch { }
 }
 $Net = $null
 
@@ -50,7 +59,7 @@ $(vars).Add("web", "$($(vars).dir)\build\api\web")
 
 if (Test-Path ".\debug\data.xml") {
     $(vars).Add("onboard", ([xml](Get-Content ".\debug\data.xml")))
-    $(vars).onboard = $(vars).onboard.gpuz_dump.card | Where vendor -ne "AMD/ATI" | Where vendor -ne "NVIDIA"
+    $(vars).onboard = $(vars).onboard.gpuz_dump.card | Where-Object vendor -ne "AMD/ATI" | Where-Object vendor -ne "NVIDIA"
 }
 
 $p = [Environment]::GetEnvironmentVariable("PSModulePath")
@@ -118,7 +127,7 @@ $Global:StartTime = Get-Date
 $CheckForSWARM = ".\build\pid\miner_pid.txt"
 if (Test-Path $CheckForSWARM) { 
     $global:GETSWARMID = Get-Content $CheckForSWARM; 
-    $Global:GETSWARM = Get-Process | Where ID -eq $global:GETSWARMID
+    $Global:GETSWARM = Get-Process | Where-Object ID -eq $global:GETSWARMID
 }
 $(vars).ADD("GCount", (Get-Content ".\debug\devicelist.txt" | ConvertFrom-Json))
 $(vars).ADD("BackgroundTimer", (New-Object -TypeName System.Diagnostics.Stopwatch))
@@ -166,7 +175,9 @@ While ($True) {
     Global:New-StatTables
     Global:Get-Metrics
     Remove-Module "initial"
-    if ($global:DoNVIDIA -eq $true) { $NVIDIAStats = Global:Set-NvidiaStats }
+    if ($global:DoNVIDIA -eq $true) { 
+        $NVIDIAStats = Global:Set-NvidiaStats 
+    }
     if ($global:DoAMD -eq $true) { $AMDStats = Global:Set-AMDStats }
 
     ## Start API Calls For Each Miner
@@ -585,7 +596,7 @@ While ($True) {
             ## ADD Power to API
             if ($global:TypeS -eq "NVIDIA" -or $global:TypeS -eq "AMD") {
                 $WattValue = 0
-                $Global:Devices | % { 
+                $Global:Devices | Foreach-Object { 
                     $WattGPU = $(vars).GCOUNT.$global:TypeS.$_
                     if ($GPUPower.$WattGPU) { 
                         $WattValue += $GPUPower.$WattGPU
@@ -597,7 +608,7 @@ While ($True) {
     }
 
 
-    ##Select Algo For Online Stats
+    ##Select-Object Algo For Online Stats
     if ($global:HIVE_ALGO.Main) { $Global:StatAlgo = $global:HIVE_ALGO.Main }
     else { $FirstMiner = $global:HIVE_ALGO.keys | Select-Object -First 1; if ($FirstMiner) { $Global:StatAlgo = $global:HIVE_ALGO.$FirstMiner } }
 
@@ -658,7 +669,7 @@ While ($True) {
         Remove-Variable numbers -ErrorAction Ignore
     }
 
-    ##Select Only For Each Device Group
+    ##Select-Object Only For Each Device Group
     $DeviceTable = @()
     if ([string]$(arg).GPUDevices1) { $DeviceTable += $(arg).GPUDevices1 -split "," }
     if ([string]$(arg).GPUDevices2) { $DeviceTable += $(arg).GPUDevices2 -split "," }

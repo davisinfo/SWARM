@@ -114,6 +114,7 @@ function Global:Start-LaunchCode($MinerCurrent, $AIP) {
                         "miniz" { $MinerArguments = "-cd $($MinerCurrent.Devices) $($MinerCurrent.Arguments)" }
                         "energiminer" { $MinerArguments = "--cuda-devices $($MinerCurrent.Devices) $($MinerCurrent.Arguments)" }
                         "gminer" { $MinerArguments = "-d $($MinerCurrent.ArgDevices) $($MinerCurrent.Arguments)" }
+                        "wildrig-nv" { $MinerArguments = "--opencl-devices $($MinerCurrent.ArgDevices) $($MinerCurrent.Arguments)" }
                         "dstm" { $MinerArguments = "--dev $($MinerCurrent.Devices) $($MinerCurrent.Arguments)" }
                         "claymore" { $MinerArguments = "-di $($MinerCurrent.Devices) $($MinerCurrent.Arguments)" }
                         "trex" { $MinerArguments = "-d $($MinerCurrent.Devices) $($MinerCurrent.Arguments)" }
@@ -148,6 +149,7 @@ function Global:Start-LaunchCode($MinerCurrent, $AIP) {
                         }
                         "grin-miner" { global:set-minerconfig $NewMiner $Logs }
                         "gminer" { $MinerArguments = "-d $($MinerCurrent.ArgDevices) $($MinerCurrent.Arguments)" }
+                        "wildrig-nv" { $MinerArguments = "--opencl-devices $($MinerCurrent.ArgDevices) $($MinerCurrent.Arguments)" }
                         "lolminer" { $MinerArguments = "--devices NVIDIA $($MinerCurrent.Arguments)" }
                         default { $MinerArguments = "$($MinerCurrent.Arguments)" }
                     }
@@ -173,11 +175,11 @@ function Global:Start-LaunchCode($MinerCurrent, $AIP) {
                             $Connection = $MinerCurrent.Connection
                             $Username = $MinerCurrent.Username
                             $Password = $MinerCurrent.Password
-                            $NewLines = $ConfFile | ForEach-Object {
-                                if ($_ -like "*<Connection Url =*") { $_ = "<Connection Url = `"stratum+tcp://$Connection`"" }
-                                if ($_ -like "*Username =*") { $_ = "            Username = `"$Username`"    " }
-                                if ($_ -like "*Password =*" ) { $_ = "            Password = `"$Password`">    " }
-                                if ($_ -notlike "*<Connection Url*" -or $_ -notlike "*Username*" -or $_ -notlike "*Password*") { $_ }
+                            for($i=0; $i -lt $NewLines.Count; $i++) {
+                                if ($NewLines[$i] -like "*<Connection Url =*") { $NewLines[$i] = "<Connection Url = `"stratum+tcp://$Connection`"" }
+                                if ($NewLines[$i] -like "*Username =*") { $NewLines[$i] = "            Username = `"$Username`"    " }
+                                if ($NewLines[$i] -like "*Password =*" ) { $NewLines[$i] = "            Password = `"$Password`">    " }
+                                if ($NewLines[$i] -notlike "*<Connection Url*" -or $NewLines[$i] -notlike "*Username*" -or $NewLines[$i] -notlike "*Password*") { $NewLines[$i] }
                             }
                             Clear-Content ".\lyclMiner.conf" -force
                             $NewLines | Set-Content ".\lyclMiner.conf"
@@ -196,11 +198,11 @@ function Global:Start-LaunchCode($MinerCurrent, $AIP) {
                             $Connection = $MinerCurrent.Connection
                             $Username = $MinerCurrent.Username
                             $Password = $MinerCurrent.Password
-                            $NewLines = $ConfFile | ForEach-Object {
-                                if ($_ -like "*<Connection Url =*") { $_ = "<Connection Url = `"stratum+tcp://$Connection`"" }
-                                if ($_ -like "*Username =*") { $_ = "            Username = `"$Username`"    " }
-                                if ($_ -like "*Password =*" ) { $_ = "            Password = `"$Password`">    " }
-                                if ($_ -notlike "*<Connection Url*" -or $_ -notlike "*Username*" -or $_ -notlike "*Password*") { $_ }
+                            for($i=0; $i -lt $NewLines.Count; $i++) {
+                                if ($NewLines[$i] -like "*<Connection Url =*") { $NewLines[$i] = "<Connection Url = `"stratum+tcp://$Connection`"" }
+                                if ($NewLines[$i] -like "*Username =*") { $NewLines[$i] = "            Username = `"$Username`"    " }
+                                if ($NewLines[$i] -like "*Password =*" ) { $NewLines[$i] = "            Password = `"$Password`">    " }
+                                if ($NewLines[$i] -notlike "*<Connection Url*" -or $NewLines[$i] -notlike "*Username*" -or $NewLines[$i] -notlike "*Password*") { $NewLines[$i] }
                             }
                             Clear-Content ".\lyclMiner.conf" -force
                             $NewLines | Set-Content ".\lyclMiner.conf"
@@ -223,7 +225,7 @@ function Global:Start-LaunchCode($MinerCurrent, $AIP) {
         }
 
         if ($(arg).Platform -eq "windows") {
-            if ($MinerProcess -eq $null -or $MinerProcess.HasExited -eq $true) {
+            if ($null -eq $MinerProcess -or $MinerProcess.HasExited -eq $true) {
             
                 #dir
                 $WorkingDirectory = Join-Path $($(vars).dir) $(Split-Path $($MinerCurrent.Path))
@@ -264,7 +266,7 @@ function Global:Start-LaunchCode($MinerCurrent, $AIP) {
                 try { 
                     $NetPath = Join-Path $(vars).dir $MinerCurrent.Path.replace(".\", "")
                     $NetName = Split-Path $MinerCurrent.Path -leaf
-                    $Net = Get-NetFireWallRule | Where DisplayName -like "*$NetName*"
+                    $Net = Get-NetFireWallRule | Where-Object DisplayName -like "*$NetName*"
                     ## Clear old names from older versions.
                     foreach ($name in $net) {
                         if ($name.DisplayName -ne $NetPath) {
@@ -275,7 +277,7 @@ function Global:Start-LaunchCode($MinerCurrent, $AIP) {
                         }
                     }
                     ## Add if miner path is not listed.
-                    if (-not ($net | Where DisplayName -eq $NetPath)) {
+                    if (-not ($net | Where-Object DisplayName -eq $NetPath)) {
                         try {
                             New-NetFirewallRule -DisplayName "$NetPath" -Direction Inbound -Program $NetPath -Action Allow -ErrorAction Ignore | Out-Null
                         }
@@ -372,7 +374,7 @@ function Global:Start-LaunchCode($MinerCurrent, $AIP) {
                 $Job = Start-Job -ArgumentList $PID, $WorkingDirectory, (Convert-Path ".\build\apps\launchcode.dll"), ".\swarm_start_$($Algo).ps1", $(arg).hidden {
                     param($ControllerProcessID, $WorkingDirectory, $dll, $ps1, $Hidden)
                     Set-Location $WorkingDirectory
-                    $ControllerProcess = Get-Process | Where Id -eq $ControllerProcessID
+                    $ControllerProcess = Get-Process | Where-Object Id -eq $ControllerProcessID
                     if ($null -eq $ControllerProcess) { return }
                     Add-Type -Path $dll
                     $start = [launchcode]::New()
@@ -385,18 +387,22 @@ function Global:Start-LaunchCode($MinerCurrent, $AIP) {
                     $arguments = "-executionpolicy bypass -Windowstyle $WindowStyle -file `"$ps1`""
                     $CommandLine += " " + $arguments
                     $New_Miner = $start.New_Miner($filepath, $CommandLine, $WorkingDirectory)
-                    $Process = Get-Process | Where id -eq $New_Miner.dwProcessId
+                    $Process = Get-Process | Where-Object id -eq $New_Miner.dwProcessId
                     if ($null -eq $Process) { 
                         [PSCustomObject]@{ProcessId = $null }
                         return
                     }            
                     [PSCustomObject]@{ProcessId = $Process.Id; ProcessHandle = $Process.Handle };
                     $ControllerProcess.Handle | Out-Null; $Process.Handle | Out-Null; 
-                    do { if ($ControllerProcess.WaitForExit(1000)) { $Process.CloseMainWindow() | Out-Null } }while ($Process.HasExited -eq $false)
+                    do { 
+                        if ($ControllerProcess.WaitForExit(1000)) { 
+                            $Process.CloseMainWindow() | Out-Null 
+                        } 
+                    } while ($Process.HasExited -eq $false)
                 }
       
-                do { sleep 1; $JobOutput = Receive-Job $Job }
-                while ($JobOutput -eq $null)
+                do { Start-Sleep 1; $JobOutput = Receive-Job $Job }
+                while ($null -eq $JobOutput)
       
                 if ($JobOutput.ProcessId -ne 0) {
                     $Process = Get-Process | Where-Object Id -EQ $JobOutput.ProcessId
@@ -446,7 +452,6 @@ function Global:Start-LaunchCode($MinerCurrent, $AIP) {
             ##Remove Old Logs
             $MinerLogs = Get-ChildItem "logs" | Where-Object Name -like "*$($MinerCurrent.Type)*"
             $MinerLogs | ForEach-Object { if (Test-Path "$($_)") { Remove-Item "$($_)" -Force } }
-            Start-Sleep -S .5
 
             ##Ensure bestminers.txt has been written (for slower storage drives)
             $FileTimer = New-Object -TypeName System.Diagnostics.Stopwatch
@@ -463,29 +468,21 @@ function Global:Start-LaunchCode($MinerCurrent, $AIP) {
             ##Bash Script to free Port
             if ($MinerCurrent.Port -ne 0) {
                 Write-Log "Clearing Miner Port `($($MinerCurrent.Port)`).." -ForegroundColor Cyan
-                $warn = 0;
                 $proc = Start-Process ".\build\bash\killcx.sh" -ArgumentList $MinerCurrent.Port -PassThru
-                do {
-                    $proc | Wait-Process -Timeout 5 -ErrorAction Ignore
-                    if ($proc.HasExited -eq $false) {
-                        log "Still Waiting For Port To Clear..." -ForegroundColor Cyan
-                        $warn += 5 
+                try {
+                    $proc | Wait-Process -Timeout 15 -ErrorAction Stop
+                    log "Miner API Port Was Cleared!" -ForegroundColor Cyan
+                }
+                catch {
+                    log "Warning: Miner API Port still listed as TIME_WAIT after 15 seconds, but launching anyway" -ForegroundColor Yellow
+                    while(!$proc.HasExited) {
+                        Stop-Process $proc
+                        Start-Sleep -S .5
+                        log "Stopping killcx" -Foreground Yellow
                     }
-                    else { $warn = $(arg).time_wait }
-                }while ($warn -lt $(arg).time_wait)
-                
-                if ($warn -eq 2) { 
-                    log "Warning: Port still listed as TIME_WAIT, but launching anyway" -ForegroundColor Yellow 
-                    if ($Proc.HasExited -eq $false) {
-                        kill $Proc.Id -ErrorAction Ignore
-                    }
-                } 
-                elseif ($Warn -eq 10) { log "Port Was Cleared" -ForegroundColor Cyan }
+                }
             }
 
-            ## Stop killcx.sh script
-            if ($proc.HasExited -eq $false) { Stop-Process $proc }
-            
             ##Notification To User That Miner Is Attempting To start
             log "Starting $($MinerCurrent.Name) Mining $($MinerCurrent.Symbol) on $($MinerCurrent.Type)" -ForegroundColor Cyan
 
@@ -531,9 +528,6 @@ function Global:Start-LaunchCode($MinerCurrent, $AIP) {
             $Algo = ($MinerCurrent.Algo).Replace("`/", "_")
             $TestScript | Set-Content "$MinerDir/swarm_start_$($Algo).sh"
     
-            ## .5 Second Delay After Read/Write Of Config Files. For Slower Drives.
-            Start-Sleep -S .5
-
             ## Run HiveOS hugepages commmand if algo is randomx
             if (
                 $MinerCurrent.algo -eq "randomx" -and
@@ -607,9 +601,9 @@ function Global:Start-LaunchCode($MinerCurrent, $AIP) {
                 #Write We Are getting ID
                 log "Getting Process ID for $($MinerCurrent.MinerName)"
                 ## Now we get all plausible process id's based on miner name
-                $Miner_IDs = Get-Process | Where Name -eq  (Split-Path $MinerEXE -Leaf)
+                $Miner_IDs = Get-Process | Where-Object Name -eq  (Split-Path $MinerEXE -Leaf)
                 ## We search the parent process's parent ID.
-                $MinerProcess = $Miner_IDs | Where { $($_.Parent).Parent.Id -eq $Screen_ID }
+                $MinerProcess = $Miner_IDs | Where-Object { $($_.Parent).Parent.Id -eq $Screen_ID }
 
             }until($null -ne $MinerProcess -or ($MinerTimer.Elapsed.TotalSeconds) -ge 10)  
             ##Stop Timer

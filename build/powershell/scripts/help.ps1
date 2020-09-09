@@ -153,13 +153,14 @@ Please choose an advanced setting you wish to modify:
 
 [Other]
 50 I would like to set maximum block time for coins. (-Max_TTF)
+51 I would like to set a minimum hashrate threshold for switching (-Hashrate_Threshold)
 
 I wish to use an optional miner from the optional miner folder (-Optional)
       * Note you can just move the file into nvida or amd folder.
         This help option not available yet.
 
 Answer"
-        $Check = Global:Confirm-Answer $ans @(1 .. 50)
+        $Check = Global:Confirm-Answer $ans @(1 .. 51)
     }While ($Check -eq 1)
     $ans
 }
@@ -574,8 +575,9 @@ Answer"
         if ($IsWindows) { Clear-Host } elseif ($IsLinux) { $Host.UI.Write("`e[3;J`e[H`e[2J") }
         $PoolList = [ordered]@{ }
         $Num = 0
-        Get-ChildItem ".\algopools" | ForEach-Object { $PoolList.Add("$($_.BaseName)", $Num); $Num++ }
-        Get-ChildItem ".\custompools" | ForEach-Object { $PoolList.Add("$($_.BaseName)", $Num); $Num++ }
+        Get-ChildItem ".\pools\pplns" | Where-Object Extension -eq ".ps1" | ForEach-Object { $PoolList.Add("$($_.BaseName)", $Num); $Num++ }
+        Get-ChildItem ".\pools\pps" | Where-Object Extension -eq ".ps1" | ForEach-Object { $PoolList.Add("$($_.BaseName)", $Num); $Num++ }
+        Get-ChildItem ".\pools\prop" | Where-Object Extension -eq ".ps1" | ForEach-Object { $PoolList.Add("$($_.BaseName)", $Num); $Num++ }
         $Message = @()
         $PoolList.keys | % { $Message += "$($PoolList.$_) $($_)" }
         $ans = Read-Host -Prompt "Now We Must Decide Pools. 
@@ -878,6 +880,11 @@ Answer"
                     elseif ($(vars).input -eq 50) {
                         Add-Module "$hd\ttf.psm1"
                         Global:Get-TTF
+                        Global:Remove-Modules
+                    }
+                    elseif ($(vars).input -eq 51) {
+                        Add-Module "$hd\hash_threshold.psm1"
+                        Global:Get-HashrateThreshold
                         Global:Remove-Modules
                     }
                 }

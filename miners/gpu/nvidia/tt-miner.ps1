@@ -1,3 +1,5 @@
+. .\build\powershell\global\miner_stat.ps1;
+. .\build\powershell\global\modules.ps1;
 $(vars).NVIDIATypes | ForEach-Object {
     
     $ConfigType = $_; $Num = $ConfigType -replace "NVIDIA", ""
@@ -32,7 +34,7 @@ $(vars).NVIDIATypes | ForEach-Object {
     $MinerConfig = $Global:config.miners.$CName
 
     ##Export would be /path/to/[SWARMVERSION]/build/export##
-    $ExportDir = Join-Path $($(vars).dir) "build\export"
+    $ExportDir = "/usr/local/swarm/lib64"
     $Miner_Dir = Join-Path ($(vars).dir) ((Split-Path $Path).replace(".", ""))
 
     ##Prestart actions before miner launch
@@ -65,10 +67,14 @@ $(vars).NVIDIATypes | ForEach-Object {
                 Where-Object Algorithm -eq $MinerAlgo | 
                 Where-Object {
                     if($_.Name -eq "zergpool" -and $_.Algorithm -ne "ethash"){$_}
-                    elseif($_.Name -ne "zergpool"){$_}
+                    elseif($_.Name -ne "whalesburg"){$_}
                 } |
                 ForEach-Object {
                 if ($_.Worker) { $Worker = "-worker $($_.Worker) " }else { $Worker = $Null }
+                $Url = "$($_.Protocol)://$($_.Pool_Host):$($_.Port)"
+                if($_.Name -eq "zergpool") {
+                    $Url = "$($_.Pool_Host):$($_.Port)"
+                }
                 [PSCustomObject]@{
                     MName      = $Name
                     Coin       = $(vars).Coins
@@ -83,9 +89,10 @@ $(vars).NVIDIATypes | ForEach-Object {
                     Stratum    = "$($_.Protocol)://$($_.Pool_Host):$($_.Port)" 
                     Version    = "$($(vars).nvidia.$CName.version)"
                     DeviceCall = "ttminer"
-                    Arguments  = "-a $($MinerConfig.$ConfigType.naming.$($_.Algorithm)) --nvidia -o $($_.Protocol)://$($_.Pool_Host):$($_.Port) $Worker-b localhost:$Port -u $($_.$User) -p $($_.$Pass) -log `'$Log`' $($MinerConfig.$ConfigType.commands.$($_.Algorithm))"
+                    Arguments  = "-a $($MinerConfig.$ConfigType.naming.$($_.Algorithm)) --nvidia -o $Url $Worker-b localhost:$Port -u $($_.$User) -p $($_.$Pass) -log `'$Log`' $($MinerConfig.$ConfigType.commands.$($_.Algorithm))"
                     HashRates  = $Stat.Hour
-                    Quote      = if ($HashStat) { [Convert]::ToDecimal($HashStat * $_.Price) }else { 0 }
+                    HashRate_Adjusted = $Hashstat
+                    Quote      = $_.Price
                     Rejections = $Stat.Rejections
                     Power      = if ($(vars).Watts.$($_.Algorithm)."$($ConfigType)_Watts") { $(vars).Watts.$($_.Algorithm)."$($ConfigType)_Watts" }elseif ($(vars).Watts.default."$($ConfigType)_Watts") { $(vars).Watts.default."$($ConfigType)_Watts" }else { 0 } 
                     MinerPool  = "$($_.Name)"

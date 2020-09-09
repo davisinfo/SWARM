@@ -1,3 +1,5 @@
+. .\build\powershell\global\miner_stat.ps1;
+. .\build\powershell\global\modules.ps1;
 $(vars).AMDTypes | ForEach-Object {
     
     $ConfigType = $_; $Num = $ConfigType -replace "AMD", ""
@@ -29,7 +31,7 @@ $(vars).AMDTypes | ForEach-Object {
     $MinerConfig = $Global:config.miners.$CName
 
     ##Export would be /path/to/[SWARMVERSION]/build/export##
-    $ExportDir = Join-Path $($(vars).dir) "build\export"
+    $ExportDir = "/usr/local/swarm/lib64"
     $Miner_Dir = Join-Path ($(vars).dir) ((Split-Path $Path).replace(".", ""))
 
     ##Prestart actions before miner launch
@@ -78,7 +80,8 @@ $(vars).AMDTypes | ForEach-Object {
                     User       = "$($_.$User)"
                     Arguments  = "$($_.Pool_Host):$($_.Port) $($_.$User) $($_.Algorithm)"
                     HashRates  = $Stat.Hour
-                    Quote      = if ($HashStat) { [Convert]::ToDecimal($HashStat * $_.Price) }else { 0 }
+                    HashRate_Adjusted = $Hashstat
+                    Quote      = $_.Price
                     Rejections = $Stat.Rejections
                     Power      = if ($(vars).Watts.$($_.Algorithm)."$($ConfigType)_Watts") { $(vars).Watts.$($_.Algorithm)."$($ConfigType)_Watts" }elseif ($(vars).Watts.default."$($ConfigType)_Watts") { $(vars).Watts.default."$($ConfigType)_Watts" }else { 0 } 
                     MinerPool  = "$($_.Name)"

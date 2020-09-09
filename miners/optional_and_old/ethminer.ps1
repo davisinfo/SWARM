@@ -1,3 +1,5 @@
+. .\build\powershell\global\miner_stat.ps1;
+. .\build\powershell\global\modules.ps1;
 $(vars).NVIDIATypes | ForEach-Object {
     
     $ConfigType = $_; $Num = $ConfigType -replace "NVIDIA", ""
@@ -34,7 +36,7 @@ $(vars).NVIDIATypes | ForEach-Object {
     $MinerConfig = $Global:config.miners.ethminer
 
     ##Export would be /path/to/[SWARMVERSION]/build/export##
-    $ExportDir = Join-Path $($(vars).dir) "build\export"
+    $ExportDir = "/usr/local/swarm/lib64"
     $Miner_Dir = Join-Path ($(vars).dir) ((Split-Path $Path).replace(".", ""))
 
     ##Prestart actions before miner launch
@@ -83,7 +85,8 @@ $(vars).NVIDIATypes | ForEach-Object {
                     DeviceCall = "progminer"
                     Arguments  = "-P $($tcp)://$($_.$User).$($work)@$($_.Pool_Host):$($_.Port) --cuda --api-bind 127.0.0.1:$Port --noeval --dag-load-mode 1 $($MinerConfig.$ConfigType.commands.$($_.Algorithm))"
                     HashRates  = $Stat.Hour
-                    Quote      = if ($HashStat) { [Convert]::ToDecimal($HashStat * $_.Price) }else { 0 }
+                    HashRate_Adjusted = $Hashstat
+                    Quote      = $_.Price
                     Rejections = $Stat.Rejections
                     Power      = if ($(vars).Watts.$($_.Algorithm)."$($ConfigType)_Watts") { $(vars).Watts.$($_.Algorithm)."$($ConfigType)_Watts" }elseif ($(vars).Watts.default."$($ConfigType)_Watts") { $(vars).Watts.default."$($ConfigType)_Watts" }else { 0 } 
                     MinerPool  = "$($_.Name)"

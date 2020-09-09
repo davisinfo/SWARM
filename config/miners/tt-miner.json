@@ -10,7 +10,8 @@
             "mtp": "",
             "eaglesong": "",
             "ethash": "",
-            "lyra2rev3": ""
+            "lyra2rev3": "",
+            "kawpow": ""
         },
         "difficulty": {
             "progpow": "",
@@ -18,7 +19,8 @@
             "mtp": "",
             "eaglesong": "",
             "ethash": "",
-            "lyra2rev3": ""
+            "lyra2rev3": "",
+            "kawpow": ""
         },
         "naming": {
             "progpow": "PROGPOW",
@@ -26,15 +28,17 @@
             "mtp": "MTP",
             "eaglesong": "EAGLESONG",
             "ethash": "ETHASH",
-            "lyra2rev3": "LYRA2V3"
+            "lyra2rev3": "LYRA2V3",
+            "kawpow": "KAWPOW"
         },
         "fee": {
-            "progpow": 1,
-            "ubqhash": 1,
-            "mtp": 1,
-            "eaglesong": 1,
-            "ethash": 1,
-            "lyra2rev3": 1
+            "progpow": 0,
+            "ubqhash": 0,
+            "mtp": 0,
+            "eaglesong": 0,
+            "ethash": 0,
+            "lyra2rev3": 0,
+            "kawpow": 0
         }
     },
     "NVIDIA2": {
@@ -47,7 +51,8 @@
             "mtp": "",
             "eaglesong": "",
             "ethash": "",
-            "lyra2rev3": ""
+            "lyra2rev3": "",
+            "kawpow": ""
         },
         "difficulty": {
             "progpow": "",
@@ -55,7 +60,8 @@
             "mtp": "",
             "eaglesong": "",
             "ethash": "",
-            "lyra2rev3": ""
+            "lyra2rev3": "",
+            "kawpow": ""
         },
         "naming": {
             "progpow": "PROGPOW",
@@ -63,15 +69,17 @@
             "mtp": "MTP",
             "eaglesong": "EAGLESONG",
             "ethash": "ETHASH",
-            "lyra2rev3": "LYRA2V3"
+            "lyra2rev3": "LYRA2V3",
+            "kawpow": "KAWPOW"
         },
         "fee": {
-            "progpow": 1,
-            "ubqhash": 1,
-            "mtp": 1,
-            "eaglesong": 1,
-            "ethash": 1,
-            "lyra2rev3": 1
+            "progpow": 0,
+            "ubqhash": 0,
+            "mtp": 0,
+            "eaglesong": 0,
+            "ethash": 0,
+            "lyra2rev3": 0,
+            "kawpow": 0
         }
     },
     "NVIDIA3": {
@@ -84,7 +92,8 @@
             "mtp": "",
             "eaglesong": "",
             "ethash": "",
-            "lyra2rev3": ""
+            "lyra2rev3": "",
+            "kawpow": ""
         },
         "difficulty": {
             "progpow": "",
@@ -92,7 +101,8 @@
             "mtp": "",
             "eaglesong": "",
             "ethash": "",
-            "lyra2rev3": ""
+            "lyra2rev3": "",
+            "kawpow": ""
         },
         "naming": {
             "progpow": "PROGPOW",
@@ -100,15 +110,17 @@
             "mtp": "MTP",
             "eaglesong": "EAGLESONG",
             "ethash": "ETHASH",
-            "lyra2rev3": "LYRA2V3"
+            "lyra2rev3": "LYRA2V3",
+            "kawpow": "KAWPOW"
         },
         "fee": {
-            "progpow": 1,
-            "ubqhash": 1,
-            "mtp": 1,
-            "eaglesong": 1,
-            "ethash": 1,
-            "lyra2rev3": 1
-        }    
+            "progpow": 0,
+            "ubqhash": 0,
+            "mtp": 0,
+            "eaglesong": 0,
+            "ethash": 0,
+            "lyra2rev3": 0,
+            "kawpow": 0
+        }
     }
 }

@@ -47,7 +47,7 @@
     "GPUDevices3": [
         ""
     ],
-    "Historical_Bias": "1:1",
+    "Historical_Bias": "25:1",
     "Hive_Hash": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
     "HiveOS": "No",
     "Interval": 5,
@@ -87,7 +87,7 @@
     "TCP": "No",
     "TCP_IP": "127.0.0.1",
     "TCP_Port": 6099,
-    "Threshold": 0.02,
+    "Threshold": 0.0042,
     "Timeout": 24,
     "Time_Wait": 10,
     "Track_Shares": "Yes",
@@ -108,5 +108,6 @@
     "cpu_priority": 0,
     "Min_Blocks": 1,
     "Hidden": "No",
-    "Throttle": 0
+    "Throttle": 0,
+    "Hashrate_Threshold": 10
 }

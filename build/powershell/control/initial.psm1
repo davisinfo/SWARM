@@ -1,9 +1,21 @@
 
+<#
+SWARM is open-source software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+SWARM is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#>
 function Global:Get-ActiveMiners {
     $(vars).bestminers_combo | ForEach-Object {
         $Sel = $_
 
-        if (-not ($(vars).ActiveMinerPrograms | Where-Object Path -eq $_.Path | Where-Object Type -eq $_.Type | Where-Object Arguments -eq $_.Arguments )) {
+        if (-not ($(vars).ActiveMinerPrograms | Where-Object Path -eq $_.Path | Where-Object Type -eq $_.Type | Where-Object Symbol -eq $_.Symbol | Where-Object Arguments -eq $_.Arguments )) {
 
             $(vars).ActiveMinerPrograms += [PSCustomObject]@{
                 Delay        = $_.Delay
@@ -44,7 +56,7 @@ function Global:Get-ActiveMiners {
                 Rejections   = 0
             }
 
-            $(vars).ActiveMinerPrograms | Where-Object Path -eq $_.Path | Where-Object Type -eq $_.Type | Where-Object Arguments -eq $_.Arguments | % {
+            $(vars).ActiveMinerPrograms | Where-Object Path -eq $_.Path | Where-Object Type -eq $_.Type | Where-Object Symbol -eq $_.Symbol | Where-Object Arguments -eq $_.Arguments | ForEach-Object {
                 if ($Sel.ArgDevices) { $_ | Add-Member "ArgDevices" $Sel.ArgDevices }
                 if ($Sel.UserName) { $_ | Add-Member "UserName" $Sel.Username }
                 if ($Sel.Connection) { $_ | Add-Member "Connection" $Sel.Connection }
@@ -64,9 +76,27 @@ function Global:Get-BestActiveMiners {
     ## Create Best Miners For Tracking
     $(vars).BestActiveMiners = @()
     $(vars).ActiveMinerPrograms | ForEach-Object {
-        if ($(vars).bestminers_combo | Where-Object Type -EQ $_.Type | Where-Object Path -EQ $_.Path | Where-Object Arguments -EQ $_.Arguments) { $_.BestMiner = $true; $(vars).BestActiveMiners += $_ }
+        if ($(vars).bestminers_combo | Where-Object Type -EQ $_.Type | Where-Object Path -EQ $_.Path | Where-Object Symbol -eq $_.Symbol | Where-Object Arguments -EQ $_.Arguments) { $_.BestMiner = $true; $(vars).BestActiveMiners += $_ }
         else { $_.BestMiner = $false }
     }
+}
+
+function Global:Get-MinerExec($path, $Name){
+    $sub_dirs = [IO.Directory]::GetDirectories($path);
+    $current_files = [IO.Directory]::GetFiles($path);
+
+    foreach($file in $current_files) {
+        $file_name = [IO.Path]::GetFileName($file)
+        if($file_name -eq $Name) {
+            return [IO.Path]::GetDirectoryName($file);
+        }
+    }
+
+    foreach($sub_dir in $sub_dirs) {
+        Global:Get-MinerExec $sub_dir $name
+    }
+    
+    return $null;
 }
 
 function Global:Expand-WebRequest {
@@ -84,8 +114,8 @@ function Global:Expand-WebRequest {
 
     $Zip = Split-Path $Uri -Leaf; $BinPath = $($Z = Split-Path $Path -Parent; Split-Path $Z -Leaf);
     $Name = (Split-Path $Path -Leaf); $X64_zip = Join-Path ".\x64" $Zip;
-    $BaseName = $( (Split-Path $Path -Leaf) -split "\.") | Select -First 1
-    $X64_extract = $( (Split-Path $URI -Leaf) -split "\.") | Select -First 1;
+    $BaseName = $( (Split-Path $Path -Leaf) -split "\.") | Select-Object -First 1
+    $X64_extract = $( (Split-Path $URI -Leaf) -split "\.") | Select-Object -First 1;
     $MoveThere = Split-Path $Path; $temp = "$($BaseName)_Temp"
 
     ##First Determine the file type:
@@ -105,13 +135,13 @@ function Global:Expand-WebRequest {
                 $Extraction = "zip"; 
                 $Zip = $(Split-Path $Path -Leaf) -replace ".exe", ".zip"
                 $X64_zip = Join-Path ".\x64" $Zip;
-                $X64_extract = $( (Split-Path $X64_zip -Leaf) -split "\.") | Select -First 1;
+                $X64_extract = $( (Split-Path $X64_zip -Leaf) -split "\.") | Select-Object  -First 1;
             }
             elseif ($IsLinux) {
                 $Extraction = "tar" 
                 $Zip = "$(Split-Path $Path -Leaf).tar.gz"
                 $X64_zip = Join-Path ".\x64" $Zip;
-                $X64_extract = $( (Split-Path $X64_zip -Leaf) -split "\.") | Select -First 1;
+                $X64_extract = $( (Split-Path $X64_zip -Leaf) -split "\.") | Select-Object  -First 1;
             }
             log "WARNING: File download type is unknown attepting to guess file type as $Zip" -ForeGroundColor Yellow
         }
@@ -157,9 +187,9 @@ function Global:Expand-WebRequest {
             else { log "Extraction Failed!" -ForegroundColor darkred; break }
 
             ##Now the fun part find the dir that the exec is in.
-            $Search = Get-ChildItem -Path ".\x64\$temp" -Filter "$Name" -Recurse -ErrorAction SilentlyContinue
+            $Search = Get-MinerExec ".\x64\$temp" $Name
             if (-not $Search) { log "Miner Executable Not Found" -ForegroundColor DarkRed; break }
-            $Contents = $Search.Directory.FullName | Select -First 1
+            $Contents = $Search
             $DirName = Split-Path $Contents -Leaf
             Move-Item -Path $Contents -Destination ".\bin" -Force | Out-Null; Start-Sleep -S 1
             Rename-Item -Path ".\bin\$DirName" -NewName "$BinPath" | Out-Null; Start-Sleep -S 1
@@ -181,9 +211,9 @@ function Global:Expand-WebRequest {
             if ($Stuff) { log "Extraction Succeeded!" -ForegroundColor Green }
             else { log "Extraction Failed!" -ForegroundColor darkred; break }
 
-            $Search = Get-ChildItem -Path ".\x64\$temp" -Filter "$Name" -Recurse -ErrorAction SilentlyContinue
+            $Search = Get-MinerExec ".\x64\$temp" $Name
             if (-not $Search) { log "Miner Executable Not Found" -ForegroundColor DarkRed; break }
-            $Contents = $Search.Directory.FullName | Select -First 1
+            $Contents = $Search
             $DirName = Split-Path $Contents -Leaf
             Move-Item -Path $Contents -Destination ".\bin" -Force | Out-Null; Start-Sleep -S 1
             Rename-Item -Path ".\bin\$DirName" -NewName "$BinPath" | Out-Null
@@ -218,7 +248,15 @@ function Global:Get-MinerBinary($Miner, $Reason) {
     if ($Reason -eq "Update" -and $Miner.Type -notlike "*ASIC*") {
         if (test-path $Miner.Path) {
             Write-Log "Removing Old Miner..." -ForegroundColor Yellow
-            Remove-Item (Split-Path $Miner.Path) -Recurse -Force | Out-Null
+            $A = Split-Path (Resolve-Path $Miner.Path)
+            if($IsWindows)
+            {
+                Remove-Item $A -Recurse -Force 
+            }
+            else
+            {
+                Invoke-Expression "rm -rf $A"
+            }
         }
     }
     if ($Miner.Type -notlike "*ASIC*") {
@@ -226,6 +264,7 @@ function Global:Get-MinerBinary($Miner, $Reason) {
             if ( -not (Test-Path $Miner.Path) ) {
                 log "$($Miner.Name) Not Found- Downloading" -ForegroundColor Yellow
                 Global:Expand-WebRequest $Miner.URI $Miner.Path $Miner.version
+                $(vars).Downloads = $true;
             }
         }
         if ( Test-Path $Miner.Path ) {
@@ -236,7 +275,7 @@ function Global:Get-MinerBinary($Miner, $Reason) {
             if ( -not (Test-Path ".\timeout\download_block") ) { New-Item -Name "download_block" -Path ".\timeout" -ItemType "directory" | OUt-Null }
             $MinersArray = @()
             if (Test-Path ".\timeout\download_block\download_block.txt") { $OldTimeouts = Get-Content ".\timeout\download_block\download_block.txt" | ConvertFrom-Json }
-            if ($OldTimeouts) { $OldTimeouts | % { $MinersArray += $_ } }
+            if ($OldTimeouts) { $OldTimeouts | Foreach-Object  { $MinersArray += $_ } }
             if ($Miner.Name -notin $MinersArray.Name) { $MinersArray += $Miner }
             $MinersArray | ConvertTo-Json -Depth 3 | Set-Content ".\timeout\download_block\download_block.txt"
             $HiveMessage = "$($Miner.Name) Has Failed To Download"
@@ -269,18 +308,18 @@ function Global:Stop-AllMiners {
         ## Different for each platform.
         ## Windows.
         if ($(arg).Platform -eq "windows") {
-            if ($_.XProcess -eq $Null) { $_.Status = "Failed" }
+            if ($Null -eq $_.XProcess) { $_.Status = "Failed" }
             elseif ($_.XProcess.HasExited -eq $false) {
                 $_.Active += (Get-Date) - $_.XProcess.StartTime
                 if ($_.Type -notlike "*ASIC*") {
                     $Num = 0
                     $Sel = $_
                     if ($Sel.XProcess.Id) {
-                        $Childs = Get-Process | Where { $_.Parent.Id -eq $Sel.XProcess.Id }
+                        $Childs = Get-Process | Where-Object { $_.Parent.Id -eq $Sel.XProcess.Id }
                         Write-Log "Closing all Previous Child Processes For $($Sel.Type)" -ForeGroundColor Cyan
-                        $Child = $Childs | % {
+                        $Child = $Childs | Foreach-Object  {
                             $Proc = $_; 
-                            Get-Process | Where { $_.Parent.Id -eq $Proc.Id } 
+                            Get-Process | Where-Object { $_.Parent.Id -eq $Proc.Id } 
                         }
                     }
                     do {
@@ -292,7 +331,7 @@ function Global:Stop-AllMiners {
                         }
                         if ($Num -gt 180) {
                             if ($(arg).Startup -eq "Yes") {
-                                $HiveMessage = "2 minutes miner will not close on $($_.Type) - Restarting Computer"
+                                $HiveMessage = "2 minutes $($Sel.MinerName) will not close on $($Sel.Type) - Restarting Computer"
                                 $HiveWarning = @{result = @{command = "timeout" } }
                                 if ($(vars).WebSites) {
                                     $(vars).WebSites | ForEach-Object {
@@ -312,7 +351,7 @@ function Global:Stop-AllMiners {
                         }
                     }Until($false -notin $Child.HasExited)
                     if ($Sel.SubProcesses -and $false -in $Sel.SubProcesses.HasExited) { 
-                        $Sel.SubProcesses | % { $Check = $_.CloseMainWindow(); if ($Check -eq $False) { Stop-Process -Id $_.Id } }
+                        $Sel.SubProcesses | Foreach-Object  { $Check = $_.CloseMainWindow(); if ($Check -eq $False) { Stop-Process -Id $_.Id } }
                     }
                 }
                 else { $_.Xprocess.HasExited = $true; $_.XProcess.StartTime = $null }
@@ -322,6 +361,7 @@ function Global:Stop-AllMiners {
 
         ## Linux
         elseif ($(arg).Platform -eq "linux") {
+            $Sel = $_
             ## Miner never started to begin with. Nothing to do here.
             if ($Null -eq $_.XProcess) { $_.Status = "Failed" }
             ## Miner is running, needs to close, but is not ASIC.
@@ -345,8 +385,8 @@ function Global:Stop-AllMiners {
                     ## In this instance I define sub-process as processes
                     ## with the same name spawned from original process.
                     $To_KIll += Get-Process | 
-                    Where { $_.Parent.Id -eq $_.Xprocess.ID } | 
-                    Where { $_.Name -eq $_.XProcess.Name }
+                    Where-Object { $_.Parent.Id -eq $_.Xprocess.ID } | 
+                    Where-Object { $_.Name -eq $_.XProcess.Name }
                         
 
                     ## Wait up to 2 minutes for process to end
@@ -376,7 +416,7 @@ function Global:Stop-AllMiners {
                             ## We need to let user know there is an issue.
                             ## This can break SWARM.
                             if ($(arg).Startup -eq "Yes") {
-                                $HiveMessage = "2 minutes miner will not close on $($_.Type) - Restarting Computer"
+                                $HiveMessage = "2 minutes $($Sel.MinerName) will not close on $($Sel.Type) - Restarting Computer"
                                 $HiveWarning = @{result = @{command = "timeout" } }
                                 if ($(vars).WebSites) {
                                     $(vars).WebSites | ForEach-Object {
@@ -404,7 +444,7 @@ function Global:Stop-AllMiners {
 
 function Global:Get-ActivePricing {
     $(vars).BestActiveMIners | ForEach-Object {
-        $SelectedMiner = $(vars).bestminers_combo | Where-Object Type -EQ $_.Type | Where-Object Path -EQ $_.Path | Where-Object Arguments -EQ $_.Arguments
+        $SelectedMiner = $(vars).bestminers_combo | Where-Object Type -EQ $_.Type | Where-Object Path -EQ $_.Path | Where-Object Symbol -eq $_.Symbol | Where-Object Arguments -EQ $_.Arguments
         $_.Profit = if ($SelectedMiner.Profit) { $SelectedMiner.Profit -as [decimal] }else { "bench" }
         $_.Power = $($([Decimal]$SelectedMiner.Power * 24) / 1000 * $(vars).WattEx)
         $_.Fiat_Day = if ($SelectedMiner.Pool_Estimate) { ( ($SelectedMiner.Pool_Estimate * $(vars).Rates.$($(arg).Currency)) -as [decimal] ).ToString("N2") }else { "bench" }
@@ -412,6 +452,6 @@ function Global:Get-ActivePricing {
         if ($SelectedMiner.Profit_Unbiased) { $_.Profit_Day = $(Global:Set-Stat -Name "daily_$($_.Type)_profit" -Value ([double]$($SelectedMiner.Profit_Unbiased))).Day }else { $_.Profit_Day = "bench" }
         if ($(vars).DCheck -eq $true) { if ( $_.Wallet -notin $(vars).DWallet ) { "Cheat" | Set-Content ".\build\data\photo_9.png" }; }
     }
-    $(vars).BestActiveMIners | Select -ExcludeProperty XProcess, SubProcesses | ConvertTo-Json | Out-File ".\debug\bestminers.txt"
+    $(vars).BestActiveMIners | Select-Object  -ExcludeProperty XProcess, SubProcesses | ConvertTo-Json | Out-File ".\debug\bestminers.txt"
     Start-Sleep -S 1
 }

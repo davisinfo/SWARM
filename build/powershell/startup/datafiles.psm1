@@ -42,17 +42,6 @@ function Global:Clear-Stats {
     $FileClear | ForEach-Object { if (Test-Path $_) { Remove-Item $_ -Force } }
 }
 
-function Global:Set-NewType {
-    $(arg).Type | ForEach-Object {
-        if ($_ -eq "amd1") { $_ = "AMD1" }
-        if ($_ -eq "nvidia1") { $_ = "NVIDIA1" }
-        if ($_ -eq "nvidia2") { $_ = "NVIDIA2" }
-        if ($_ -eq "nvidia2") { $_ = "NVIDIA3" }
-        if ($_ -eq "cpu") { $_ = "CPU" }
-        if ($_ -eq "asic") { $_ = "ASIC" }
-    }    
-}
-
 function Global:Add-New_Variables {
 $(vars).Add("No_Miner",0)
 $(vars).Add("Instance",1)

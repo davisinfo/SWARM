@@ -119,7 +119,7 @@ function Global:Start-Webcommand {
             $data = "$($command.result.exec)"
             $payload = Invoke-Expression $Data | Out-String
             $line = @()
-            $payload | foreach { $line += "$_`n" }
+            $payload | Foreach-Object { $line += "$_`n" }
             $payload = $line
             $DoResponse = Global:Set-Response -Method $method -messagetype $messagetype -Data $data -CommandID $command.result.id -Payload $payload -Site $WebSite
             $DoResponse = $DoResponse | ConvertTo-JSon -Depth 1
@@ -134,7 +134,7 @@ function Global:Start-Webcommand {
             Start-NVIDIAOC $Command.result.nvidia_oc
             $getpayload = Get-Content ".\debug\ocnvidia.txt"
             $line = @()
-            $getpayload | foreach { $line += "$_`n" }
+            $getpayload | Foreach-Object { $line += "$_`n" }
             $payload = $line
             $DoResponse = Global:Set-Response -Method $method -messagetype $messagetype -Data $data -CommandID $command.result.id -Payload $payload -Site $WebSite
             $DoResponse = $DoResponse | ConvertTo-JSon -Depth 1
@@ -150,7 +150,7 @@ function Global:Start-Webcommand {
             Start-AMDOC $Command.result.amd_oc
             $getpayload = Get-Content ".\debug\ocamd.txt"
             $line = @()
-            $getpayload | foreach { $line += "$_`n" }
+            $getpayload | Foreach-Object { $line += "$_`n" }
             $payload = $line
             $DoResponse = Global:Set-Response -Method $method -messagetype $messagetype -Data $data -CommandID $command.result.id -Payload $payload -Site $WebSite
             $DoResponse = $DoResponse | ConvertTo-JSon -Depth 1
@@ -197,42 +197,59 @@ function Global:Start-Webcommand {
                 ## Get Old Wallet
                 $Path = [IO.Path]::Join($($(vars).dir), "debug\get-hive-hello.txt")
                 $Old_Config = Get-Content $Path | ConvertFrom-Json
-
                 $method = "message"
                 $messagetype = "success"
                 $data = "Rig config changed"
-                $arguments = [string]$Command.result.wallet | ConvertFrom-StringData
-                if ($arguments.CUSTOM_USER_CONFIG) {
-                    ## Remove the "'" at front and end.
-                    $arguments = $arguments.CUSTOM_USER_CONFIG.TrimStart("'").TrimEnd("'");
-
+                $parser = [string]$Command.result.wallet;
+                $new = $parser;
+                $joined = $parser.replace("`n","");
+                $start_joined = $joined.IndexOf("CUSTOM_USER_CONFIG=`'{");
+                if($start_joined -ne -1) {
+                    $start = $parser.IndexOf("CUSTOM_USER_CONFIG=");
+                    $end = $parser.Substring($start + 20).IndexOf("`'");
+                    $end_joined = $joined.Substring($start_joined + 20).IndexOf("`'");
+                    $condensed = $joined.Substring(($start_joined + 19),($end_joined + 2));
+                    $new = $parser.remove($start + 19, $end + 2).Insert($start + 19,$condensed);
                 }
-                else {
+                $Wallet = $new | ConvertFrom-StringData
+                for ($i = 0; $i -lt $Wallet.keys.Count; $i++) {
+                    $key = $Wallet.Keys | Select-Object -Skip $i -First 1;
+                    $Wallet.$key = $Wallet.$key.TrimStart("`"");
+                    $Wallet.$key = $Wallet.$key.TrimEnd("`"");
+                    $Wallet.$key = $Wallet.$key.TrimStart("`'");
+                    $Wallet.$key = $Wallet.$key.TrimEnd("`'");
+                }        
+                if(!$Wallet.CUSTOM_USER_CONFIG) {
                     Write-Log "Warning: No CUSTOM_USER_CONFIG found!" -ForegroundColor Red
                     Write-Log "Make sure you are using a Custom User Config section in HiveOS" -ForegroundColor Red
                 }
-                try { $test = "$arguments" | ConvertFrom-Json; if ($test) { $isjson = $true } } catch { $isjson = $false }
+                $arguments = $Wallet.CUSTOM_USER_CONFIG
+                $isjson = $false
+                try { 
+                    $test = $arguments | ConvertFrom-Json;
+                    $isjson = $true;
+                } catch { }
                 if ($isjson) {
                     $Params = @{ }
-                    $test.PSObject.Properties.Name | % { $Params.Add("$($_)", $test.$_) }
+                    $test.PSObject.Properties.Name | Foreach-Object { $Params.Add("$($_)", $test.$_) }
                     $Defaults = Get-Content ".\config\parameters\default.json" | ConvertFrom-Json
-                    $Defaults.PSObject.Properties.Name | % { if ($_ -notin $Params.keys) { $Params.Add("$($_)", $Defaults.$_) } }
+                    $Defaults.PSObject.Properties.Name | Foreach-Object { if ($_ -notin $Params.keys) { $Params.Add("$($_)", $Defaults.$_) } }
 
                 }
                 else {
                     $argjson = @{ }
                     $arguments = $arguments -split " -"
-                    $arguments = $arguments | foreach { $_.trim(" ") }
-                    $arguments = $arguments | % { $_.trimstart("-") }
-                    $arguments | foreach { $argument = $_ -split " " | Select -first 1; $argparam = $_ -split " " | Select -last 1; $argjson.Add($argument, $argparam); }
+                    $arguments = $arguments | Foreach-Object { $_.trim(" ") }
+                    $arguments = $arguments | Foreach-Object { $_.trimstart("-") }
+                    $arguments | Foreach-Object { $argument = $_ -split " " | Select-Object -first 1; $argparam = $_ -split " " | Select-Object -last 1; $argjson.Add($argument, $argparam); }
                     $argjson = $argjson | ConvertTo-Json | ConvertFrom-Json
   
                     $Defaults = Get-Content ".\config\parameters\default.json" | ConvertFrom-Json   
                     $Params = @{ }
   
-                    $Defaults | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | % { $Params.Add("$($_)", $Defaults.$_) }
+                    $Defaults | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Foreach-Object { $Params.Add("$($_)", $Defaults.$_) }
   
-                    $argjson | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | foreach {
+                    $argjson | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Foreach-Object {
                         if ($argjson.$_ -ne $Params.$_) {
                             switch ($_) {
                                 default { $Params.$_ = $argjson.$_ }
@@ -260,7 +277,7 @@ function Global:Start-Webcommand {
                 $Params | convertto-Json | Out-File ".\config\parameters\newarguments.json"
 
                 ## Check link for update.
-                $arguments = [string]$Command.result.wallet | ConvertFrom-StringData
+                $arguments = $new | ConvertFrom-StringData
                 $New_Url = ($arguments.CUSTOM_INSTALL_URL)
                 if ([string]$New_Url -ne "`"`"") {
                     $New_Url = $New_Url.Replace("`"", "")

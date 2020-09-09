@@ -5,18 +5,18 @@ function Global:Stop-ActiveMiners {
         if ($_.BestMiner -eq $false) {
         
             if ($(arg).Platform -eq "windows") {
-                if ($_.XProcess -eq $Null -and $_.Status -ne "Idle") { $_.Status = "Failed" }
+                if ($Null -eq $_.XProcess -and $_.Status -ne "Idle") { $_.Status = "Failed" }
                 elseif ($_.XProcess.HasExited -eq $false) {
                     $_.Active += (Get-Date) - $_.XProcess.StartTime
                     if ($_.Type -notlike "*ASIC*") {
                         $Num = 0
                         $Sel = $_
                         if ($Sel.XProcess.Id) {
-                            $Childs = Get-Process | Where { $_.Parent.Id -eq $Sel.XProcess.Id }
+                            $Childs = Get-Process | Where-Object { $_.Parent.Id -eq $Sel.XProcess.Id }
                             Write-Log "Closing all Previous Child Processes For $($Sel.Type)" -ForeGroundColor Cyan
-                            $Child = $Childs | % {
+                            $Child = $Childs | ForEach-Object {
                                 $Proc = $_; 
-                                Get-Process | Where { $_.Parent.Id -eq $Proc.Id } 
+                                Get-Process | Where-Object { $_.Parent.Id -eq $Proc.Id } 
                             }
                         }
                         do {
@@ -28,7 +28,7 @@ function Global:Stop-ActiveMiners {
                             }
                             if ($Num -gt 180) {
                                 if ($(arg).Startup -eq "Yes") {
-                                    $HiveMessage = "2 minutes miner will not close on $($_.Type) - Restarting Computer"
+                                    $HiveMessage = "2 minutes $($Sel.MinerName) will not close on $($Sel.Type) - Restarting Computer"
                                     $HiveWarning = @{result = @{command = "timeout" } }
                                     if ($(vars).WebSites) {
                                         $(vars).WebSites | ForEach-Object {
@@ -48,7 +48,7 @@ function Global:Stop-ActiveMiners {
                             }
                         }Until($false -notin $Child.HasExited)
                         if ($Sel.SubProcesses -and $false -in $Sel.SubProcesses.HasExited) { 
-                            $Sel.SubProcesses | % { $Check = $_.CloseMainWindow(); if ($Check -eq $False) { Stop-Process -Id $_.Id } }
+                            $Sel.SubProcesses | ForEach-Object { $Check = $_.CloseMainWindow(); if ($Check -eq $False) { Stop-Process -Id $_.Id } }
                         }
                     }
                     else { $_.Xprocess.HasExited = $true; $_.XProcess.StartTime = $null }
@@ -58,6 +58,7 @@ function Global:Stop-ActiveMiners {
 
             ## Linux
             elseif ($(arg).Platform -eq "linux") {
+                $Sel = $_
                 ## Miner never started to begin with. Nothing to do here.
                 if ($Null -eq $_.XProcess) { $_.Status = "Failed" }
                 ## Miner is running, needs to close, but is not ASIC.
@@ -106,14 +107,14 @@ function Global:Stop-ActiveMiners {
                         else {
                             log "Warning- There was no screen that matches $($_.Type)" -Foreground Red
                         }
-                        $Bash_ID = Get-Process | Where { $_.Parent.Id -eq $Screen_Id }
+                        $Bash_ID = Get-Process | Where-Object { $_.Parent.Id -eq $Screen_Id }
 
                         ## Get all sub-processes
                         ## In this instance I define sub-process as processes
                         ## with the same name spawned from original process.
                         $To_KIll += Get-Process | 
-                        Where { $_.Parent.Id -eq $_.Xprocess.ID } | 
-                        Where { $_.Name -eq $_.XProcess.Name }
+                        Where-Object { $_.Parent.Id -eq $_.Xprocess.ID } | 
+                        Where-Object { $_.Name -eq $_.XProcess.Name }
 
                         ## Get the bash process miner is launch in.
                         
@@ -144,7 +145,7 @@ function Global:Stop-ActiveMiners {
                                 ## We need to let user know there is an issue.
                                 ## This can break SWARM.
                                 if ($(arg).Startup -eq "Yes") {
-                                    $HiveMessage = "2 minutes miner will not close on $($_.Type) - Restarting Computer"
+                                    $HiveMessage = "2 minutes $($Sel.MinerName) will not close on $($Sel.Type) - Restarting Computer"
                                     $HiveWarning = @{result = @{command = "timeout" } }
                                     if ($(vars).WebSites) {
                                         $(vars).WebSites | ForEach-Object {
@@ -203,7 +204,7 @@ function Global:Start-NewMiners {
             if ($Reason -eq "Launch") {
                 ## Check for Websites, Load Modules
                 if ($(vars).WebSites -and $(vars).WebSites -ne "") {
-                    $GetNetMods = @($(vars).NetModules | Foreach { Get-ChildItem $_ })
+                    $GetNetMods = @($(vars).NetModules | ForEach-Object { Get-ChildItem $_ })
                     $GetNetMods | ForEach-Object { Import-Module -Name "$($_.FullName)" }
                     $(vars).WebSites | ForEach-Object {
                         switch ($_) {
@@ -216,6 +217,7 @@ function Global:Start-NewMiners {
                                     ## If this is a different group- User is screwed for other groups.
 
                                     if ($Miner.Type -notlike "*ASIC*" -and $Miner.Type -ne "CPU" -and $Miner.Type -like "*1*") {
+                                        $Hive_Miner_Name = $Miner.Name.replace("-1","");
                                         $OC_Success = Global:Start-HiveTune $Miner.Algo
 
                                         ## If it succeeded- SWARM will add to the oc_groups, which
@@ -260,13 +262,9 @@ function Global:Start-NewMiners {
                 if ($_.Type -notlike "*ASIC*") {
                     $Num = 0
                     $Sel = $_
-                    if ($Sel.XProcess.Id -ne $null) {
-                        $Childs = Get-Process | Where { $_.Parent.Id -eq $Sel.XProcess.Id }
+                    if ($null -ne $Sel.XProcess.Id) {
+                        $Childs = Get-Process | Where-Object { $_.Parent.Id -eq $Sel.XProcess.Id }
                         Write-Log "Closing all Previous Child Processes For $($Sel.Type)" -ForeGroundColor Cyan
-                        $Child = $Childs | % {
-                            $Proc = $_; 
-                            Get-Process | Where { $_.Parent.Id -eq $Proc.Id } 
-                        }
                     }
                     if ($Sel.HasExited -eq $false) {
                         do {
@@ -278,7 +276,7 @@ function Global:Start-NewMiners {
                             }
                             if ($Num -gt 180) {
                                 if ($(arg).Startup -eq "Yes") {
-                                    $HiveMessage = "2 minutes miner will not close on $($_.Type) - Restarting Computer"
+                                    $HiveMessage = "2 minutes $($Sel.MinerName) will not close on $($Sel.Type) - Restarting Computer"
                                     $HiveWarning = @{result = @{command = "timeout" } }
                                     if ($(vars).WebSites) {
                                         $(vars).WebSites | ForEach-Object {
@@ -296,10 +294,10 @@ function Global:Start-NewMiners {
                                 }
                                 Restart-Computer
                             }
-                        }Until($false -notin $Child.HasExited)
+                        }Until($false -notin $Childs.HasExited)
                     }
                     if ($Sel.SubProcesses -and $false -in $Sel.SubProcesses.HasExited) { 
-                        $Sel.SubProcesses | % { $Check = $_.CloseMainWindow(); if ($Check -eq $False) { Stop-Process -Id $_.Id -ErrorAction Ignore } }
+                        $Sel.SubProcesses | ForEach-Object { $Check = $_.CloseMainWindow(); if ($Check -eq $False) { Stop-Process -Id $_.Id -ErrorAction Ignore } }
                     }
                 }
             }
@@ -311,13 +309,14 @@ function Global:Start-NewMiners {
                 if ($IsWindows) {
                     $(vars).QuickTimer.restart()
                     do {
-                        $Miner.SubProcesses = if ($Miner.Xprocess.Id) { Get-Process | Where { $_.Parent.ID -eq $Miner.Xprocess.Id } } else { $Null }
-                        if ($Miner.Subprocesses) {
-                            $Miner.SubProcesses = $Miner.SubProcesses | % { $Cur = $_.id; Get-Process | Where $_.Parent.ID -eq $Child | Where ProcessName -eq $Miner.MinerName.Replace(".exe", "") }
-                        }
+                        $Miner.SubProcesses = if ($Miner.Xprocess.Id) {
+                            Get-Process | 
+                            Where-Object { $_.Parent.ID -eq $Miner.Xprocess.Id} |
+                            Where-Object ProcessName -eq $Miner.MinerName.Replace(".exe", "")
+                        } else { $Null }
                         Write-Log "Getting Process Id For $($Miner.Name)"
                         Start-Sleep -S 1
-                    }Until($Null -ne $Miner.SubProcesses -or $(vars).QuickTimer.Elapsed.TotalSeconds -ge 5)
+                    } Until($Null -ne $Miner.SubProcesses -or $(vars).QuickTimer.Elapsed.TotalSeconds -ge 5)
                 }
             }
             else {
@@ -327,7 +326,7 @@ function Global:Start-NewMiners {
             }
 
             ##Confirm They are Running
-            if ($Miner.XProcess -eq $null -or $Miner.Xprocess.HasExited -eq $true) {
+            if ($null -eq $Miner.XProcess -or $Miner.Xprocess.HasExited -eq $true) {
                 $Miner.Status = "Failed"
                 $(vars).NoMiners = $true
                 log "$($Miner.MinerName) Failed To Launch" -ForegroundColor Darkred
@@ -335,7 +334,42 @@ function Global:Start-NewMiners {
             else {
                 $Miner.Status = "Running"
                 if ($Miner.Type -notlike "*ASIC*") { log "Process is $(Split-Path $Miner.Path -Leaf)[$($Miner.XProcess.ID)]" }
-                if ($Miner.Type -notlike "*ASIC*") { log "$($Miner.MinerName) Is Running!" -ForegroundColor Green }
+                if ($Miner.Type -notlike "*ASIC*") { 
+                    log "$($Miner.MinerName) Is Running!" -ForegroundColor Green 
+                    ## Change Process priority
+                    ## It has been found that lowering priority may
+                    ## Help with performance
+                    ## Some miners (like cryptodredge) will set their
+                    ## Priority to above normal- Crashing any rig with
+                    ## A not-so-great CPU in Windows.
+                    if ($IsWindows) {
+                        if (
+                            $Miner.Type -eq "NVIDIA1" -or
+                            $Miner.Type -eq "NVIDIA2" -or
+                            $Miner.Type -eq "NVIDIA3" -or
+                            $Miner.Type -eq "AMD1"
+                        ) {
+                            log "Setting process priority" -ForegroundColor Cyan
+                            do{
+                                for ($i = 0; $i -lt $Miner.SubProcesses.Count; $i++) {
+                                    $Proc = $Miner.SubProcesses[$i]
+                                    if (
+                                        !$Proc.HasExited -and 
+                                        $Proc.PriorityClass -ne "BelowNormal"
+                                    ) {
+                                        $Proc.PriorityClass = "BelowNormal"
+                                    }
+                                    elseif ($Proc.HasExited) {
+                                        $bool_array[$i] = $false
+                                    }
+                                    elseif ($Proc.PriorityClass -eq "BelowNormal") {
+                                        $bool_array[$i] = $false
+                                    }
+                                }
+                            } until ($Miner.SubProcesses.HasExited -notcontains $false -or $Miner.SubProcesses.PriorityClass -eq "BelowNormal")
+                        }
+                    }
+                }
                 else { log "$($Miner.Name) has successfully switched pools!" -ForeGroundColor Green }
                 $(vars).current_procs += $Miner.Xprocess.ID
             }

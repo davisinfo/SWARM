@@ -19,20 +19,22 @@ function Global:Start-NVIDIAOC($NewOC) {
     $ocmessage = @()
     $OCCount = Get-Content ".\debug\oclist.txt" | ConvertFrom-JSon
     $FansArgs = @()
+    $PowerArgs = @()
 
     ## Get Power limits
-    $Max_Power = invoke-expression "nvidia-smi --query-gpu=power.max_limit --format=csv" | ConvertFrom-CSV
-    $Max_Power = $Max_Power.'power.max_limit [W]' | % { $_ = $_ -replace " W", ""; $_ }
+    $Get_Power = invoke-expression "nvidia-smi --query-gpu=power.max_limit,power.default_limit --format=csv" | ConvertFrom-CSV
+    $Max_Power = $Get_Power.'power.max_limit [W]'.replace(" W","").replace(".00","")
+    $Default_Power = $Get_Power.'power.default_limit [W]'.replace(" W","").replace(".00","")
 
-    $HiveNVOC.Keys | % {
+    $HiveNVOC.Keys | Foreach-Object  {
         $key = $_
         Switch ($key) {
             "OHGODAPILL_ENABLED" {
                 if ($HiveNVOC.OHGODAPILL_ENABLED -eq 1) {
                     $PillArg = $HiveNVOC.OHGODAPILL_ARG
                     $PillDelay = $HiveNVOC.RUNNING_DELAY
-                    $PillProc = Get-Process | Where Name -eq "OhGodAnETHlargementPill-r2"
-                    if ($PillProc) { $PillProc | % { Stop-Process -Id $_.ID } }
+                    $PillProc = Get-Process | Where-Object  Name -eq "OhGodAnETHlargementPill-r2"
+                    if ($PillProc) { $PillProc | Foreach-Object  { Stop-Process -Id $_.ID } }
                     if ($HiveNVOC.OHGODAPILL_START_TIMEOUT -gt 0) { $Sleep = "timeout $($HiveNVOC.OHGODAPILL_START_TIMEOUT) > NUL" }
                     $Script = @()
                     $Script += "$Sleep"
@@ -41,8 +43,8 @@ function Global:Start-NVIDIAOC($NewOC) {
                     $Process = Start-Process ".\build\apps\pill.bat" -WindowStyle Minimized
                 }
                 else {
-                    $PillProc = Get-Process | Where Name -eq "OhGodAnETHlargementPill-r2"
-                    if ($PillProc) { $PillProc | % { Stop-Process -Id $_.ID } }
+                    $PillProc = Get-Process | Where-Object  Name -eq "OhGodAnETHlargementPill-r2"
+                    if ($PillProc) { $PillProc | Foreach-Object  { Stop-Process -Id $_.ID } }
                 }
             }
             "FAN" {
@@ -51,14 +53,14 @@ function Global:Start-NVIDIAOC($NewOC) {
                     $NVOCFAN = $NVOCFan -split " "
                     if ($NVOCFAN.Count -eq 1) {
                         for ($i = 0; $i -lt $OCCount.NVIDIA.PSObject.Properties.Value.Count; $i++) {
-                            $FansArgs += "--index $i --speed $($NVOCFan)"
-                            $ocmessage += "Setting GPU $($OCCount.NVIDIA.$i) Fan Speed To $($NVOCFan)`%"
+                            $FansArgs += "-i $i -s $($NVOCFan)"
+                            $ocmessage += "Setting GPU $($OCCount.NVIDIA.$i) Fan Speed To $($NVOCFan)`% "
                         }
                     }
                     else {
                         for ($i = 0; $i -lt $NVOCFAN.Count; $i++) {
-                            $FansArgs += "--index $i --speed $($NVOCFan[$i])"
-                            $ocmessage += "Setting GPU $i Fan Speed To $($NVOCFan[$i])`%"
+                            $FansArgs += "-i $i -s $($NVOCFan[$i])"
+                            $ocmessage += "Setting GPU $i Fan Speed To $($NVOCFan[$i])`% "
                         }
                     }
                 }
@@ -105,20 +107,26 @@ function Global:Start-NVIDIAOC($NewOC) {
                     $NVOCPL = $NVOCPL -split " "
                     if ($NVOCPL.Count -eq 1) {
                         for ($i = 0; $i -lt $OCCount.NVIDIA.PSObject.Properties.Value.Count; $i++) {
-                            [Double]$Max = $Max_Power[$i]
-                            [Double]$Value = $NVOCPL | % { iex $_ }  ## String to double/int issue.
-                            [Double]$Limit = [math]::Round(($Value / $Max) * 100, 0)
-                            $OCArgs += "-setPowerTarget:$($OCCount.NVIDIA.$i),$($Limit) "
-                            $ocmessage += "Setting GPU $($OCCount.NVIDIA.$i) Power Limit To $($Limit)%"
+                            if($NVOCPL -eq "0") {
+                                $Value = $Default_Power
+                            } else {
+                                $Value = $NVOCPL
+                            }
+                            $Max = $Max_Power
+                            $PowerArgs += "-i $i -p $Value,$Max"
+                            $ocmessage += "Setting GPU $($OCCount.NVIDIA.$i) Power Limit To $($Value) watts"
                         }
                     }
                     else {
                         for ($i = 0; $i -lt $NVOCPL.Count; $i++) {
-                            [Double]$Max = $Max_Power[$i]
-                            [Double]$Value = $NVOCPL[$i] | % { iex $_ } ## String to double/int issue.
-                            [Double]$Limit = [math]::Round(($Value / $Max) * 100, 0)
-                            $OCArgs += "-setPowerTarget:$($i),$($Limit) "
-                            $ocmessage += "Setting GPU $i Power Limit To $($Limit)%"
+                            if($NVOCPL[$i] -eq "0") {
+                                $Value = $Default_Power[$i]
+                            } else {
+                                $Value = $NVOCPL[$i]
+                            }
+                            $Max = $Max_Power[$i]
+                            $PowerArgs += "-i $i -p $Value,$Max"
+                            $ocmessage += "Setting GPU $i Power Limit To $($Value) watts"
                         }
                     }
                 }
@@ -132,7 +140,8 @@ function Global:Start-NVIDIAOC($NewOC) {
 
     if ([string]$OcArgs -ne "") {
         $script += "Invoke-Expression `'.\inspector\nvidiaInspector.exe $OCArgs`'"
-        if ($FansArgs) { $FansArgs | ForEach-Object { $script += "Invoke-Expression `'.\nvfans\nvfans.exe $($_)`'" } }
+        if ($FansArgs.count -gt 0 ) { $FansArgs | ForEach-Object { $script += "Invoke-Expression `'.\nvfans\nvfans.exe $($_)`'" } }
+        if ($PowerArgs.count -gt 0) { $PowerArgs | ForEach-Object { $script += "Invoke-Expression `'.\nvclocks\NVClocks.exe $($_)`'" } }
         $ScriptFile = "$($(vars).dir)\build\apps\hive_nvoc_start.ps1"
         $Script | OUt-File $ScriptFile
         $start = [launchcode]::New()
@@ -141,7 +150,7 @@ function Global:Start-NVIDIAOC($NewOC) {
         $arguments = "-executionpolicy bypass -command `"$ScriptFile`""
         $CommandLine += " " + $arguments
         $start_oc = $start.New_Miner($filepath, $CommandLine, (split-path $ScriptFile))
-        $Proc = Get-Process | Where id -eq $start_oc.dwProcessId
+        $Proc = Get-Process | Where-Object  id -eq $start_oc.dwProcessId
         $Proc | Wait-Process
         $ocmessage
         $ocmessage | Set-Content ".\debug\ocnvidia.txt"
@@ -383,7 +392,7 @@ function Global:Start-AMDOC($NewOC) {
         ## Fan Settings
         if ($FanSpeed) {
             $OCArgs += "Fan_ZeroRPM=0 Fan_P0=25;$($FanSpeed) Fan_P1=25;$($FanSpeed) Fan_P2=25;$($FanSpeed) Fan_P3=25;$($FanSpeed) Fan_P4=25;$($FanSpeed) "
-            $ocmessage += "Setting GPU $($OCCount.AMD.$i) Fan Speed To $($FanSpeed)`%"
+            $ocmessage += "Setting GPU $($OCCount.AMD.$i) Fan Speed To $($FanSpeed)`% "
         }
         
         ## Ref Settings
@@ -403,7 +412,7 @@ function Global:Start-AMDOC($NewOC) {
         $arguments = "-executionpolicy bypass -command `"$ScriptFile`""
         $CommandLine += " " + $arguments
         $start_oc = $start.New_Miner($filepath, $CommandLine, (split-path $ScriptFile))
-        $Proc = Get-Process | Where id -eq $start_oc.dwProcessId
+        $Proc = Get-Process | Where-Object  id -eq $start_oc.dwProcessId
         $Proc | Wait-Process
         $ocmessage
         $ocmessage | Set-Content ".\debug\ocamd.txt"

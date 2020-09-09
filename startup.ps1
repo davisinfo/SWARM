@@ -1,3 +1,16 @@
+<#
+SWARM is open-source software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+SWARM is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#>
+
 $Dir = Split-Path $script:MyInvocation.MyCommand.Path
 $Dir = $Dir -replace "/var/tmp", "/root"
 Set-Location $Dir
@@ -36,6 +49,7 @@ $parsed = @{ }
 $start = $false
 $noconfig = $false
 
+
 ## Arguments take highest priority
 if ($args) {
     ## First run -help
@@ -55,13 +69,13 @@ if ($args) {
     ## defaults not specified.
     else {
         $Start = $true
-        $args | % {
-            if ($_ -is [string]) {
-                $_ = $_.replace("cnight", "cryptonight")
+        for($i=0; $i -lt $args.count; $i++) {
+            if ($args[$i] -is [string]) {
+                $args[$i] = $args[$i].replace("cnight", "cryptonight")
             }
             $Command = $false
-            $ListCheck = $_ -replace "-", ""
-            if ($_[0] -eq "-") { $Command = $true; $Com = $_ -replace "-", "" }
+            $ListCheck = $args[$i] -replace "-", ""
+            if ($args[$i][0] -eq "-") { $Command = $true; $Com = $args[$i] -replace "-", "" }
             if ($Command -eq $true) {
                 if ($ListCheck -in $List) {
                     if ($ListCheck -notin $parsed.keys) {
@@ -80,11 +94,11 @@ if ($args) {
                 }            
             }
             else {
-                if ($parsed.$Com -eq "new") { $parsed.$Com = $_ }
+                if ($parsed.$Com -eq "new") { $parsed.$Com = $args[$i] }
                 else {
                     $NewArray = @()
-                    $Parsed.$Com | % { $NewArray += $_ }
-                    $NewArray += $_
+                    $Parsed.$Com | Foreach-Object { $NewArray += $args[$i] }
+                    $NewArray += $args[$i]
                     $Parsed.$Com = $NewArray
                 }
             }
@@ -100,7 +114,7 @@ elseif (test-path ".\config.json") {
     $arguments = Get-Content ".\config.json" | ConvertFrom-Json
     if ([string]$arguments -ne "") {
         $Start = $true
-        $arguments.PSObject.Properties.Name | % { $Parsed.Add("$($_)", $arguments.$_) }
+        $arguments.PSObject.Properties.Name | Foreach-Object { $Parsed.Add("$($_)", $arguments.$_) }
     }
     ## run help if no newarguments
     elseif (-not (test-path ".\config\parameters\newarguments.json")) {
@@ -121,8 +135,8 @@ elseif (test-path ".\config.json") {
         $parsed = @{ }
         $arguments = Get-Content ".\config\parameters\newarguments.json" | ConvertFrom-Json
         $defaults = Get-Content ".\config\parameters\default.json" | ConvertFrom-Json
-        $arguments.PSObject.Properties.Name | % { $Parsed.Add("$($_)", $arguments.$_) }    
-        $defaults.PSObject.Properties.Name | % {
+        $arguments.PSObject.Properties.Name | Foreach-Object { $Parsed.Add("$($_)", $arguments.$_) }    
+        $defaults.PSObject.Properties.Name | Foreach-Object {
             if ($_ -notin $Parsed.keys) {
                 $Parsed.Add("$($_)", $defaults.$_)
             }
@@ -136,8 +150,8 @@ elseif (Test-Path ".\config\parameters\newarguments.json") {
     $parsed = @{ }
     $arguments = Get-Content ".\config\parameters\newarguments.json" | ConvertFrom-Json
     $defaults = Get-Content ".\config\parameters\default.json" | ConvertFrom-Json
-    $arguments.PSObject.Properties.Name | % { $Parsed.Add("$($_)", $arguments.$_) }
-    $defaults.PSObject.Properties.Name | % {
+    $arguments.PSObject.Properties.Name | Foreach-Object { $Parsed.Add("$($_)", $arguments.$_) }
+    $defaults.PSObject.Properties.Name | Foreach-Object {
         if ($_ -notin $Parsed.keys) {
             $Parsed.Add("$($_)", $defaults.$_)
         }
@@ -160,7 +174,7 @@ else {
 }
 
 if ($Start -eq $true) {
-    $Defaults.PSObject.Properties.Name | % { if ($_ -notin $Parsed.keys) { $Parsed.Add("$($_)", $Defaults.$_) } }
+    $Defaults.PSObject.Properties.Name | Foreach-Object { if ($_ -notin $Parsed.keys) { $Parsed.Add("$($_)", $Defaults.$_) } }
 
     $Parsed | convertto-json | Out-File ".\config\parameters\commandline.json"
 
@@ -180,6 +194,6 @@ if ($Start -eq $true) {
             Write-Host "Saving Arguments To .\config\parameters\newarguments.json" -ForegroundColor Yellow
             $Parsed | ConvertTo-Json | Out-File ".\config\parameters\newarguments.json"
         }
-        Invoke-Expression ".\swarm.ps1"
+        . .\swarm.ps1
     }
 }

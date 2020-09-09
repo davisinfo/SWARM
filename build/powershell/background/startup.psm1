@@ -1,3 +1,15 @@
+<#
+SWARM is open-source software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+SWARM is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#>
 function Global:Get-Params {
     $global:Config.Add("params", @{ })
     $global:Config.Add("hive_params", @{ })
@@ -6,18 +18,23 @@ function Global:Get-Params {
     $global:Config.Add("summary",@{ })
     if (Test-Path ".\config\parameters\newarguments.json") {
         $arguments = Get-Content ".\config\parameters\newarguments.json" | ConvertFrom-Json
-        $arguments.PSObject.Properties.Name | % { $global:config.params.Add("$($_)", $arguments.$_) }
+        $arguments.PSObject.Properties.Name | ForEach-Object { $global:config.params.Add("$($_)", $arguments.$_) }
         $arguments = $null
     }
     else {
         $arguments = Get-Content ".\config\parameters\commandline.json" | ConvertFrom-Json
-        $arguments.PSObject.Properties.Name | % { $global:Config.params.Add("$($_)", $arguments.$_) }
+        $arguments.PSObject.Properties.Name | ForEach-Object { $global:Config.params.Add("$($_)", $arguments.$_) }
         $arguments = $null
     }
     if (Test-Path ".\config\parameters\Hive_params_keys.json") {
-        $HiveStuff = Get-Content ".\config\parameters\Hive_params_keys.json" | ConvertFrom-Json
-        $HiveStuff.PSObject.Properties.Name | % { $global:Config.hive_params.Add("$($_)", $HiveStuff.$_) }
-        $HiveStuff = $null
+        try {
+            $HiveStuff = Get-Content ".\config\parameters\Hive_params_keys.json" | ConvertFrom-Json
+            $HiveStuff.PSObject.Properties.Name | ForEach-Object { $global:Config.hive_params.Add("$($_)", $HiveStuff.$_) }
+            $HiveStuff = $null    
+        }
+        catch {
+            Write-Host "Hive_params_keys.json was corrupted. Not using, will attempt to reconnect without it." -ForegroundColor Red
+        }
     }
     if (-not $global:Config.hive_params.Id) {
         Write-Host "No Id- HiveOS Disabled"
@@ -37,7 +54,7 @@ function Global:Get-Params {
 
     if (Test-Path ".\config\parameters\SWARM_params_keys.json") {
         $SWARMStuff = Get-Content ".\config\parameters\SWARM_params_keys.json" | ConvertFrom-Json
-        $SWARMStuff.PSObject.Properties.Name | % { $global:Config.SWARM_Params.Add("$($_)", $SWARMStuff.$_) }
+        $SWARMStuff.PSObject.Properties.Name | ForEach-Object { $global:Config.SWARM_Params.Add("$($_)", $SWARMStuff.$_) }
         Write-Host $global:Config.SWARM_Params.Mirror
         $SWARMStuff = $null
     }

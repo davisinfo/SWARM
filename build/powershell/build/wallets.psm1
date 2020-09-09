@@ -1,3 +1,15 @@
+<#
+SWARM is open-source software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+SWARM is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#>
 function Global:Set-Donation {
     if ($(arg).Rigname1 -eq "Donate") { $global:Donating = $True }
     else { $global:Donating = $False }
@@ -24,12 +36,12 @@ function Global:Get-AltWallets {
     if ($(arg).coin_params) {
         $(arg).coin_params | ForEach-Object {
             $Coin_Param = $_ -split "`:"
-            $symbol = $Coin_Param | Select -First 1
-            $address = $Coin_Param | Select -Skip 1 -First 1
+            $symbol = $Coin_Param | Select-Object  -First 1
+            $address = $Coin_Param | Select-Object  -Skip 1 -First 1
             if ($address -eq "none") { $address = "add address of coin if you wish to mine to that address, or leave alone." }
-            $params = $Coin_Param | Select -Skip 2 -First 1
+            $params = $Coin_Param | Select-Object  -Skip 2 -First 1
             if ($params -eq "none") { $params = "enter additional params here, such as 'm=solo' or m=party.partypassword" }
-            $exchange = $Coin_Param | Select -Skip 3 -First 1
+            $exchange = $Coin_Param | Select-Object  -Skip 3 -First 1
             if ($symbol) {
                 if ($symbol -notin $Wallets."Passive Alternative Wallets"."coin list") {
                     $Wallet_Json."Passive Alternative Wallets"."coin list" | Add-Member "$symbol" @{address = $address; params = $params; exchange = $exchange }
@@ -41,8 +53,8 @@ function Global:Get-AltWallets {
     if ([string]$(arg).AltWallet1 -eq "") {
         $(vars).All_AltWallets = @{ }
         $Wallet_Json."Passive Alternative Wallets"."coin list".PSObject.Properties.Name | 
-        Where { $_ -ne "add coin symbol here" } | 
-        Where { $_ -ne "Add another symbol of coin here" } |
+        Where-Object  { $_ -ne "add coin symbol here" } | 
+        Where-Object  { $_ -ne "Add another symbol of coin here" } |
         ForEach-Object { $(vars).All_AltWallets.ADD("$($_)", $Wallet_Json."Passive Alternative Wallets"."coin list".$_) }
     }
     else { $(vars).All_AltWallets = $null }
@@ -80,16 +92,16 @@ function Global:Get-AltWallets {
 
     if ([string]$(arg).AltWallet1 -eq "") {
         ##Sort Only Wallet Info
-        $Wallet_Json = $Wallet_Json."Active Exchange Wallets".AltWallets | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | % { if ($_ -like "*AltWallet*") { @{"$($_)" = $Wallet_Json."Active Exchange Wallets".AltWallets.$_ } } }
+        $Wallet_Json = $Wallet_Json."Active Exchange Wallets".AltWallets | Get-Member -MemberType NoteProperty | Select-Object  -ExpandProperty Name | Foreach-Object  { if ($_ -like "*AltWallet*") { @{"$($_)" = $Wallet_Json."Active Exchange Wallets".AltWallets.$_ } } }
 
         ##Go Through Each Wallet, see if it has been modified.
         $Wallet_Configs = @()
 
-        $Wallet_Json.keys | % {
+        $Wallet_Json.keys | Foreach-Object  {
             $Add = $false
             $Current_Wallet = $_
             $Wallet_Hash = @{"$Current_Wallet" = @{ } }
-            $Wallet_Json.$Current_Wallet.PSObject.Properties.Name | % {
+            $Wallet_Json.$Current_Wallet.PSObject.Properties.Name | Foreach-Object  {
                 $Symbol = "$($_)"
                 if ($_ -ne "add coin symbol here" -and $_ -ne "add another coin symbol here" -and $_ -ne "note") {
                     $Wallet_Hash.$Current_Wallet.Add("$Symbol", @{ })
@@ -121,7 +133,7 @@ function Global:Get-Wallets {
     ## would require account information. But new changes
     ## will allow get wallets command to work for external BTC Addresses.
     
-    $(arg).PoolName | % { $NewWallet1 += $_; $NewWallet2 += $_; $NewWallet3 += $_ } 
+    $(arg).PoolName | Foreach-Object  { $NewWallet1 += $_; $NewWallet2 += $_; $NewWallet3 += $_ } 
     $global:Wallets | Add-Member "Wallet1" @{$($(arg).Passwordcurrency1) = @{address = $(arg).Wallet1; Pools = $NewWallet1 } }
     $global:Wallets | Add-Member "Wallet2" @{$($(arg).Passwordcurrency2) = @{address = $(arg).Wallet1; Pools = $NewWallet1 } }
     $global:Wallets | Add-Member "Wallet3" @{$($(arg).Passwordcurrency3) = @{address = $(arg).Wallet1; Pools = $NewWallet1 } }
@@ -157,7 +169,7 @@ function Global:Get-Wallets {
     if (Test-Path ".\wallet\keys") { $Oldkeys = Get-ChildItem ".\wallet\keys" }
     if ($Oldkeys) { Remove-Item ".\wallet\keys\*" -Force }
     if (-Not (Test-Path ".\wallet\keys")) { new-item -Path ".\wallet" -Name "keys" -ItemType "directory" | Out-Null }
-    $global:Wallets.PSObject.Properties.Name | % { $global:Wallets.$_ | ConvertTo-Json -Depth 3 | Set-Content ".\wallet\keys\$($_).txt" }
+    $global:Wallets.PSObject.Properties.Name | Foreach-Object  { $global:Wallets.$_ | ConvertTo-Json -Depth 3 | Set-Content ".\wallet\keys\$($_).txt" }
 }
 
 function Global:Add-Algorithms {
@@ -166,7 +178,7 @@ function Global:Add-Algorithms {
     }
     elseif ($(arg).Auto_Algo -eq "Yes") { $(vars).Algorithm = $global:Config.Pool_Algos.PSObject.Properties.Name }
     $NUll_Out = $true
-    $(arg).Type | % {
+    $(arg).Type | Foreach-Object  {
         if ($_ -like "NVIDIA*" -or
             $_ -like "AMD*" -or
             $_ -like "CPU*"

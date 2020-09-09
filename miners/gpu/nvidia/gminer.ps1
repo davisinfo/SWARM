@@ -1,3 +1,5 @@
+. .\build\powershell\global\miner_stat.ps1;
+. .\build\powershell\global\modules.ps1;
 $(vars).NVIDIATypes | ForEach-Object {
     
     $ConfigType = $_; $Num = $ConfigType -replace "NVIDIA", ""
@@ -48,7 +50,7 @@ $(vars).NVIDIATypes | ForEach-Object {
     $MinerConfig = $Global:config.miners.gminer
 
     ##Export would be /path/to/[SWARMVERSION]/build/export##
-    $ExportDir = Join-Path $($(vars).dir) "build\export"
+    $ExportDir = "/usr/local/swarm/lib64"
     $Miner_Dir = Join-Path ($(vars).dir) ((Split-Path $Path).replace(".", ""))
 
     ##Prestart actions before miner launch
@@ -80,10 +82,16 @@ $(vars).NVIDIATypes | ForEach-Object {
             $Pools | Where-Object Algorithm -eq $MinerAlgo | ForEach-Object {
                 $SelAlgo = $_.Algorithm
                 $SelName = $_.Name
+                if ($MinerConfig.$ConfigType.difficulty.$($_.Algorithm)) { $Diff = ",d=$($MinerConfig.$ConfigType.difficulty.$($_.Algorithm))" }
+                $UserPass = "--pass $($_.$Pass)$Diff "
+                $GetUser = "$($_.$User) ";
+                $Worker = $_.Worker;
                 switch ($SelAlgo) {
                     "equihash_150/5" { $AddArgs = "--algo 150_5 " }
                     "cuckoo_cycle" { $AddArgs = "--algo aeternity " }
                     "cuckaroom" { $AddArgs = "--algo grin29 " }
+                    "cuckarooz29" { $AddArgs = "--algo grin29 " }
+                    "cuckaroo29-bfc" { $AddArgs = "--algo bfc " }
                     "cuckatoo31" { $AddArgs = "--algo grin31 " }
                     "cuckatoo32" { $AddArgs = "--algo grin32 " }
                     "beamv2" { $AddArgs = "--algo 150_5 " }
@@ -98,12 +106,13 @@ $(vars).NVIDIATypes | ForEach-Object {
                         switch ($SelName) {
                             "nicehash" { $AddArgs = "--algo ethash --proto stratum " }
                             "zergpool" { $AddArgs = "--algo ethash " }
+                            "whalesburg" { $UserPass = " "; $GetUser = "$($Getuser)" + "." + "$($Worker)"; $AddArgs = "--algo ethash " }
                             default { $AddArgs = "--algo ethash --proto stratum" }
                         }
                     }
                     "eaglesong" { $AddArgs = "--algo eaglesong " }
+                    "beamhashv3" { $AddArgs = "--algo beamhash " }
                 }
-                if ($MinerConfig.$ConfigType.difficulty.$($_.Algorithm)) { $Diff = ",d=$($MinerConfig.$ConfigType.difficulty.$($_.Algorithm))" }
                 [PSCustomObject]@{
                     MName      = $Name
                     Coin       = $(vars).Coins
@@ -119,9 +128,10 @@ $(vars).NVIDIATypes | ForEach-Object {
                     Stratum    = "$($_.Protocol)://$($_.Pool_Host):$($_.Port)" 
                     Version    = "$($(vars).nvidia.gminer.version)"
                     DeviceCall = "gminer"
-                    Arguments  = "--api $Port --server $($_.Pool_Host) --nvml 0 --port $($_.Port) $AddArgs--user $($_.$User) --logfile `'$Log`' --pass $($_.$Pass)$Diff $($MinerConfig.$ConfigType.commands.$($_.Algorithm))"
+                    Arguments  = "--api $Port --server $($_.Pool_Host) --nvml 0 --port $($_.Port) $AddArgs--user $GetUser$UserPass--logfile `'$Log`' $($MinerConfig.$ConfigType.commands.$($_.Algorithm))"
                     HashRates  = $Stat.Hour
-                    Quote      = if ($HashStat) { [Convert]::ToDecimal($HashStat * $_.Price) }else { 0 }
+                    HashRate_Adjusted = $Hashstat
+                    Quote      = $_.Price
                     Rejections = $Stat.Rejections
                     Power      = if ($(vars).Watts.$($_.Algorithm)."$($ConfigType)_Watts") { $(vars).Watts.$($_.Algorithm)."$($ConfigType)_Watts" }elseif ($(vars).Watts.default."$($ConfigType)_Watts") { $(vars).Watts.default."$($ConfigType)_Watts" }else { 0 } 
                     MinerPool  = "$($_.Name)"

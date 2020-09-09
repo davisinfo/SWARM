@@ -1,3 +1,15 @@
+<#
+SWARM is open-source software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+SWARM is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#>
 function Global:Invoke-MinerCheck {
 
     ##Bool for Current Miners
@@ -11,7 +23,7 @@ function Global:Invoke-MinerCheck {
 
     ##Handle New Miners
     if ($global:GetMiners -and $global:GETSWARM.HasExited -eq $false) {
-        $global:GetMiners | ForEach-Object { if (-not ($global:CurrentMiners | Where-Object Path -eq $_.Path | Where-Object Arguments -eq $_.Arguments )) { $Switched = $true } }
+        $global:GetMiners | ForEach-Object { if (-not ($global:CurrentMiners | Where-Object Path -eq $_.Path | Where-Object Symbol -eq $_.Symbol | Where-Object Arguments -eq $_.Arguments )) { $Switched = $true } }
         if ($Switched -eq $True) {
             Write-Host "Miners Have Switched `n" -ForegroundColor Cyan
             $global:CurrentMiners = $global:GetMiners;
@@ -87,7 +99,7 @@ function Global:New-StatTables {
         }
     }
     if ($global:DoASIC) { 
-        $ASICS = $global:CurrentMiners.Type | Where { $_ -like "*ASIC*" }
+        $ASICS = $global:CurrentMiners.Type | Where-Object { $_ -like "*ASIC*" }
         for ($i = 0; $i -lt $ASICS.Count; $i++) {
             $global:ASICHashRates | Add-Member -MemberType NoteProperty -Name "$i" -Value 0; 
         }
@@ -102,7 +114,7 @@ function Global:Get-Metrics {
             $diskSpace = [math]::Round($diskSpace)
             $global:diskSpace = "$($diskSpace)G"
             $global:ramtotal = Get-Content ".\debug\ram.txt" | Select-Object -First 1
-            $global:ramfree = try { [math]::Round((Get-Ciminstance Win32_OperatingSystem -ErrorAction Stop | Select FreePhysicalMemory).FreePhysicalMemory / 1kb, 2) } catch { Write-Host "Failed To Get RAM Size" -ForegroundColor Red, 0 }
+            $global:ramfree = try { [math]::Round((Get-Ciminstance Win32_OperatingSystem -ErrorAction Stop | Select-Object FreePhysicalMemory).FreePhysicalMemory / 1kb, 2) } catch { Write-Host "Failed To Get RAM Size" -ForegroundColor Red, 0 }
 
             ## LOAD AVERAGE NOTES FOR WINDOWS:
             ## We use an exponentially weighted moving average, just like Unix systems do

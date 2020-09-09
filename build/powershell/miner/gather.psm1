@@ -40,23 +40,20 @@ function Global:Get-Miners {
     $GetMiners = New-Object System.Collections.ArrayList
 
     if ($GPUMiners -eq $true) {
-        if ($NVB -eq $true) {
-            $NVIDIAMiners = Get-ChildItemContent -Path ".\miners\gpu\nvidia" | ForEach-Object { $_.Content | Add-Member @{Name = $_.Name } -PassThru } |
-            Where-Object { $(arg).Type.Count -eq 0 -or (Compare-Object $(arg).Type $_.Type -IncludeEqual -ExcludeDifferent | Measure-Object).Count -gt 0 } |
+        if ($NVB -eq $true) {            
+            $NVIDIAMiners = Global:Get-ChildItemContent -Path ".\miners\gpu\nvidia" | ForEach-Object { $_.Content | Add-Member @{Name = $_.Name } -PassThru } |
             Where-Object { $_.Path -ne "None" } |
             Where-Object { $_.Uri -ne "None" } |
             Where-Object { $_.MinerName -ne "None" }
         }
         if ($AMDB -eq $true) {
-            $AMDMiners = Get-ChildItemContent -Path ".\miners\gpu\amd" | ForEach-Object { $_.Content | Add-Member @{Name = $_.Name } -PassThru } |
-            Where-Object { $(arg).Type.Count -eq 0 -or (Compare-Object $(arg).Type $_.Type -IncludeEqual -ExcludeDifferent | Measure-Object).Count -gt 0 } |
+            $AMDMiners = Global:Get-ChildItemContent -Path ".\miners\gpu\amd" | ForEach-Object { $_.Content | Add-Member @{Name = $_.Name } -PassThru } |
             Where-Object { $_.Path -ne "None" } |
             Where-Object { $_.Uri -ne "None" } |
             Where-Object { $_.MinerName -ne "None" }
         }
         if ($CPUB -eq $true) {
-            $CPUMiners = Get-ChildItemContent -Path ".\miners\cpu" | ForEach-Object { $_.Content | Add-Member @{Name = $_.Name } -PassThru } |
-            Where-Object { $(arg).Type.Count -eq 0 -or (Compare-Object $(arg).Type $_.Type -IncludeEqual -ExcludeDifferent | Measure-Object).Count -gt 0 } |
+            $CPUMiners = Global:Get-ChildItemContent -Path ".\miners\cpu" | ForEach-Object { $_.Content | Add-Member @{Name = $_.Name } -PassThru } |
             Where-Object { $_.Path -ne "None" } |
             Where-Object { $_.Uri -ne "None" } |
             Where-Object { $_.MinerName -ne "None" }
@@ -117,9 +114,10 @@ function Global:Get-Miners {
 function Global:Get-AlgoMiners {
     if ($(vars).AlgoPools.Count -gt 0 -and $(vars).AlgoPools -ne 1) {
         $start_time = (Get-Date).ToUniversalTime()
+        $(vars).Coins = $false
         log "Checking Algo Miners. . . ." -ForegroundColor Yellow
         ##Load Only Needed Algorithm Miners
-        Global:Get-Miners | % { $(vars).Miners.Add($_) | Out-Null }
+        Global:Get-Miners | ForEach-Object { $(vars).Miners.Add($_) | Out-Null }
         remove AlgoPools
         [GC]::Collect()
         [GC]::WaitForPendingFinalizers()
@@ -135,7 +133,7 @@ function Global:Get-CoinMiners {
         $(vars).Coins = $true
         log "Checking Coin Miners. . . . ." -ForegroundColor Yellow
         ##Load Only Needed Coin Miners
-        Global:Get-Miners | % { $(vars).Miners.Add($_) | Out-Null }
+        Global:Get-Miners | ForEach-Object { $(vars).Miners.Add($_) | Out-Null }
         remove CoinPools
         [GC]::Collect()
         [GC]::WaitForPendingFinalizers()
@@ -149,8 +147,8 @@ function Global:Confirm-Backup {
     if ($(vars).No_Miners -ge 10 -and $(arg).startup -eq "Yes") {
         log "No Miners Last 10 Intervals- Migrating Backup And Then Restarting" -Foreground DarkRed
         if (test-path ".\Backup") {
-            $backup_stats = Get-ChildItem ".\backup" | Where BaseName -like "*hashrate*"
-            $backup_stats | % {
+            $backup_stats = Get-ChildItem ".\backup" | Where-Object BaseName -like "*hashrate*"
+            $backup_stats | ForEach-Object {
                 Copy-Item $_ -Destination ".\stats" -Force
             }
         }

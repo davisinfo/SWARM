@@ -1,3 +1,5 @@
+. .\build\powershell\global\miner_stat.ps1;
+. .\build\powershell\global\modules.ps1;
 $(vars).AMDTypes | ForEach-Object {
     
     $ConfigType = $_; $Num = $ConfigType -replace "AMD", ""
@@ -28,7 +30,7 @@ $(vars).AMDTypes | ForEach-Object {
     $MinerConfig = $Global:config.miners.lolminer
 
     ##Export would be /path/to/[SWARMVERSION]/build/export && Bleeding Edge Check##
-    $ExportDir = Join-Path $($(vars).dir) "build\export"
+    $ExportDir = "/usr/local/swarm/lib64"
     $Miner_Dir = Join-Path ($(vars).dir) ((Split-Path $Path).replace(".", ""))
 
     ##Prestart actions before miner launch
@@ -66,10 +68,11 @@ $(vars).AMDTypes | ForEach-Object {
                     "equihash_125/4" { $AddArgs = "--coin ZEL --tls 0 " }
                     "beamv2" { $AddArgs = "--coin BEAM-II --tls 0 " }
                     "equihash_192/7" { $AddArgs = "--coin AUTO192_7 " }
-                    "cuckatoo31" { $AddArgs = "--coin GRIN-AT31 " }
-                    "cuckaroom" { $AddArgs = "--coin GRIN-C29M " }
-                    "cuckatoo32" { $AddArgs = "--coin GRIN-C32 " }
-                    "cuckarood29v" { $AddArgs = "--coin MWC-C29D " }
+                    "cuckatoo31" { $AddArgs = "--algo C31 " }
+                    "cuckaroom" { $AddArgs = "--algo C29M " }
+                    "cuckatoo32" { $AddArgs = "--algo C32 " }
+                    "cuckarood29v" { $AddArgs = "--algo C29D " }
+                    "beamhashv3" { $AddArgs = "--algo BEAM-III --tls 0" }
                 }
                 if ($MinerConfig.$ConfigType.difficulty.$($_.Algorithm)) { $Diff = ",d=$($MinerConfig.$ConfigType.difficulty.$($_.Algorithm))" }else { $Diff = "" }
                 [PSCustomObject]@{
@@ -86,9 +89,10 @@ $(vars).AMDTypes | ForEach-Object {
                     Stratum    = "$($_.Protocol)://$($_.Pool_Host):$($_.Port)" 
                     Version    = "$($(vars).amd.lolminer.version)"
                     DeviceCall = "lolminer"
-                    Arguments  = "--pool $($_.Pool_Host) --port $($_.Port) --user $($_.$User) $AddArgs--pass $($_.$Pass)$($Diff) --apiport $Port $($MinerConfig.$ConfigType.commands.$($_.Algorithm))"
+                    Arguments  = "--pool $($_.Pool_Host):$($_.Port) --user $($_.$User) $AddArgs--pass $($_.$Pass)$($Diff) --apiport $Port $($MinerConfig.$ConfigType.commands.$($_.Algorithm))"
                     HashRates  = $Stat.Hour
-                    Quote      = if ($HashStat) { [Convert]::ToDecimal($HashStat * $_.Price) }else { 0 }
+                    HashRate_Adjusted = $Hashstat
+                    Quote      = $_.Price
                     Rejections = $Stat.Rejections
                     Power      = if ($(vars).Watts.$($_.Algorithm)."$($ConfigType)_Watts") { $(vars).Watts.$($_.Algorithm)."$($ConfigType)_Watts" }elseif ($(vars).Watts.default."$($ConfigType)_Watts") { $(vars).Watts.default."$($ConfigType)_Watts" }else { 0 } 
                     MinerPool  = "$($_.Name)"

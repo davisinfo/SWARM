@@ -1,7 +1,19 @@
+<#
+SWARM is open-source software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+SWARM is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#>
 function Global:Get-MinerConfigs {
     if ($(arg).Type -like "*AMD*" -or $(arg).Type -like "*NVIDIA*" -or $(arg).Type -like "*CPU*") {
-        $Configs = Get-ChildItem ".\config\miners" | Where Extension -ne ".md"
-        $Configs.Name | % {
+        $Configs = Get-ChildItem ".\config\miners" | Where-Object  Extension -ne ".md"
+        $Configs.Name | Foreach-Object  {
             $FileDir = Join-Path ".\config\miners" $_
             $A = Get-Content $FileDir | ConvertFrom-Json
             if (-not $global:Config.miners) { $global:Config.Add("miners", @{ })
@@ -27,9 +39,9 @@ function Global:Add-ASICS {
             $ASIC_COUNT = 1
             $Config.Params.ASIC_IP | ForEach-Object {
                 $SEL = $_ -Split "`:"
-                $(vars).ASICS.ADD("ASIC$ASIC_COUNT", @{IP = $($SEL | Select -First 1) })
+                $(vars).ASICS.ADD("ASIC$ASIC_COUNT", @{IP = $($SEL | Select-Object  -First 1) })
                 if ($SEL.Count -gt 1) {
-                    $(vars).ASICS."ASIC$ASIC_COUNT".ADD("NickName", $($SEL | Select -Last 1))
+                    $(vars).ASICS."ASIC$ASIC_COUNT".ADD("NickName", $($SEL | Select-Object  -Last 1))
                 }
                 $ASIC_COUNT++
             }
@@ -55,7 +67,7 @@ function Global:Add-ASICS {
         }
     }
 
-    $(arg).Type = $(arg).Type | Where { $_ -ne "ASIC" }
-    if ($(arg).Type -like "*ASIC*") { $(arg).Type | Where { $_ -like "*ASIC*" } | % { $(vars).ASICTypes += $_ } }
+    $(arg).Type = $(arg).Type | Where-Object  { $_ -ne "ASIC" }
+    if ($(arg).Type -like "*ASIC*") { $(arg).Type | Where-Object  { $_ -like "*ASIC*" } | Foreach-Object  { $(vars).ASICTypes += $_ } }
     if ($(arg).ASIC_IP -eq "") { $(arg).ASIC_IP = "localhost" }
 }

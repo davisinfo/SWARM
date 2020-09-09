@@ -1,3 +1,5 @@
+. .\build\powershell\global\miner_stat.ps1;
+. .\build\powershell\global\modules.ps1;
 $(vars).NVIDIATypes | ForEach-Object {
     
     $ConfigType = $_; $Num = $ConfigType -replace "NVIDIA", ""
@@ -35,7 +37,7 @@ $(vars).NVIDIATypes | ForEach-Object {
     $MinerConfig = $Global:config.miners.claymore
 
     ##Export would be /path/to/[SWARMVERSION]/build/export##
-    $ExportDir = Join-Path $($(vars).dir) "build\export"
+    $ExportDir = "/usr/local/swarm/lib64"
     $Miner_Dir = Join-Path ($(vars).dir) ((Split-Path $Path).replace(".", ""))
 
     ##Prestart actions before miner launch
@@ -65,14 +67,14 @@ $(vars).NVIDIATypes | ForEach-Object {
             if ($(arg).Rej_Factor -eq "Yes" -and $Stat.Rejections -gt 0 -and $Stat.Rejection_Periods -ge 3) { $HashStat = $Stat.Hour * (1 - ($Stat.Rejections * 0.01)) }
             else { $HashStat = $Stat.Hour }
             $Pools | Where-Object Algorithm -eq $MinerAlgo | ForEach-Object {
-                $SelName = $_.Name
+                $SelName = $_.Name;
                 switch ($SelName) {
-                    "nicehash" { $AddArgs = "-esm 3 -estale 0 " }
-                    default { $AddArgs = "" }
+                    "nicehash" { $AddArgs = " -esm 3 -estale 0 " }
+                    default { $AddArgs = " " }
                 }
                 if ($MinerConfig.$ConfigType.difficulty.$($_.Algorithm)) { $Diff = ",d=$($MinerConfig.$ConfigType.difficulty.$($_.Algorithm))" }else { $Diff = "" }
-                if ($_.Worker) { $MinerWorker = "-eworker $($_.Worker) " }
-                else { $MinerWorker = "-epsw $($_.$Pass)$($Diff) " }
+                if ($_.Worker) { $MinerWorker = "-eworker $($_.Worker)" }
+                else { $MinerWorker = "-epsw $($_.$Pass)$($Diff)" }
                 [PSCustomObject]@{
                     MName      = $Name
                     Coin       = $(vars).Coins
@@ -87,9 +89,10 @@ $(vars).NVIDIATypes | ForEach-Object {
                     Stratum    = "$($_.Protocol)://$($_.Pool_Host):$($_.Port)" 
                     Version    = "$($(vars).nvidia.claymore.version)"
                     DeviceCall = "claymore"
-                    Arguments  = "-platform 2 -mport $Port -mode 1 -allcoins 1 $AddArgs-allpools 1 -epool $($_.Protocol)://$($_.Pool_Host):$($_.Port) -logfile `'$Log`' -ewal $($_.$User) $MinerWorker-wd 0 -gser 2 -dbg -1 -eres 0 $($MinerConfig.$ConfigType.commands.$($_.Algorithm))"
+                    Arguments  = "-platform 2 -mport $Port -epool $($_.Protocol)://$($_.Pool_Host):$($_.Port) -ewal $($_.$User) $MinerWorker -allcoins 1 -allpools 1 -wd 0 -gser 2 -dbg -1$AddArgs-logfile `'$Log`' $($MinerConfig.$ConfigType.commands.$($_.Algorithm))"
                     HashRates  = $Stat.Hour
-                    Quote      = if ($HashStat) { [Convert]::ToDecimal($HashStat * $_.Price) }else { 0 }
+                    HashRate_Adjusted = $Hashstat
+                    Quote      = $_.Price
                     Rejections = $Stat.Rejections
                     Power      = if ($(vars).Watts.$($_.Algorithm)."$($ConfigType)_Watts") { $(vars).Watts.$($_.Algorithm)."$($ConfigType)_Watts" }elseif ($(vars).Watts.default."$($ConfigType)_Watts") { $(vars).Watts.default."$($ConfigType)_Watts" }else { 0 } 
                     API        = "claymore"

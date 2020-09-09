@@ -4,6 +4,8 @@
 
 Windows Version Does Not Require HiveOS Windows. SWARM is built with all HiveOS API methods, and its own utilities like autofan, and overclocking. However, the overclocking for AMD requires prior registry modifications and compute mode activated to fully manipulate power play tables. If you are unsure how to do this- Run Win_Optimize.bat as an administrator. This will make an attempt to edit/make the registry entries for you, and set cards in compute mode. Reboot afterwards.
 
+**Developer Note**: I am aware of how brutal the codebase is. This is a 4 year old project, I have had to thousands of changes/additions along the way. Sometimes even I scratch my head. If you need clarification on how something works, I am more than happy to answer in the issues section. I eventually plan to sit down and re-write the entire thing into a much cleaner format, but right now it works....so....
+
 ## SWARM wiki:
 
 https://github.com/MaynardMiner/SWARM/wiki
@@ -63,6 +65,14 @@ Would give you a list of all powershell core processes.
 ## Development 
 
 I am a sole developer, and this is a large project. I prioritize workload by requests and activity, if you would like me to develop/improve a particular version Just notify me. Currently, the most popular, most used, and most user supported feature of SWARM is utilizing it as a custom miner in HiveOS. This was not an easy task, and also not easy to continue to maintain. This is why the fee of 1.5% is applied.
+
+## Why Are More Pools Not Added?
+
+PPS and Prop pools are the only pools worthwhile to mine in a switching setting. PPLNS pools, which are the majority of mining pools, have a payment scheme in which promotes loyalty to their pools: You get penalized when you mine on another pool. All the pools listed in SWARM are either PPS (Pay Per Share) or Prop (Proportional Share Pay). There are a couple of PPLNS+ pools, which do not penalize you for switching, but rather give you a bonus for loyalty.
+
+So in essence, it is a diservice to my users to provide more pools based on the format/intention of the software.
+
+If you know of more PROP or PPS pools, please let me know: I will add immediately.
 
 ## Simple Install Instructions 
 
