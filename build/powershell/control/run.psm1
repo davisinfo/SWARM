@@ -53,6 +53,7 @@ function Global:Stop-ActiveMiners {
                     }
                     else { $_.Xprocess.HasExited = $true; $_.XProcess.StartTime = $null }
                     $_.Status = "Idle"
+                    copy-item -Path ".\logs\$($_.Type)" -Destination ".\logs\$($_.Name)_$($_.Type)" -Force
                 }
             }
 

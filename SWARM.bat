@@ -27,4 +27,4 @@ cd /D %~dp0
 ::
 :: pwsh -executionpolicy Bypass -command ".\startup.ps1 -RigName1 SWARM -Location US -PoolName nlpool,blockmasters,zergpool,nicehash,fairpool,ahashpool,blazepool,hashrefinery,zpool -Type AMD1 -Wallet1 1RVNsdO6iuwEHfoiuwe123hsdfljk -Donate .5"
 
-pwsh -executionpolicy Bypass -command ".\startup.ps1"
+pwsh -executionpolicy Bypass -command ".\startup.ps1 -Startup No -RigName1 SERVER03 -Currency USD -CoinExchange BTC -Location EUROPE -PoolName nicehash,whalesburg -Bans x25x,gminer-amd-1,mtp,claymore-amd-1,phoenix-amd-1 -Swarm_Hash 463753fb9d12d8bb4415a37c6a15fbe6aef6b56c -Type AMD1 -Wallet1 1MGwuGQrAVLa8XCMAXJ6FcUJ1kmWvYMtxT -Donate .5 -WattOMeter No -platform windows -SWARM_Mode No -ETH 0x5146cda01a47B0168311DA2c56A3aB5d941BF8C5 -Worker SERVER03 -Nicehash_Wallet1 31rJaGuyKeBucGU8R9Nnuo136CCBbNr9jL -Historical_Bias 15 -TCP_Port 6099 -TCP Yes -Stat_Algo Hour -StatsInterval 10000 -Benchmark 180 -Threshold 0.0006"
