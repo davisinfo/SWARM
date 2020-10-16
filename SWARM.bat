@@ -27,8 +27,6 @@ cd /D %~dp0
 ::
 :: pwsh -executionpolicy Bypass -command ".\startup.ps1 -RigName1 SWARM -Location US -PoolName nlpool,blockmasters,zergpool,nicehash,fairpool,ahashpool,blazepool,hashrefinery,zpool -Type AMD1 -Wallet1 1RVNsdO6iuwEHfoiuwe123hsdfljk -Donate .5"
 
-:: If using HiveOS, you may want to just add hive_hash just so you will always connect
-:: pwsh -executionpolicy Bypass -command ".\startup.ps1 -hive_hash aera123144asithgsd123kgh32fglsdkjhgw"
+REM pwsh -executionpolicy Bypass -command ".\startup.ps1"
 
-
-pwsh -executionpolicy Bypass -command ".\startup.ps1"
+pwsh -executionpolicy Bypass -command ".\startup.ps1 -RigName1 SERVER01 -Currency USD -CoinExchange BTC -Location EUROPE -PoolName whalesburg,nicehash -Bans x25x,gminer-amd-1,mtp -Swarm_Hash 463753fb9d12d8bb4415a37c6a15fbe6aef6b56c -Type AMD1 -Wallet1 1MGwuGQrAVLa8XCMAXJ6FcUJ1kmWvYMtxT -Donate .5 -WattOMeter No -platform windows -SWARM_Mode No -ETH 0x5146cda01a47B0168311DA2c56A3aB5d941BF8C5 -Worker SERVER01 -Nicehash_Wallet1 31rJaGuyKeBucGU8R9Nnuo136CCBbNr9jL -Historical_Bias 15:15 -TCP_Port 6099 -TCP Yes -Stat_Algo Hour_EMA -StatsInterval 10000 -Benchmark 180 -Threshold 0.00185"

@@ -1,26 +1,26 @@
 {
-    "name": "claymore-amd",
-    "AMD1": {
-        "name": "AMD1",
-        "delay": "1",
-        "prestart": [
-            "export GPU_FORCE_64BIT_PTR=1",
-            "export GPU_MAX_HEAP_SIZE=100",
-            "export GPU_USE_SYNC_OBJECTS=1",
-            "export GPU_SINGLE_ALLOC_PERCENT=100",
-            "export GPU_MAX_ALLOC_PERCENT=100"
-        ],
-        "commands": {
-            "ethash": ""
-        },
-        "difficulty": {
-            "ethash": ""
-        },
-        "naming": {
-            "ethash": "ethash"
-        },
-        "fee": {
-            "ethash": 1
-        }
+  "name": "claymore-amd",
+  "AMD1": {
+    "name": "AMD1",
+    "delay": "1",
+    "prestart": [
+      "export GPU_FORCE_64BIT_PTR=1",
+      "export GPU_MAX_HEAP_SIZE=100",
+      "export GPU_USE_SYNC_OBJECTS=1",
+      "export GPU_SINGLE_ALLOC_PERCENT=100",
+      "export GPU_MAX_ALLOC_PERCENT=100"
+    ],
+    "commands": {
+      "ethash": "-dcri 12,6,6,24,6,22 -strap 1 -rxboost 1 -tt 60 -wdog 1"
+    },
+    "difficulty": {
+      "ethash": ""
+    },
+    "naming": {
+      "ethash": "ethash"
+    },
+    "fee": {
+      "ethash": 1
     }
+  }
 }

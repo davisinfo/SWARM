@@ -1,29 +1,30 @@
 {
-    "Cards": "",
-    "default_NVIDIA1": {
-        "Power": "",
-        "Core": "",
-        "Memory": "",
-        "Fans": ""
-    },
-    "default_NVIDIA2": {
-        "Power": "",
-        "Core": "",
-        "Memory": "",
-        "Fans": ""
-    },
-    "default_NVIDIA3": {
-        "Power": "",
-        "Core": "",
-        "Memory": "",
-        "Fans": ""
-    },
-    "default_AMD1": {
-        "dpm": "",
-        "v": "",
-        "core": "",
-        "mem": "",
-        "mdpm": "",
-        "fans": ""
-    }
+  "Cards": "RX580 RX580 RX580 RX580 RX580 RX580",
+  "default_NVIDIA1": {
+    "Power": "",
+    "Core": "",
+    "Memory": "",
+    "Fans": ""
+  },
+  "default_NVIDIA2": {
+    "Power": "",
+    "Core": "",
+    "Memory": "",
+    "Fans": ""
+  },
+  "default_NVIDIA3": {
+    "Power": "",
+    "Core": "",
+    "Memory": "",
+    "Fans": ""
+  },
+  "default_AMD1": {
+    "dpm": "",
+    "v": "825 825 825 850 825 825",
+    "core": "1150 1150 1150 1100 1150 1100",
+    "mem": "2000;775 2000;775 2000;775 2000;775 2000;775 2000;775",
+    "mdpm": "",
+    "fans": "20;30;50;65;80",
+    "target_temps": "60 60 60 60 60 60"
+  }
 }
